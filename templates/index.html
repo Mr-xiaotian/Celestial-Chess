@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Celestial Chess</title>
+    <style>
+        #celestial {
+            /* 初始颜色，可以根据需要调整 */
+            color: grey; 
+            font-weight: bold; /* 如果你想让文字更显眼 */
+            /* 其他可能的样式 */
+        }
+        table {
+            border-collapse: collapse;
+            margin: auto;
+        }
+        td {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            vertical-align: middle;
+            border: 1px solid black;
+            cursor: pointer;
+            position: relative;
+        }
+        .black-hole {
+            background-color: black;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align:center;"> 
+        <span id="celestial">Celestial</span> Chess
+    </h1>
+    <table id="chessboard"></table>
+
+    <div id="score" style="text-align:center; font-size: 18px; margin-bottom: 10px;">
+        Total Score: <span id="totalScore">0</span>
+        
+    </div>
+    <div style="text-align:center; margin-bottom: 10px;">
+        <button id="undoButton">悔棋</button>
+        <button id="redoButton">重悔</button>
+        <button id="restartButton">重开</button>
+        <button id="aiButton">AI执棋</button>
+    </div>
+
+    <script src="/static/script.js"></script>
+    <script src="https://cdn.socket.io/socket.io-4.0.0.js"></script>
+</body>
+</html>
