@@ -6,7 +6,8 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "your_secret_key"
 socketio = SocketIO(app)
 
-weight, height = 11, 11  # 11x11 的棋盘
+size = 11  # 棋盘大小
+weight, height = (size, size)
 # 假设棋盘初始状态
 board = [[[0, 0] for _ in range(height)] for _ in range(weight)]
 game = ChessGame((weight, height), 3)
