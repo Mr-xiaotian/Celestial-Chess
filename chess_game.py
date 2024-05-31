@@ -7,7 +7,10 @@ from time import time
 from copy import deepcopy
 from collections import deque
 from pprint import pprint
+from loguru import logger
 
+logger.remove()  # remove the default handler
+logger.add(f"logs/thread_manager.log", format="{time:YYYY-MM-DD HH:mm:ss} {level} {message}")
 
 class ChessGame:
     def __init__(self, board_range=(5, 5), power=2) -> None:
@@ -38,12 +41,15 @@ class ChessGame:
         ):
             self.transposition_table[key] = value
             self.transposition_table_change = True
+            logger.info(f"update transposition table: {key} -> {value}")
 
     def save_transposition_table(self):
         if not self.transposition_table_change:
             return
         with open(self.transposition_file, "wb") as file:
             pickle.dump(self.transposition_table, file)
+            self.transposition_table_change = False
+            logger.info(f"save transposition table to {self.transposition_file}")
 
     def update_chessboard(self, row, col, color):
         """
@@ -93,8 +99,8 @@ class ChessGame:
 
     def mark_black_holes(self):
         """标记黑洞区域"""
-        for row in range(len(self.chessboard)):
-            for col in range(len(self.chessboard[0])):
+        for row in range(len(self.chessboard[0])):
+            for col in range(len(self.chessboard[1])):
                 if self.chessboard[row][col][1] >= self.threshold:  # 检查是否超过极限值
                     # 标记为黑洞区域
                     self.mark_adjacent_black_holes(row, col)
@@ -149,7 +155,6 @@ class ChessGame:
                     move_list.append((row_idx, col_idx))
         return move_list
     
-
     def get_board_key(self):
         # 将数据转换为字符串形式
         data_str = str(self.chessboard)
@@ -170,98 +175,11 @@ class ChessGame:
                     return False
         return True
 
-    def minimax(self, depth, color, alpha, beta):
-        board_key = self.get_board_key()
-        if board_key in self.transposition_table and \
-            self.transposition_table[board_key]['depth'] >= depth:
-            return self.transposition_table[board_key]['score']
-        
-        if depth == 0 or self.is_game_over():
-            score = self.get_score()
-            self.update_transposition_table(
-                board_key,  {'score': score, 'depth': depth})
-            return score
-
-        if color == 1:
-            max_eval = float("-inf")
-            for move in self.get_all_moves():
-                self.update_chessboard(*move, color)
-                eval = self.minimax(depth - 1, -1, alpha, beta)
-                self.undo()
-                max_eval = max(max_eval, eval)
-                alpha = max(alpha, eval)
-                if beta <= alpha:
-                    break
-            self.update_transposition_table(
-                board_key,  {'score': max_eval, 'depth': depth})
-            return max_eval
-        elif color == -1:
-            min_eval = float("inf")
-            for move in self.get_all_moves():
-                self.update_chessboard(*move, color)
-                eval = self.minimax(depth - 1, 1, alpha, beta)
-                self.undo()
-                min_eval = min(min_eval, eval)
-                beta = min(beta, eval)
-                if beta <= alpha:
-                    break
-            self.update_transposition_table(
-                board_key,  {'score': min_eval, 'depth': depth})
-            return min_eval
-
-    def find_best_move(self, color, depth=3):
-        '''
-        定义函数find_best_move，用于在搜索树中搜索最佳移动
-        参数color表示玩家颜色
-        参数depth表示搜索深度
-        回最佳移动
-        '''
-        best_move = None
-
-        if color == 1:
-            best_score = float("-inf")
-            for move in self.get_all_moves():
-                self.update_chessboard(*move, color)
-                score = self.minimax(depth, color * -1, float("-inf"), float("inf"))
-                self.undo()
-                if score > best_score:
-                    best_score = score
-                    best_move = move
-
-        elif color == -1:
-            best_score = float("inf")
-            for move in self.get_all_moves():
-                self.update_chessboard(*move, color)
-                score = self.minimax(depth, color * -1, float("-inf"), float("inf"))
-                self.undo()
-                if score < best_score:
-                    best_score = score
-                    best_move = move
-
-        self.save_transposition_table()
-
-        return best_move
-
     def show_chessboard(self):
         '''打印棋盘'''
         pprint([[cell[0] for cell in row] for row in self.chessboard])
 
-    def test_time(self, depth = 3):
-        self.restart()
-
-        first_time = time()
-        while True:
-            last_time = time()
-            color = 1 if self.step%2==0 else -1
-            move = self.find_best_move(color, depth)
-            print(time()-last_time)
-            self.update_chessboard(*move, color)
-            self.show_chessboard()
-            print()
-            # sleep(0)
-            if self.is_game_over():
-                print(f'总分数:{self.get_score()}\n用时:{time()-first_time}')
-                break
+    
 
 if __name__ == "__main__":
     game = ChessGame((5,5), power=2)
@@ -273,6 +191,3 @@ if __name__ == "__main__":
     # print(game.get_all_moves())
     # game.find_best_move(1, 1)
 
-    game.test_time(5)
-    
-    print(len(game.transposition_table.keys()))

@@ -1,6 +1,6 @@
 let currentColor = 1; // 初始颜色设为 1
-let board_size = 11; //设定棋盘大小
-let power = 3; // 设定power
+let board_size = 5; //设定棋盘大小
+let power = 2; // 设定power
 
 document.addEventListener('DOMContentLoaded', function () {
     renderChessboard(board_size, board_size); // 假设棋盘是 8x8 的

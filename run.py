@@ -1,16 +1,19 @@
 from flask import Flask, jsonify, request, render_template
 from flask_socketio import SocketIO
+from copy import deepcopy
 from chess_game import ChessGame
+from ai_algorithm import MinimaxAI
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "your_secret_key"
 socketio = SocketIO(app)
 
-size = 11  # 棋盘大小
+size = 5  # 棋盘大小
 weight, height = (size, size)
 # 假设棋盘初始状态
 board = [[[0, 0] for _ in range(height)] for _ in range(weight)]
-game = ChessGame((weight, height), 3)
+game = ChessGame((weight, height), 2)
+minimax_ai = MinimaxAI()
 
 def convert_inf_to_string(value):
     if value == float("inf"):
@@ -34,7 +37,7 @@ def play():
     data = request.json
     row = data["row"]
     col = data["col"]
-    color = data["color"]  # 假设前端发送了颜色信息
+    color = data["color"]  # 前端发送了颜色信息
 
     try:
         game.update_chessboard(row, col, color)
@@ -73,7 +76,7 @@ def restart():
 def ai():
     # AI执棋逻辑
     color = 1 if game.step%2==0 else -1
-    move = game.find_best_move(color, 1)
+    move = minimax_ai.find_best_move(game, color, 1)
     game.update_chessboard(*move, color)
 
     score = game.get_score()
