@@ -1,11 +1,13 @@
-from time import time
-from typing import List, Tuple
+from time import time, strftime, localtime
+from typing import Tuple
 from chess_game import ChessGame
 from loguru import logger
 
+
 # Configure logging
 logger.remove()  # remove the default handler
-logger.add(f"logs/thread_manager.log", format="{time:YYYY-MM-DD HH:mm:ss} {level} {message}")
+now_time = strftime("%Y-%m-%d", localtime())
+logger.add(f"logs/chess_manager({now_time}).log", format="{time:YYYY-MM-DD HH:mm:ss} {level} {message}")
 
 class AIAlgorithm:
     def find_best_move(self, game: ChessGame, color: int, depth: int) -> Tuple[int, int]:
@@ -20,6 +22,7 @@ class MinimaxAI(AIAlgorithm):
         best_move = None
         self.iterate_time = 0
         logger.info(f"MinimaxAI is thinking in depth {depth}...")
+        logger.info(f'{game.format_matrix(game.chessboard)}')
 
         if color == 1:
             best_score = float("-inf")
@@ -104,4 +107,4 @@ class MinimaxAI(AIAlgorithm):
 
 if __name__ == '__main__':
     minimax_ai = MinimaxAI()
-    minimax_ai.test_time(20)
+    minimax_ai.test_time(6)

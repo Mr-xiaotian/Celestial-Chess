@@ -2,15 +2,16 @@
 Author: 晓天
 Vision: 1.1
 """
+from time import strftime, localtime
 import pickle, hashlib
-from time import time
 from copy import deepcopy
 from collections import deque
 from pprint import pprint
 from loguru import logger
 
 logger.remove()  # remove the default handler
-logger.add(f"logs/thread_manager.log", format="{time:YYYY-MM-DD HH:mm:ss} {level} {message}")
+now_time = strftime("%Y-%m-%d", localtime())
+logger.add(f"logs/chess_manager({now_time}).log", format="{time:YYYY-MM-DD HH:mm:ss} {level} {message}")
 
 class ChessGame:
     def __init__(self, board_range=(5, 5), power=2) -> None:
@@ -42,6 +43,7 @@ class ChessGame:
             self.transposition_table[key] = value
             self.transposition_table_change = True
             logger.info(f"update transposition table: {key} -> {value}")
+            logger.info(f'{self.format_matrix(self.chessboard)}')
 
     def save_transposition_table(self):
         if not self.transposition_table_change:
@@ -178,6 +180,13 @@ class ChessGame:
     def show_chessboard(self):
         '''打印棋盘'''
         pprint([[cell[0] for cell in row] for row in self.chessboard])
+
+    def format_matrix(self, matrix):
+        # 使用列表推导式和 join 方法将每一行转换为字符串
+        formatted_rows = ["  " + str(row) for row in matrix]
+        # 将所有行用逗号和换行符连接起来，并加上方括号
+        formatted_string = "[\n" + ",\n".join(formatted_rows) + "\n]"
+        return formatted_string
 
     
 
