@@ -7,7 +7,9 @@ from loguru import logger
 # Configure logging
 logger.remove()  # remove the default handler
 now_time = strftime("%Y-%m-%d", localtime())
-logger.add(f"logs/chess_manager({now_time}).log", format="{time:YYYY-MM-DD HH:mm:ss} {level} {message}")
+logger.add(f"logs/chess_manager({now_time}).log", 
+           format="{time:YYYY-MM-DD HH:mm:ss} {level} {message}",
+           level="INFO")
 
 class AIAlgorithm:
     def find_best_move(self, game: ChessGame, color: int, depth: int) -> Tuple[int, int]:
@@ -50,7 +52,7 @@ class MinimaxAI(AIAlgorithm):
 
     def minimax(self, game: ChessGame, depth: int, color: int, alpha: float, beta: float) -> float:
         self.iterate_time += 1
-        logger.info(f"Iteration {self.iterate_time} in depth {depth}")
+        logger.debug(f"Iteration {self.iterate_time} in depth {depth}")
 
         board_key = game.get_board_key()
         if board_key in game.transposition_table and \
