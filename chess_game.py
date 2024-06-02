@@ -205,18 +205,22 @@ class ChessGame:
     def who_is_winner(self):
         '''
         判断当前玩家是否获胜
-        :return: 当前玩家是否获胜
+        :return: 1 蓝方获胜，-1 红方获胜，0 平局
         '''
         if not self.is_game_over():
             return None
         if self.get_color() == 1:
             if self.get_score() > self.get_balance_num():
                 return 1
+            elif self.get_score() == self.get_balance_num():
+                return 0
             else:
                 return -1
         else:
             if self.get_score() < -1 * self.get_balance_num():
                 return -1
+            elif self.get_score() == -1 * self.get_balance_num():
+                return 0
             else:
                 return 1
 

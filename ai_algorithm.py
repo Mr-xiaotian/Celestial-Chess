@@ -114,9 +114,11 @@ class MCTSNode:
     def best_child(self, c_param=1.4):
         """使用UCB1策略选择最佳子节点"""
         choices_weights = [
-            (child.wins / child.visits) + c_param * math.sqrt((2 * math.log(self.visits) / child.visits))
+            (child.wins / child.visits) + c_param * math.sqrt((math.log(self.visits) / child.visits))
             for child in self.children
         ]
+        color = self.game_state.get_color()
+        choices_weights = [color * choice for choice in choices_weights]
         return self.children[choices_weights.index(max(choices_weights))]
 
     def expand(self):
@@ -156,7 +158,7 @@ def tree_policy(node: MCTSNode) -> MCTSNode:
     return node
 
 class MCTSAI(AIAlgorithm):
-    def __init__(self, itermax: int = 3) -> None:
+    def __init__(self, itermax: int = 1000) -> None:
         self.itermax = itermax
 
     def find_best_move(self, game: ChessGame, color: int) -> Tuple[int, int]:
@@ -208,12 +210,17 @@ def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm):
         print(f'用时: {time()-last_time}\n')
 
         if test_game.is_game_over():
-            print(f'{"蓝方"+ai_blue_name if test_game.who_is_winner()==1 else "红方"+ai_red_name} 获胜！')
+            if test_game.who_is_winner()==1:
+                print(f'{"蓝方"+ai_blue_name} 获胜！')
+            elif test_game.who_is_winner()==-1:
+                print(f'{"红方"+ai_red_name} 获胜！')
+            else:
+                print('平局！')
             print(f'用时:{time()-first_time}')
             break
 
 if __name__ == '__main__':
     minimax_ai = MinimaxAI(5)
-    mcts_ai = MCTSAI(1000)
+    mcts_ai = MCTSAI(100000)
 
-    ai_battle(mcts_ai, mcts_ai)
+    ai_battle(minimax_ai, mcts_ai)
