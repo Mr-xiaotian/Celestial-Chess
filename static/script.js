@@ -1,19 +1,19 @@
-let currentColor = 1; // 初始颜色设为 1
-let board_size = 5; //设定棋盘大小
-let power = 2; // 设定power
+let currentColor; // 设定颜色
+let power; // 设定power
 
 document.addEventListener('DOMContentLoaded', function () {
-    renderChessboard(board_size, board_size); // 假设棋盘是 8x8 的
     document.getElementById("undoButton").addEventListener("click", undoMove);
     document.getElementById("redoButton").addEventListener("click", redoMove);
     document.getElementById("restartButton").addEventListener("click", restartGame);
     document.getElementById("aiButton").addEventListener("click", aiDo);
 
-    fetch('/current_state')
+    fetch('/init_state')
         .then(response => response.json())
         .then(data => {
-            updateChessboard(data.board); // 更新棋盘
-            updateTotalScore(data.score); // 更新分数
+            power = data.power; // 初始化power
+            renderChessboard(data.weight, data.height); // 初始化棋盘size
+            updateChessboard(data.board); // 初始化棋盘
+            updateTotalScore(data.score); // 初始化分数
             toggleColor(data.step); // 根据步数切换颜色
         })
         .catch(error => console.error('Error:', error));
