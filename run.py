@@ -7,9 +7,9 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "your_secret_key"
 socketio = SocketIO(app)
 
-size = 5  # 棋盘大小
+size = 11  # 棋盘大小
 weight, height = (size, size)
-power = 2
+power = 3  # 棋子力量
 
 # 假设棋盘初始状态
 board = [[[0, 0] for _ in range(height)] for _ in range(weight)]
@@ -49,58 +49,8 @@ def init_state():
                     "board": prepared_board, "score": score, "step": game.step})
 
 
-@app.route("/play", methods=["POST"])
-def play():
-    data = request.json
-    row = data["row"]
-    col = data["col"]
-    color = data["color"]  # 前端发送了颜色信息
-
-    try:
-        response = update_board(row, col, color)
-        return jsonify(response)
-    except AssertionError as e:
-        return jsonify({"error": str(e)}), 400
-
-
-@app.route("/undo", methods=["POST"])
-def undo():
-    # 悔棋逻辑
-    game.undo()
-    score = game.get_score()
-    prepared_board = prepare_board_for_json(game.chessboard)
-    return jsonify({"board": prepared_board, "score": score, "step": game.step})
-
-
-@app.route("/redo", methods=["POST"])
-def redo():
-    # 重悔逻辑
-    game.redo()
-    score = game.get_score()
-    prepared_board = prepare_board_for_json(game.chessboard)
-    return jsonify({"board": prepared_board, "score": score, "step": game.step})
-
-
-@app.route('/restart', methods=['POST'])
-def restart():
-    # 重开游戏逻辑
-    game.restart()
-    score = game.get_score()
-    prepared_board = prepare_board_for_json(game.chessboard)
-    return jsonify({"board": prepared_board, "score": score, "step": game.step})
-
-
-@app.route("/ai", methods=["POST"])
-def ai():
-    # AI执棋逻辑
-    color = 1 if game.step%2==0 else -1
-    move = mcts_ai.find_best_move(game, color)
-    response = update_board(*move, color)
-    return jsonify(response)
-
-
-@socketio.on("play")
-def handle_play(data):
+@socketio.on("play_move")
+def handle_play_move(data):
     row = data["row"]
     col = data["col"]
     color = data["color"]  # 前端发送了颜色信息
@@ -111,12 +61,16 @@ def handle_play(data):
     except AssertionError as e:
         socketio.emit("update_board", {"error": str(e)}), 400
 
+
 @socketio.on("undo_move")
 def handle_undo_move():
     game.undo()
     prepared_board = prepare_board_for_json(game.chessboard)
     score = game.get_score()
-    socketio.emit("update_board", {"board": prepared_board, "score": score, "step": game.step})
+    try:
+        socketio.emit("update_board", {"board": prepared_board, "score": score, "step": game.step})
+    except AssertionError as e:
+        socketio.emit("update_board", {"error": str(e)}), 400
 
 
 @socketio.on("redo_move")
@@ -124,7 +78,10 @@ def handle_redo_move():
     game.redo()
     prepared_board = prepare_board_for_json(game.chessboard)
     score = game.get_score()
-    socketio.emit("update_board", {"board": prepared_board, "score": score, "step": game.step})
+    try:
+        socketio.emit("update_board", {"board": prepared_board, "score": score, "step": game.step})
+    except AssertionError as e:
+        socketio.emit("update_board", {"error": str(e)}), 400
 
 
 @socketio.on("restart_game")
@@ -132,7 +89,22 @@ def handle_restart_game():
     game.restart()
     prepared_board = prepare_board_for_json(game.chessboard)
     score = game.get_score()
-    socketio.emit("update_board", {"board": prepared_board, "score": score, "step": game.step})
+    try:
+        socketio.emit("update_board", {"board": prepared_board, "score": score, "step": game.step})
+    except AssertionError as e:
+        socketio.emit("update_board", {"error": str(e)}), 400
+
+
+@socketio.on("ai_move")
+def handle_ai_move():
+    # AI执棋逻辑
+    color = game.get_color()
+    move = mcts_ai.find_best_move(game, color)
+    try:
+        response = update_board(*move, color)
+        socketio.emit("update_board", response)
+    except AssertionError as e:
+        socketio.emit("update_board", {"error": str(e)}), 400
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 let currentColor; // 设定颜色
 let power; // 设定power
-let socket = io.connect('http://' + document.domain + ':' + location.port);
+let socket = io.connect(window.location.protocol + '//' + window.location.host, { secure: true });
 
 document.addEventListener('DOMContentLoaded', function () {
     document.getElementById("undoButton").addEventListener("click", undoMove);
@@ -44,28 +44,6 @@ function renderChessboard(weight, height) {
             });
         }
     }
-}
-
-function onCellClick(row, col) {
-    // fetch('/play', {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({ row: row, col: col, color: currentColor })
-    // })
-    //     .then(response => response.json())
-    //     .then(data => {
-    //         updateChessboard(data.board);
-    //         updateTotalScore(data.score); // 更新总分数
-    //         toggleColor(data.step); // 切换颜色
-    //     })
-    //     .catch(error => console.error('Error:', error));
-    
-    socket.emit('play', { row: row, col: col, color: currentColor });
-    console.log('Play:', row, col, currentColor);
-
-    
 }
 
 function updateChessboard(board) {
@@ -188,74 +166,96 @@ function updateTotalScore(score) {
     document.getElementById("totalScore").textContent = score;
 }
 
+function onCellClick(row, col) {
+    // fetch('/play', {
+    //     method: 'POST',
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify({ row: row, col: col, color: currentColor })
+    // })
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         updateChessboard(data.board);
+    //         updateTotalScore(data.score); // 更新总分数
+    //         toggleColor(data.step); // 切换颜色
+    //     })
+    //     .catch(error => console.error('Error:', error));
+    socket.emit('play_move', { row: row, col: col, color: currentColor });
+    // console.log('Clicked cell:', row, col);
+}
+
 function undoMove() {
     // 发送 AJAX 请求到后端执行悔棋操作
-    fetch('/undo', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    })
-        .then(response => response.json())
-        .then(data => {
-            updateChessboard(data.board); // 更新棋盘
-            updateTotalScore(data.score); // 更新分数
-            toggleColor(data.step); // 切换颜色
-        })
-        .catch(error => console.error('Error:', error));
+    // fetch('/undo', {
+    //     method: 'POST',
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //     }
+    // })
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         updateChessboard(data.board); // 更新棋盘
+    //         updateTotalScore(data.score); // 更新分数
+    //         toggleColor(data.step); // 切换颜色
+    //     })
+    //     .catch(error => console.error('Error:', error));
+
+    socket.emit('undo_move')
 }
 
 function redoMove() {
     // 发送 AJAX 请求到后端执行重悔操作
-    fetch('/redo', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    })
-        .then(response => response.json())
-        .then(data => {
-            updateChessboard(data.board); // 更新棋盘
-            updateTotalScore(data.score); // 更新分数
-            toggleColor(data.step); // 切换颜色
-        })
-        .catch(error => console.error('Error:', error));
+    // fetch('/redo', {
+    //     method: 'POST',
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //     }
+    // })
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         updateChessboard(data.board); // 更新棋盘
+    //         updateTotalScore(data.score); // 更新分数
+    //         toggleColor(data.step); // 切换颜色
+    //     })
+    //     .catch(error => console.error('Error:', error));
+    socket.emit('redo_move')
 }
 
 function restartGame() {
     // 发送 AJAX 请求到后端重启游戏
-    // 根据后端响应重置界面
-    fetch('/restart', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-        // 不需要发送任何数据，因为悔棋操作通常不需要额外的信息
-    })
-        .then(response => response.json())
-        .then(data => {
-            updateChessboard(data.board); // 更新棋盘
-            updateTotalScore(data.score); // 更新分数
-            toggleColor(data.step); // 切换颜色
-        })
-        .catch(error => console.error('Error:', error));
+    // fetch('/restart', {
+    //     method: 'POST',
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //     }
+    //     // 不需要发送任何数据，因为悔棋操作通常不需要额外的信息
+    // })
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         updateChessboard(data.board); // 更新棋盘
+    //         updateTotalScore(data.score); // 更新分数
+    //         toggleColor(data.step); // 切换颜色
+    //     })
+    //     .catch(error => console.error('Error:', error));
+    socket.emit('restart_game')
 }
 
 function aiDo() {
     // 发送 AJAX 请求到后端，让 AI 执棋
-    fetch('/ai', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-        // 不需要发送任何数据，因为操作通常不需要额外的信息
-    })
-        .then(response => response.json())
-        .then(data => {
-            console.log('AI move received:', data); // 打印响应数据，用于调试
-            updateChessboard(data.board); // 更新棋盘
-            updateTotalScore(data.score); // 更新分数
-            toggleColor(data.step); // 切换颜色
-        })
-        .catch(error => console.error('Error:', error));
+    // fetch('/ai', {
+    //     method: 'POST',
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //     }
+    // })
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         console.log('AI move received:', data); // 打印响应数据，用于调试
+    //         updateChessboard(data.board); // 更新棋盘
+    //         updateTotalScore(data.score); // 更新分数
+    //         toggleColor(data.step); // 切换颜色
+    //     })
+    //     .catch(error => console.error('Error:', error));
+    socket.emit('ai_move')
 }
