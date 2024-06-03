@@ -112,7 +112,7 @@ class MinimaxAI(AIAlgorithm):
             with open(transposition_file, "wb") as file:
                 pickle.dump(self.transposition_table, file)
 
-    def update_transposition_table(self, key, value) -> None:
+    def update_transposition_table(self, key: str, value: int) -> None:
         """
         更新transposition table
         """

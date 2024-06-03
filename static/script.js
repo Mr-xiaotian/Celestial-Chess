@@ -1,5 +1,6 @@
 let currentColor; // 设定颜色
 let power; // 设定power
+let socket = io.connect('http://' + document.domain + ':' + location.port);
 
 document.addEventListener('DOMContentLoaded', function () {
     document.getElementById("undoButton").addEventListener("click", undoMove);
@@ -17,6 +18,17 @@ document.addEventListener('DOMContentLoaded', function () {
             toggleColor(data.step); // 根据步数切换颜色
         })
         .catch(error => console.error('Error:', error));
+
+    // 添加 SocketIO 事件监听器
+    socket.on('update_board', function (data) {
+        if (data.error) {
+            console.error('Error:', data.error);
+        } else {
+            updateChessboard(data.board);
+            updateTotalScore(data.score);
+            toggleColor(data.step);
+        }
+    });
 });
 
 function renderChessboard(weight, height) {
@@ -35,20 +47,25 @@ function renderChessboard(weight, height) {
 }
 
 function onCellClick(row, col) {
-    fetch('/play', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ row: row, col: col, color: currentColor })
-    })
-        .then(response => response.json())
-        .then(data => {
-            updateChessboard(data.board);
-            updateTotalScore(data.score); // 更新总分数
-            toggleColor(data.step); // 切换颜色
-        })
-        .catch(error => console.error('Error:', error));
+    // fetch('/play', {
+    //     method: 'POST',
+    //     headers: {
+    //         'Content-Type': 'application/json',
+    //     },
+    //     body: JSON.stringify({ row: row, col: col, color: currentColor })
+    // })
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         updateChessboard(data.board);
+    //         updateTotalScore(data.score); // 更新总分数
+    //         toggleColor(data.step); // 切换颜色
+    //     })
+    //     .catch(error => console.error('Error:', error));
+    
+    socket.emit('play', { row: row, col: col, color: currentColor });
+    console.log('Play:', row, col, currentColor);
+
+    
 }
 
 function updateChessboard(board) {
@@ -178,7 +195,23 @@ function undoMove() {
         headers: {
             'Content-Type': 'application/json',
         }
-        // 不需要发送任何数据，因为悔棋操作通常不需要额外的信息
+    })
+        .then(response => response.json())
+        .then(data => {
+            updateChessboard(data.board); // 更新棋盘
+            updateTotalScore(data.score); // 更新分数
+            toggleColor(data.step); // 切换颜色
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+function redoMove() {
+    // 发送 AJAX 请求到后端执行重悔操作
+    fetch('/redo', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
     })
         .then(response => response.json())
         .then(data => {

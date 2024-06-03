@@ -1,6 +1,6 @@
 """
 Author: 晓天
-Vision: 1.1
+Vision: 1.2
 """
 import hashlib
 from copy import deepcopy
