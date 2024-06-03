@@ -24,32 +24,46 @@ class ChessGame:
         self.member_dict = {0: deepcopy(self.chessboard)}
         self.step = 0
         self.transposition_file = f"transposition_table/transposition_table({power}&{board_range[0]}_{board_range[1]})(sha256).pickle"
-        self.transposition_table = {}
+        self.transposition_table = dict()
         self.transposition_table_change = False
 
+    def load_transposition_table(self):
+        """
+        加载transposition table
+        """
         try:
             with open(self.transposition_file, "rb") as file:
                 self.transposition_table = pickle.load(file)
+                logger.info(f"load transposition table from {self.transposition_file}")
         except (FileNotFoundError, EOFError):
             with open(self.transposition_file, "wb") as file:
                 pickle.dump(self.transposition_table, file)
 
     def update_transposition_table(self, key, value):
-        # 检查是否存在更深层次的搜索结果
+        """
+        更新transposition table
+        """
         if (
             key not in self.transposition_table
             or self.transposition_table[key]["depth"] < value["depth"]
         ):
+            old_value = self.transposition_table.get(key, None)
             self.transposition_table[key] = value
             self.transposition_table_change = True
-            logger.info(f"update transposition table: {key} -> {value}")
+            logger.info(f"update transposition table: {old_value} -> {value}")
             logger.info(f'{self.format_matrix(self.chessboard)}')
-
+            
     def save_transposition_table(self):
+        """
+        保存transposition table到文件
+        """
         if not self.transposition_table_change:
+            self.transposition_table = dict()
+            self.transposition_table_change = False
             return
         with open(self.transposition_file, "wb") as file:
             pickle.dump(self.transposition_table, file)
+            self.transposition_table = dict()
             self.transposition_table_change = False
             logger.info(f"save transposition table to {self.transposition_file}")
 
@@ -138,18 +152,22 @@ class ChessGame:
         self.chessboard = deepcopy(self.member_dict[self.step])
 
     def get_score(self):
-        # 计算棋盘上所有非无穷大格子的总分数
+        """计算棋盘上所有非无穷大格子的总分数"""
         total_score = sum(
             cell[0]
             for row in self.chessboard
             for cell in row
             if cell[0] != float("inf")
         )
+        return total_score - self.get_balance_num()
+    
+    def get_balance_num(self):
+        """计算平衡数"""
         balance_num = self.power * (self.power + 1) * (2 * self.power + 1) / 12
-        return total_score - balance_num
+        return balance_num
 
     def get_all_moves(self):
-        # 创建一个空列表，用于存放棋盘上所有格子的坐标
+        """创建一个空列表，用于存放棋盘上所有格子的坐标"""
         move_list = []
         for row_idx, row in enumerate(self.chessboard):
             for col_idx, cell in enumerate(row):
@@ -158,30 +176,65 @@ class ChessGame:
         return move_list
     
     def get_board_key(self):
-        # 将数据转换为字符串形式
-        data_str = str(self.chessboard)
-        # 使用 hashlib 库中的 sha256 函数来生成哈希值
-        hash_object = hashlib.sha256(data_str.encode())
-        # 获取十六进制表示的哈希值
-        hash_hex = hash_object.hexdigest()
+        '''获取棋盘的哈希值'''
+        data_str = str(self.chessboard) # 将数据转换为字符串形式
+        hash_object = hashlib.sha256(data_str.encode()) # 使用 hashlib 库中的 sha256 函数来生成哈希值
+        hash_hex = hash_object.hexdigest() # 获取十六进制表示的哈希值
         return hash_hex
+    
+    def get_board_value(self):
+        '''获取棋盘的值'''
+        return [[cell[0] for cell in row] for row in self.chessboard]
+    
+    def get_color(self):
+        '''获取当前玩家的颜色的颜色'''
+        color = 1 if self.step % 2 == 0 else -1
+        return color
 
     def is_game_over(self):
         '''
         判断游戏是否结束
         :return: 游戏是否结束
         '''
-        for row in self.chessboard:
-            for cell in row:
-                if cell[0] == 0:
+        for row_value in self.get_board_value():
+            for cell_value in row_value:
+                if cell_value == 0:
                     return False
         return True
+    
+    def who_is_winner(self):
+        '''
+        判断当前玩家是否获胜
+        :return: 1 蓝方获胜，-1 红方获胜，0 平局
+        '''
+        if not self.is_game_over():
+            return None
+        if self.get_color() == 1:
+            if self.get_score() > self.get_balance_num():
+                return 1
+            elif self.get_score() == self.get_balance_num():
+                return 0
+            else:
+                return -1
+        else:
+            if self.get_score() < -1 * self.get_balance_num():
+                return -1
+            elif self.get_score() == -1 * self.get_balance_num():
+                return 0
+            else:
+                return 1
+
 
     def show_chessboard(self):
         '''打印棋盘'''
-        pprint([[cell[0] for cell in row] for row in self.chessboard])
+        pprint(self.get_board_value())
 
     def format_matrix(self, matrix):
+        '''
+        格式化矩阵
+        :param matrix: 矩阵
+        :return: 格式化后的字符串
+        '''
         # 使用列表推导式和 join 方法将每一行转换为字符串
         formatted_rows = ["  " + str(row) for row in matrix]
         # 将所有行用逗号和换行符连接起来，并加上方括号
