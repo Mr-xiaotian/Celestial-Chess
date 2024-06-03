@@ -222,4 +222,4 @@ if __name__ == '__main__':
     minimax_ai = MinimaxAI(6)
     mcts_ai = MCTSAI(10000)
 
-    ai_battle(mcts_ai, minimax_ai)
+    ai_battle(mcts_ai, mcts_ai)
