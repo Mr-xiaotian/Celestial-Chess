@@ -50,8 +50,7 @@ class ChessGame:
             old_value = self.transposition_table.get(key, None)
             self.transposition_table[key] = value
             self.transposition_table_change = True
-            logger.info(f"update transposition table: {old_value} -> {value}")
-            logger.info(f'{self.format_matrix(self.chessboard)}')
+            logger.info(f"update transposition table: {old_value} -> {value}\n{self.format_matrix(self.chessboard):>20}")
             
     def save_transposition_table(self):
         """
@@ -235,9 +234,17 @@ class ChessGame:
         :param matrix: 矩阵
         :return: 格式化后的字符串
         '''
-        # 使用列表推导式和 join 方法将每一行转换为字符串
-        formatted_rows = ["  " + str(row) for row in matrix]
-        # 将所有行用逗号和换行符连接起来，并加上方括号
+        # 确定每个元素的最大宽度
+        max_width = max(len(str(item)) for row in matrix for sublist in row for item in sublist)
+        
+        formatted_rows = []
+        for row in matrix:
+            formatted_row = "  ["
+            for sublist in row:
+                formatted_row += "[" + ", ".join(f"{item:>{max_width}}" for item in sublist) + "], "
+            formatted_row = formatted_row.rstrip(", ") + "]"
+            formatted_rows.append(formatted_row)
+        
         formatted_string = "[\n" + ",\n".join(formatted_rows) + "\n]"
         return formatted_string
 
@@ -245,11 +252,12 @@ class ChessGame:
 
 if __name__ == "__main__":
     game = ChessGame((5,5), power=2)
-    # game.update_chessboard(2, 2, 1)
-    # # game.update_chessboard(2,1,-1)
+    game.update_chessboard(2, 2, 1)
+    game.update_chessboard(2,1,-1)
     # # game.undo()
     # # print(game.step, game.member_dict)
     # game.show_chessboard()
     # print(game.get_all_moves())
     # game.find_best_move(1, 1)
+    print(game.format_matrix(game.chessboard))
 

@@ -30,8 +30,7 @@ class MinimaxAI(AIAlgorithm):
         best_move = None
         self.iterate_time = 0
         depth = self.depth
-        logger.info(f"MinimaxAI is thinking in depth {depth}...")
-        logger.info(f'{game.format_matrix(game.chessboard)}')
+        logger.debug(f"MinimaxAI is thinking in depth {depth}...\n{game.format_matrix(game.chessboard)}")
         game.load_transposition_table()
 
         if color == 1:
@@ -221,6 +220,6 @@ def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm):
 
 if __name__ == '__main__':
     minimax_ai = MinimaxAI(5)
-    mcts_ai = MCTSAI(100000)
+    mcts_ai = MCTSAI(10000)
 
     ai_battle(minimax_ai, mcts_ai)
