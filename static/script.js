@@ -172,24 +172,8 @@ function updateTotalScore(score) {
 }
 
 function undoMove() {
+    // 发送 AJAX 请求到后端执行悔棋操作
     fetch('/undo', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-        // 不需要发送任何数据，因为悔棋操作通常不需要额外的信息
-    })
-        .then(response => response.json())
-        .then(data => {
-            updateChessboard(data.board); // 更新棋盘
-            updateTotalScore(data.score); // 更新分数
-            toggleColor(data.step); // 切换颜色
-        })
-        .catch(error => console.error('Error:', error));
-}
-
-function redoMove() {
-    fetch('/redo', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

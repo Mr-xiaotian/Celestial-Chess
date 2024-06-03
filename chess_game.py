@@ -2,11 +2,10 @@
 Author: 晓天
 Vision: 1.1
 """
-from time import strftime, localtime
-import pickle, hashlib
+import hashlib
 from copy import deepcopy
+from time import strftime, localtime
 from collections import deque
-from pprint import pprint
 from loguru import logger
 
 logger.remove()  # remove the default handler
@@ -19,53 +18,12 @@ class ChessGame:
             [[0, 0] for _ in range(board_range[1])] for _ in range(board_range[0])
         ]
         self.power = power
+        self.board_range = board_range
         self.threshold = self.power * 2 + 1
 
-        self.member_dict = {0: deepcopy(self.chessboard)}
+        self.history_dict = {0: deepcopy(self.chessboard)}
         self.step = 0
-        self.transposition_file = f"transposition_table/transposition_table({power}&{board_range[0]}_{board_range[1]})(sha256).pickle"
-        self.transposition_table = dict()
-        self.transposition_table_change = False
-
-    def load_transposition_table(self):
-        """
-        加载transposition table
-        """
-        try:
-            with open(self.transposition_file, "rb") as file:
-                self.transposition_table = pickle.load(file)
-                logger.info(f"load transposition table from {self.transposition_file}")
-        except (FileNotFoundError, EOFError):
-            with open(self.transposition_file, "wb") as file:
-                pickle.dump(self.transposition_table, file)
-
-    def update_transposition_table(self, key, value):
-        """
-        更新transposition table
-        """
-        if (
-            key not in self.transposition_table
-            or self.transposition_table[key]["depth"] < value["depth"]
-        ):
-            old_value = self.transposition_table.get(key, None)
-            self.transposition_table[key] = value
-            self.transposition_table_change = True
-            logger.info(f"update transposition table: {old_value} -> {value}\n{self.format_matrix(self.chessboard):>20}")
-            
-    def save_transposition_table(self):
-        """
-        保存transposition table到文件
-        """
-        if not self.transposition_table_change:
-            self.transposition_table = dict()
-            self.transposition_table_change = False
-            return
-        with open(self.transposition_file, "wb") as file:
-            pickle.dump(self.transposition_table, file)
-            self.transposition_table = dict()
-            self.transposition_table_change = False
-            logger.info(f"save transposition table to {self.transposition_file}")
-
+    
     def update_chessboard(self, row, col, color):
         """
         根据新规则更新棋盘状态，并考虑黑洞点的影响。
@@ -83,7 +41,7 @@ class ChessGame:
         self.mark_black_holes()
 
         self.step += 1
-        self.member_dict[self.step] = deepcopy(self.chessboard)
+        self.history_dict[self.step] = deepcopy(self.chessboard)
 
     def update_adjacent_cells(self, row, col, color):
         """更新落子点周围的格子，考虑黑洞点对路径的阻挡作用，同时只影响右侧的格子"""
@@ -137,18 +95,18 @@ class ChessGame:
     def undo(self):
         """悔棋"""
         self.step -= 1 if self.step >= 1 else 0
-        self.chessboard = deepcopy(self.member_dict[self.step])
+        self.chessboard = deepcopy(self.history_dict[self.step])
 
     def redo(self):
         """重悔"""
-        if self.step + 1 in self.member_dict.keys():
+        if self.step + 1 in self.history_dict.keys():
             self.step += 1
-            self.chessboard = deepcopy(self.member_dict[self.step])
+            self.chessboard = deepcopy(self.history_dict[self.step])
 
     def restart(self):
         """重开"""
         self.step = 0
-        self.chessboard = deepcopy(self.member_dict[self.step])
+        self.chessboard = deepcopy(self.history_dict[self.step])
 
     def get_score(self):
         """计算棋盘上所有非无穷大格子的总分数"""
@@ -273,7 +231,7 @@ if __name__ == "__main__":
     game.update_chessboard(2, 2, 1)
     game.update_chessboard(2,1,-1)
     # # game.undo()
-    # # print(game.step, game.member_dict)
+    # # print(game.step, game.history_dict)
     # game.show_chessboard()
     # print(game.get_all_moves())
     # game.find_best_move(1, 1)

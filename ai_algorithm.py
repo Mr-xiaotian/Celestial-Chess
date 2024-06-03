@@ -1,12 +1,12 @@
 
 import math
 import random
-from collections import deque
-from copy import deepcopy
+import pickle
 from typing import Tuple
+from loguru import logger
+from copy import deepcopy
 from time import time, strftime, localtime
 from chess_game import ChessGame
-from loguru import logger
 
 
 # Configure logging
@@ -26,12 +26,15 @@ class MinimaxAI(AIAlgorithm):
     def __init__(self, depth: int = 3) -> None:
         self.depth = depth
 
+        self.transposition_table = dict()
+        self.transposition_table_change = False
+
     def find_best_move(self, game: ChessGame, color: int) -> Tuple[int, int]:
         best_move = None
         self.iterate_time = 0
         depth = self.depth
         logger.debug(f"MinimaxAI is thinking in depth {depth}...\n{game.format_matrix(game.chessboard)}")
-        game.load_transposition_table()
+        self.load_transposition_table(game)
 
         if color == 1:
             best_score = float("-inf")
@@ -53,7 +56,7 @@ class MinimaxAI(AIAlgorithm):
                     best_score = score
                     best_move = move
 
-        game.save_transposition_table()
+        self.save_transposition_table(game)
 
         return best_move
 
@@ -96,6 +99,47 @@ class MinimaxAI(AIAlgorithm):
             game.update_transposition_table(board_key, {'score': min_eval, 'depth': depth})
             return min_eval
         
+    def load_transposition_table(self, game: ChessGame) -> None:
+        """
+        加载transposition table
+        """
+        transposition_file = f"transposition_table/transposition_table({game.power}&{game.board_range[0]}_{game.board_range[1]})(sha256).pickle"
+        try:
+            with open(transposition_file, "rb") as file:
+                self.transposition_table = pickle.load(file)
+                logger.info(f"load transposition table from {transposition_file}")
+        except (FileNotFoundError, EOFError):
+            with open(transposition_file, "wb") as file:
+                pickle.dump(self.transposition_table, file)
+
+    def update_transposition_table(self, key, value) -> None:
+        """
+        更新transposition table
+        """
+        if (
+            key not in self.transposition_table
+            or self.transposition_table[key]["depth"] < value["depth"]
+        ):
+            old_value = self.transposition_table.get(key, None)
+            self.transposition_table[key] = value
+            self.transposition_table_change = True
+            logger.info(f"update transposition table: {old_value} -> {value}\n{self.format_matrix(self.chessboard):>20}")
+            
+    def save_transposition_table(self, game: ChessGame) -> None:
+        """
+        保存transposition table到文件
+        """
+        transposition_file = f"transposition_table/transposition_table({game.power}&{game.board_range[0]}_{game.board_range[1]})(sha256).pickle"
+        if not self.transposition_table_change:
+            self.transposition_table = dict()
+            self.transposition_table_change = False
+            return
+        with open(transposition_file, "wb") as file:
+            pickle.dump(self.transposition_table, file)
+            self.transposition_table = dict()
+            self.transposition_table_change = False
+            logger.info(f"save transposition table to {transposition_file}")
+
 
 class MCTSNode:
     def __init__(self, game_state: ChessGame, parent=None):
