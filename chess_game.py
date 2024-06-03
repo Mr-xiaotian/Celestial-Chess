@@ -208,7 +208,7 @@ class ChessGame:
         '''
         if not self.is_game_over():
             return None
-        if self.get_color() == 1:
+        if self.get_color() == -1:
             if self.get_score() > self.get_balance_num():
                 return 1
             elif self.get_score() == self.get_balance_num():
@@ -226,7 +226,8 @@ class ChessGame:
 
     def show_chessboard(self):
         '''打印棋盘'''
-        pprint(self.get_board_value())
+        format_board_value = self.format_simple_matrix(self.get_board_value())
+        print(format_board_value)
 
     def format_matrix(self, matrix):
         '''
@@ -243,6 +244,23 @@ class ChessGame:
             for sublist in row:
                 formatted_row += "[" + ", ".join(f"{item:>{max_width}}" for item in sublist) + "], "
             formatted_row = formatted_row.rstrip(", ") + "]"
+            formatted_rows.append(formatted_row)
+        
+        formatted_string = "[\n" + ",\n".join(formatted_rows) + "\n]"
+        return formatted_string
+    
+    def format_simple_matrix(self, matrix):
+        '''
+        格式化简单矩阵
+        :param matrix: 矩阵
+        :return: 格式化后的字符串
+        '''
+        # 确定每个元素的最大宽度
+        max_width = max(len(str(item)) for row in matrix for item in row)
+        
+        formatted_rows = []
+        for row in matrix:
+            formatted_row = "  [" + ", ".join(f"{item:>{max_width}}" for item in row) + "]"
             formatted_rows.append(formatted_row)
         
         formatted_string = "[\n" + ",\n".join(formatted_rows) + "\n]"
