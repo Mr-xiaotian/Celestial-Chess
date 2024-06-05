@@ -147,6 +147,14 @@ class ChessGame:
         '''获取当前玩家的颜色的颜色'''
         color = 1 if self.step % 2 == 0 else -1
         return color
+    
+    def get_format_board(self):
+        '''获取棋盘的格式化'''
+        return self.format_matrix(self.chessboard)
+    
+    def get_format_board_value(self):
+        '''获取棋盘数值的格式化'''
+        return self.format_simple_matrix(self.get_board_value())
 
     def is_game_over(self):
         '''
@@ -181,11 +189,9 @@ class ChessGame:
             else:
                 return 1
 
-
     def show_chessboard(self):
         '''打印棋盘'''
-        format_board_value = self.format_simple_matrix(self.get_board_value())
-        print(format_board_value)
+        print(self.get_format_board_value())
 
     def format_matrix(self, matrix):
         '''

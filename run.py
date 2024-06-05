@@ -1,21 +1,21 @@
 from flask import Flask, jsonify, request, render_template
 from flask_socketio import SocketIO
-from chess_game import ChessGame
-from ai_algorithm import MinimaxAI, MCTSAI
+from game.chess_game import ChessGame
+from ai import MinimaxAI, MCTSAI
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "your_secret_key"
 socketio = SocketIO(app)
 
-size = 11  # 棋盘大小
-weight, height = (size, size)
-power = 3  # 棋子力量
+# size = 2  # 棋盘大小
+weight, height = (3, 2)
+power = 2  # 棋子力量
 
 # 假设棋盘初始状态
 board = [[[0, 0] for _ in range(height)] for _ in range(weight)]
 game = ChessGame((weight, height), power)
 minimax_ai = MinimaxAI(5)
-mcts_ai = MCTSAI(1000)
+mcts_ai = MCTSAI(10000)
 
 def convert_inf_to_string(value):
     if value == float("inf"):
@@ -98,6 +98,8 @@ def handle_restart_game():
 @socketio.on("ai_move")
 def handle_ai_move():
     # AI执棋逻辑
+    if game.is_game_over():
+        return
     color = game.get_color()
     move = mcts_ai.find_best_move(game, color)
     try:
@@ -109,4 +111,4 @@ def handle_ai_move():
 
 if __name__ == "__main__":
     # app.run(debug=True)
-    socketio.run(app)
+    socketio.run(app, debug=True)
