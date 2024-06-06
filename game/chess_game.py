@@ -23,6 +23,7 @@ class ChessGame:
 
         self.history_dict = {0: deepcopy(self.chessboard)}
         self.step = 0
+        self.current_win_rate: float = 0.0
     
     def update_chessboard(self, row, col, color):
         """
@@ -108,6 +109,14 @@ class ChessGame:
         self.step = 0
         self.chessboard = deepcopy(self.history_dict[self.step])
 
+    def set_current_win_rate(self, win_rate: float = 0.0):
+        """设置当前玩家的胜率"""
+        self.current_win_rate = win_rate
+
+    def get_current_win_rate(self):
+        """获取当前玩家的胜率"""
+        return self.current_win_rate
+
     def get_score(self):
         """计算棋盘上所有非无穷大格子的总分数"""
         total_score = sum(
@@ -191,6 +200,10 @@ class ChessGame:
 
     def show_chessboard(self):
         '''打印棋盘'''
+        print(self.get_format_board())
+
+    def show_chessboard_value(self):
+        '''打印棋盘数值部分'''
         print(self.get_format_board_value())
 
     def format_matrix(self, matrix):

@@ -39,7 +39,7 @@ class MinimaxAI(AIAlgorithm):
                     best_move = move
 
         self.save_transposition_table(game)
-
+        game.set_current_win_rate()
         return best_move
 
     def minimax(self, game: ChessGame, depth: int, color: int, alpha: float, beta: float) -> float:

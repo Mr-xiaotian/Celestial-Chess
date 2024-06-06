@@ -7,9 +7,11 @@ from game.chess_game import ChessGame
 
 
 class MCTSNode:
-    def __init__(self, game_state: ChessGame, parent=None):
+    def __init__(self, game_state: ChessGame, parent=None, move=None):
         self.game_state = deepcopy(game_state)  # 当前节点的游戏状态
         self.parent: MCTSNode = parent  # 父节点
+        self.move = move  # 移动的棋子
+
         self.children: List[MCTSNode] = []  # 子节点列表
         self.visits = 0  # 访问次数
         self.wins = 0  # 胜利次数
@@ -18,11 +20,15 @@ class MCTSNode:
     def is_fully_expanded(self) -> bool:
         """检查节点是否已完全展开"""
         return len(self.untried_moves) == 0
+    
+    def get_win_rate(self) -> float:
+        """计算节点的胜率"""
+        return self.wins / self.visits if self.visits > 0 else 0
 
     def best_child(self, c_param=1.4):
         """使用UCB1策略选择最佳子节点"""
         choices_weights = [
-            (child.wins / child.visits) + c_param * math.sqrt((math.log(self.visits) / child.visits))
+            child.get_win_rate() + c_param * math.sqrt((math.log(self.visits) / child.visits))
             for child in self.children
         ]
         color = self.game_state.get_color()
@@ -35,7 +41,7 @@ class MCTSNode:
         move = self.untried_moves.pop()
         color = self.game_state.get_color()
         new_game_state.update_chessboard(*move, color)
-        child_node = MCTSNode(new_game_state, parent=self)
+        child_node = MCTSNode(new_game_state, parent=self, move=move)
         self.children.append(child_node)
         return child_node
 
@@ -72,20 +78,9 @@ class MCTSAI(AIAlgorithm):
     def find_best_move(self, game: ChessGame, color: int) -> Tuple[int, int]:
         root = MCTSNode(game) # 创建一个MCTSNode对象，表示根节点
         best_child = self.MCTS(root) # 使用MCTS算法选择最佳的子节点
+        game.set_current_win_rate(best_child.get_win_rate())
 
-        # 遍历根节点的所有子节点
-        for child in root.children:
-            # 如果子节点的棋盘状态与最佳子节点的棋盘状态相同
-            if child.game_state.chessboard == best_child.game_state.chessboard:
-                # 遍历所有可能的移动
-                for move in game.get_all_moves():
-                    new_game_state = deepcopy(game) # 创建一个新的棋盘状态
-                    new_game_state.update_chessboard(*move, color) # 更新棋盘状态
-                    # 如果新的棋盘状态与最佳子节点的棋盘状态相同
-                    if new_game_state.chessboard == best_child.game_state.chessboard:
-                        # 返回移动
-                        return move
-        return None
+        return best_child.move
 
     def MCTS(self, root: MCTSNode) -> MCTSNode:
         """执行迭代次数为 itermax 的 MCTS 搜索，返回最佳子节点"""
