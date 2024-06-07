@@ -11,10 +11,11 @@ class MinimaxAI(AIAlgorithm):
         self.transposition_table = dict()
         self.transposition_table_change = False
 
-    def find_best_move(self, game: ChessGame, color: int) -> Tuple[int, int]:
+    def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
         best_move = None
         self.iterate_time = 0
         depth = self.depth
+        color = game.get_color()
         logger.debug(f"MinimaxAI is thinking in depth {depth}...\n{game.format_matrix(game.chessboard)}")
         self.load_transposition_table(game)
 

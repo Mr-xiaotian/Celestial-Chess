@@ -101,7 +101,7 @@ def handle_ai_move():
     if game.is_game_over():
         return
     color = game.get_color()
-    move = mcts_ai.find_best_move(game, color)
+    move = mcts_ai.find_best_move(game)
     try:
         response = update_board(*move, color)
         socketio.emit("update_board", response)

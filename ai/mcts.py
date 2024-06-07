@@ -75,7 +75,7 @@ class MCTSAI(AIAlgorithm):
     def __init__(self, itermax: int = 1000) -> None:
         self.itermax = itermax
 
-    def find_best_move(self, game: ChessGame, color: int) -> Tuple[int, int]:
+    def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
         root = MCTSNode(game) # 创建一个MCTSNode对象，表示根节点
         best_child = self.MCTS(root) # 使用MCTS算法选择最佳的子节点
         game.set_current_win_rate(best_child.get_win_rate())

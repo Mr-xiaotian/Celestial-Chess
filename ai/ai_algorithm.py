@@ -13,6 +13,6 @@ logger.add(f"logs/chess_manager({now_time}).log",
 
 
 class AIAlgorithm:
-    def find_best_move(self, game: ChessGame, color: int) -> Tuple[int, int]:
+    def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
         raise NotImplementedError("This method should be overridden by subclasses.")
     
