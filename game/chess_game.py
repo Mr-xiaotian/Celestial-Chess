@@ -21,9 +21,11 @@ class ChessGame:
         self.board_range = board_range
         self.threshold = self.power * 2 + 1
 
-        self.history_dict = {0: deepcopy(self.chessboard)}
+        self.history_board = {0: deepcopy(self.chessboard)}
+        self.history_move = {0: None}
         self.step = 0
         self.current_win_rate: float = 0.0
+        
     
     def update_chessboard(self, row, col, color):
         """
@@ -42,7 +44,8 @@ class ChessGame:
         self.mark_black_holes()
 
         self.step += 1
-        self.history_dict[self.step] = deepcopy(self.chessboard)
+        self.history_board[self.step] = deepcopy(self.chessboard)
+        self.history_move[self.step] = (row, col)
 
     def update_adjacent_cells(self, row, col, color):
         """更新落子点周围的格子，考虑黑洞点对路径的阻挡作用，同时只影响右侧的格子"""
@@ -96,18 +99,18 @@ class ChessGame:
     def undo(self):
         """悔棋"""
         self.step -= 1 if self.step >= 1 else 0
-        self.chessboard = deepcopy(self.history_dict[self.step])
+        self.chessboard = deepcopy(self.history_board[self.step])
 
     def redo(self):
         """重悔"""
-        if self.step + 1 in self.history_dict.keys():
+        if self.step + 1 in self.history_board.keys():
             self.step += 1
-            self.chessboard = deepcopy(self.history_dict[self.step])
+            self.chessboard = deepcopy(self.history_board[self.step])
 
     def restart(self):
         """重开"""
         self.step = 0
-        self.chessboard = deepcopy(self.history_dict[self.step])
+        self.chessboard = deepcopy(self.history_board[self.step])
 
     def set_current_win_rate(self, win_rate: float = 0.0):
         """设置当前玩家的胜率"""
@@ -116,6 +119,10 @@ class ChessGame:
     def get_current_win_rate(self):
         """获取当前玩家的胜率"""
         return self.current_win_rate
+    
+    def get_current_move(self):
+        """获取当前玩家的移动"""
+        return self.history_move[self.step]
 
     def get_score(self):
         """计算棋盘上所有非无穷大格子的总分数"""
@@ -250,7 +257,7 @@ if __name__ == "__main__":
     game.update_chessboard(2, 2, 1)
     game.update_chessboard(2,1,-1)
     # # game.undo()
-    # # print(game.step, game.history_dict)
+    # # print(game.step, game.history_board)
     # game.show_chessboard()
     # print(game.get_all_moves())
     # game.find_best_move(1, 1)

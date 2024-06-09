@@ -1,5 +1,6 @@
 import math
 import random
+from __future__ import annotations
 from copy import deepcopy
 from typing import Tuple, List
 from .ai_algorithm import AIAlgorithm, logger
@@ -7,10 +8,10 @@ from game.chess_game import ChessGame
 
 
 class MCTSNode:
-    def __init__(self, game_state: ChessGame, parent=None, move=None):
+    def __init__(self, game_state: ChessGame, parent=None, target_color=None):
         self.game_state = deepcopy(game_state)  # 当前节点的游戏状态
         self.parent: MCTSNode = parent  # 父节点
-        self.move = move  # 移动的棋子
+        self.target_color = target_color # 目标颜色
 
         self.children: List[MCTSNode] = []  # 子节点列表
         self.visits = 0  # 访问次数
@@ -24,15 +25,26 @@ class MCTSNode:
     def get_win_rate(self) -> float:
         """计算节点的胜率"""
         return self.wins / self.visits if self.visits > 0 else 0
+    
+    def get_current_move(self) -> Tuple[int, int]:
+        """获取当前节点的移动"""
+        return self.game_state.get_current_move()
+    
+    def UCB1(self, child: MCTSNode, c_param=1.4):
+        """使用UCB1策略选择最佳子节点"""
+        return child.get_win_rate() + c_param * math.sqrt((math.log(self.visits) / child.visits))
+
+    def update(self, win: bool):
+        """更新节点的胜利次数和访问次数"""
+        self.visits += 1
+        self.wins += win
 
     def best_child(self, c_param=1.4):
         """使用UCB1策略选择最佳子节点"""
         choices_weights = [
-            child.get_win_rate() + c_param * math.sqrt((math.log(self.visits) / child.visits))
+            self.UCB1(child, c_param)
             for child in self.children
         ]
-        color = self.game_state.get_color()
-        choices_weights = [color * choice for choice in choices_weights]
         return self.children[choices_weights.index(max(choices_weights))]
 
     def expand(self):
@@ -40,8 +52,9 @@ class MCTSNode:
         new_game_state = deepcopy(self.game_state)
         move = self.untried_moves.pop()
         color = self.game_state.get_color()
+        target_color = self.target_color
         new_game_state.update_chessboard(*move, color)
-        child_node = MCTSNode(new_game_state, parent=self, move=move)
+        child_node = MCTSNode(new_game_state, parent=self, target_color=target_color)
         self.children.append(child_node)
         return child_node
 
@@ -53,7 +66,13 @@ class MCTSNode:
             move = random.choice(possible_moves)
             color = current_simulation_state.get_color()
             current_simulation_state.update_chessboard(*move, color)
-        return current_simulation_state.who_is_winner()
+        
+        if current_simulation_state.who_is_winner() == self.target_color:
+            return 1.0
+        elif current_simulation_state.who_is_winner() == -1 * self.target_color:
+            return 0.0
+        else:
+            return 0.5
 
     def backpropagate(self, result: float):
         """将模拟结果向上传播到根节点"""
@@ -76,11 +95,12 @@ class MCTSAI(AIAlgorithm):
         self.itermax = itermax
 
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
-        root = MCTSNode(game) # 创建一个MCTSNode对象，表示根节点
+        target_color = game.get_color()
+        root = MCTSNode(game, target_color=target_color) # 创建一个MCTSNode对象，表示根节点
         best_child = self.MCTS(root) # 使用MCTS算法选择最佳的子节点
         game.set_current_win_rate(best_child.get_win_rate())
 
-        return best_child.move
+        return best_child.get_current_move()
 
     def MCTS(self, root: MCTSNode) -> MCTSNode:
         """执行迭代次数为 itermax 的 MCTS 搜索，返回最佳子节点"""
