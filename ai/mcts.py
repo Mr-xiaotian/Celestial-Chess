@@ -1,6 +1,6 @@
+from __future__ import annotations
 import math
 import random
-from __future__ import annotations
 from copy import deepcopy
 from typing import Tuple, List
 from .ai_algorithm import AIAlgorithm, logger
@@ -8,7 +8,7 @@ from game.chess_game import ChessGame
 
 
 class MCTSNode:
-    def __init__(self, game_state: ChessGame, parent=None, target_color=None):
+    def __init__(self, game_state: ChessGame, parent=None, target_color=None, flag=True):
         self.game_state = deepcopy(game_state)  # 当前节点的游戏状态
         self.parent: MCTSNode = parent  # 父节点
         self.target_color = target_color # 目标颜色
@@ -30,16 +30,16 @@ class MCTSNode:
         """获取当前节点的移动"""
         return self.game_state.get_current_move()
     
-    def UCB1(self, child: MCTSNode, c_param=1.4):
+    def UCB1(self, child: MCTSNode, c_param):
         """使用UCB1策略选择最佳子节点"""
-        return child.get_win_rate() + c_param * math.sqrt((math.log(self.visits) / child.visits))
+        return (1-c_param) * child.get_win_rate() + c_param * math.sqrt((math.log(self.visits) / child.visits))
 
     def update(self, win: bool):
         """更新节点的胜利次数和访问次数"""
         self.visits += 1
         self.wins += win
 
-    def best_child(self, c_param=1.4):
+    def best_child(self, c_param=0.9):
         """使用UCB1策略选择最佳子节点"""
         choices_weights = [
             self.UCB1(child, c_param)
@@ -67,9 +67,10 @@ class MCTSNode:
             color = current_simulation_state.get_color()
             current_simulation_state.update_chessboard(*move, color)
         
-        if current_simulation_state.who_is_winner() == self.target_color:
+        winner = current_simulation_state.who_is_winner()
+        if winner == self.target_color:
             return 1.0
-        elif current_simulation_state.who_is_winner() == -1 * self.target_color:
+        elif winner == -1 * self.target_color:
             return 0.0
         else:
             return 0.5

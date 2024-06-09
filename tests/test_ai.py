@@ -25,7 +25,7 @@ def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = 
         print(f'第{test_game.step}步: {"蓝方" if color==1 else "红方"} 落子在 {move}')
         print(f'获胜概率: {test_game.get_current_win_rate():.2%}')
         print(f'分数: {test_game.get_score()}')
-        print(f'总用时: {time()-last_time}\n')
+        print(f'用时: {time()-last_time:.2f}s\n')
 
         if test_game.is_game_over():
             if test_game.who_is_winner()==1:
@@ -34,12 +34,12 @@ def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = 
                 print(f'{"红方"+ai_red_name} 获胜！')
             else:
                 print('平局！')
-            print(f'用时:{time()-first_time}')
+            print(f'总用时:{time()-first_time:.2f}s')
             break
 
 if __name__ == '__main__':
-    minimax_ai = MinimaxAI(5)
-    mcts_ai = MCTSAI(10000)
+    minimax_ai = MinimaxAI(3)
+    mcts_ai = MCTSAI(1000)
     test_game = ChessGame((5,5), 2)
 
-    ai_battle(mcts_ai, minimax_ai, test_game)
+    ai_battle(mcts_ai, mcts_ai, test_game)

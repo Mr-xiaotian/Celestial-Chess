@@ -13,9 +13,12 @@ now_time = strftime("%Y-%m-%d", localtime())
 logger.add(f"logs/chess_manager({now_time}).log", format="{time:YYYY-MM-DD HH:mm:ss} {level} {message}")
 
 class ChessGame:
+    BLACK_HOLE = float("inf")
+    INIT_CELL = [0, 0]
+
     def __init__(self, board_range=(5, 5), power=2) -> None:
         self.chessboard = [
-            [[0, 0] for _ in range(board_range[1])] for _ in range(board_range[0])
+            [self.INIT_CELL[:] for _ in range(board_range[1])] for _ in range(board_range[0])
         ]
         self.power = power
         self.board_range = board_range
@@ -35,66 +38,79 @@ class ChessGame:
             self.chessboard[row][col][0] == 0
         ), f"须在值为0处落子, ({row},{col})为{self.chessboard[row][col][0]}"
 
-        # 落子点设置为3，并更新周围点的值
-        self.chessboard[row][col][0] += self.power * color
-        self.chessboard[row][col][1] += self.power
-        self.update_adjacent_cells(row, col, color)
+        # 更新落子点及周围点的值
+        visited = self.update_adjacent_cells(row, col, color)
 
         # 检查并标记黑洞
-        self.mark_black_holes()
+        self.mark_black_holes(visited)
 
         self.step += 1
         self.history_board[self.step] = deepcopy(self.chessboard)
         self.history_move[self.step] = (row, col)
 
     def update_adjacent_cells(self, row, col, color):
-        """更新落子点周围的格子，考虑黑洞点对路径的阻挡作用，同时只影响右侧的格子"""
+        """更新落子点周围的格子，考虑黑洞点对路径的阻挡作用，同时只影响下方的格子"""
         visited = set()
         queue = deque([(row, col, 0)])  # 使用队列进行BFS搜索
 
         while queue:
             r, c, distance = queue.popleft()
-            if (r, c) != (row, col) and (r, c) not in visited:
-                if self.chessboard[r][c][0] is not float("inf"):  # 检查是否为黑洞点
-                    # print(distance, r, c)
-                    change = max(self.power - distance, 0) * color
-                    self.chessboard[r][c][0] += change
-                    self.chessboard[r][c][1] += change * color
-                visited.add((r, c))
+            if (r, c) in visited:
+                continue
+            elif distance >= self.power:
+                continue
+            elif self.chessboard[r][c][0] is self.BLACK_HOLE:  # 检查是否为黑洞点
+                continue
 
-            if distance < self.power - 1:
-                # 只向右侧、上方和下方扩展搜索区域
-                for dr, dc in [(0, 1), (-1, 0), (1, 0)]:
-                    nr, nc = r + dr, c + dc
-                    if (
-                        0 <= nr < len(self.chessboard)
-                        and 0 <= nc < len(self.chessboard[0])
-                        and (nr, nc) not in visited
-                        and self.chessboard[nr][nc][0] != float("inf")
-                    ):
-                        queue.append((nr, nc, distance + 1))
+            visited.add((r, c))
 
-    def mark_black_holes(self):
+            change = max(self.power - distance, 0)
+            self.chessboard[r][c][0] += change * color
+            self.chessboard[r][c][1] += change
+            
+            # 只向左侧、右侧和下方扩展搜索区域
+            for dr, dc in [(0, 1), (0, -1), (1, 0)]:
+                nr, nc = r + dr, c + dc
+                if (
+                    0 <= nr < self.board_range[0]
+                    and 0 <= nc < self.board_range[1]
+                ):
+                    queue.append((nr, nc, distance + 1))
+
+        return visited
+
+    def mark_black_holes(self, visited: set):
         """标记黑洞区域"""
-        for row in range(len(self.chessboard[0])):
-            for col in range(len(self.chessboard[1])):
-                if self.chessboard[row][col][1] >= self.threshold:  # 检查是否超过极限值
-                    # 标记为黑洞区域
-                    self.mark_adjacent_black_holes(row, col)
+        while visited:
+            row, col = visited.pop()
+            if self.chessboard[row][col][1] >= self.threshold:  # 检查是否超过极限值
+                # 标记为黑洞区域
+                self.mark_adjacent_black_holes(row, col)
 
     def mark_adjacent_black_holes(self, row, col):
         """标记黑洞周围的格子为黑洞区域"""
-        black_power = self.power - 2
-        for dr in range(-1 * black_power, black_power + 1):
-            for dc in range(-black_power, 1):
-                r, c = row + dr, col + dc + black_power
-                distance = abs(dr) + abs(dc)
+        black_power = self.power - 1
+        queue = deque([(row + black_power - 1, col, 0)])
+        visited = set()
+
+        while queue:
+            r, c, distance = queue.popleft()
+            if (r, c) in visited:
+                continue
+            elif distance >= black_power:
+                continue
+
+            self.chessboard[r][c][0] = self.BLACK_HOLE
+            visited.add((r, c))
+            
+            # 向四个方向扩展
+            for dr, dc in [(0, 1), (0, -1), (-1, 0)]:
+                nr, nc = r + dr, c + dc
                 if (
-                    0 <= r < len(self.chessboard)
-                    and 0 <= c < len(self.chessboard[0])
-                    and distance < black_power + 1
+                    0 <= nr < self.board_range[0]
+                    and 0 <= nc < self.board_range[1]
                 ):
-                    self.chessboard[r][c][0] = float("inf")
+                    queue.append((nr, nc, distance + 1))
 
     def undo(self):
         """悔棋"""
@@ -130,7 +146,7 @@ class ChessGame:
             cell[0]
             for row in self.chessboard
             for cell in row
-            if cell[0] != float("inf")
+            if cell[0] != self.BLACK_HOLE
         )
         return total_score - self.get_balance_num()
     
@@ -140,7 +156,7 @@ class ChessGame:
         return balance_num
 
     def get_all_moves(self):
-        """创建一个空列表，用于存放棋盘上所有格子的坐标"""
+        """获取所有合法的移动"""
         move_list = []
         for row_idx, row in enumerate(self.chessboard):
             for col_idx, cell in enumerate(row):
@@ -148,6 +164,38 @@ class ChessGame:
                     move_list.append((row_idx, col_idx))
         return move_list
     
+    def get_perfect_moves(self):
+        """获取所有最好的合法移动"""
+        all_moves = self.get_all_moves()
+        color = self.get_color()  # 获取当前玩家的颜色
+        center_rows = range(self.power - 1, self.board_range[0] - self.power + 1)
+        center_cols = range(0, self.board_range[1] - self.power + 1)
+
+        # 初步筛选
+        filtered_moves = [
+            move for move in all_moves if move[0] in center_rows and move[1] in center_cols
+        ]
+
+        if not filtered_moves:
+            filtered_moves = all_moves
+
+        perfect_score = float('-inf') if color == 1 else float('inf')
+        perfect_moves = []
+
+        for move in filtered_moves:
+            row, col = move
+            self.update_chessboard(row, col, color)  # 更新棋盘状态
+            score = self.get_score()  # 计算得分
+            self.undo()  # 回溯棋盘状态
+
+            if (color == 1 and score > perfect_score) or (color == -1 and score < perfect_score):
+                perfect_score = score
+                perfect_moves = [move]
+            elif score == perfect_score:
+                perfect_moves.append(move)
+            
+        return perfect_moves
+        
     def get_board_key(self):
         '''获取棋盘的哈希值'''
         data_str = str(self.chessboard) # 将数据转换为字符串形式
