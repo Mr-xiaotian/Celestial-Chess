@@ -7,15 +7,15 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "your_secret_key"
 socketio = SocketIO(app)
 
-size = 11  # 棋盘大小
+size = 5  # 棋盘大小
 weight, height = (size, size)
-power = 3  # 棋子力量
+power = 2  # 棋子力量
 
 # 假设棋盘初始状态
 board = [[[0, 0] for _ in range(height)] for _ in range(weight)]
 game = ChessGame((weight, height), power)
-minimax_ai = MinimaxAI(5)
-mcts_ai = MCTSAI(10000)
+minimax_ai = MinimaxAI(3)
+mcts_ai = MCTSAI(1000)
 
 def convert_inf_to_string(value):
     if value == float("inf"):
@@ -95,8 +95,21 @@ def handle_restart_game():
         socketio.emit("update_board", {"error": str(e)}), 400
 
 
-@socketio.on("ai_move")
-def handle_ai_move():
+@socketio.on("minimax_move")
+def handle_minimax_move():
+    # AI执棋逻辑
+    if game.is_game_over():
+        return
+    color = game.get_color()
+    move = minimax_ai.find_best_move(game)
+    try:
+        response = update_board(*move, color)
+        socketio.emit("update_board", response)
+    except AssertionError as e:
+        socketio.emit("update_board", {"error": str(e)}), 400
+
+@socketio.on("mcts_move")
+def handle_mcts_move():
     # AI执棋逻辑
     if game.is_game_over():
         return

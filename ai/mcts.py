@@ -16,7 +16,12 @@ class MCTSNode:
         self.children: List[MCTSNode] = []  # 子节点列表
         self.visits = 0  # 访问次数
         self.wins = 0  # 胜利次数
-        self.untried_moves = game_state.get_all_moves()  # 未尝试的走法列表
+
+        self.flag = flag  # 是否是未尝试的走法
+        if flag:
+            self.untried_moves = game_state.get_all_moves()  # 未尝试的走法列表
+        else:
+            self.untried_moves = game_state.get_perfect_moves()  # 未尝试的走法列表
 
     def is_fully_expanded(self) -> bool:
         """检查节点是否已完全展开"""
@@ -54,7 +59,7 @@ class MCTSNode:
         color = self.game_state.get_color()
         target_color = self.target_color
         new_game_state.update_chessboard(*move, color)
-        child_node = MCTSNode(new_game_state, parent=self, target_color=target_color)
+        child_node = MCTSNode(new_game_state, parent=self, target_color=target_color, flag=self.flag)
         self.children.append(child_node)
         return child_node
 
@@ -62,7 +67,10 @@ class MCTSNode:
         """从当前节点进行一次完整的随机模拟"""
         current_simulation_state = deepcopy(self.game_state)
         while not current_simulation_state.is_game_over():
-            possible_moves = current_simulation_state.get_all_moves()
+            if self.flag:
+                possible_moves = current_simulation_state.get_all_moves()
+            else:
+                possible_moves = current_simulation_state.get_perfect_moves()  # 未尝试的走法列表
             move = random.choice(possible_moves)
             color = current_simulation_state.get_color()
             current_simulation_state.update_chessboard(*move, color)
@@ -92,12 +100,13 @@ def tree_policy(node: MCTSNode) -> MCTSNode:
     return node
 
 class MCTSAI(AIAlgorithm):
-    def __init__(self, itermax: int = 1000) -> None:
+    def __init__(self, itermax: int = 1000, flag=True) -> None:
         self.itermax = itermax
+        self.flag = flag
 
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
         target_color = game.get_color()
-        root = MCTSNode(game, target_color=target_color) # 创建一个MCTSNode对象，表示根节点
+        root = MCTSNode(game, target_color=target_color, flag=self.flag) # 创建一个MCTSNode对象，表示根节点
         best_child = self.MCTS(root) # 使用MCTS算法选择最佳的子节点
         game.set_current_win_rate(best_child.get_win_rate())
 

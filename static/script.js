@@ -3,10 +3,21 @@ let power; // 设定power
 let socket = io.connect(window.location.protocol + '//' + window.location.host, { secure: true });
 
 document.addEventListener('DOMContentLoaded', function () {
-    document.getElementById("undoButton").addEventListener("click", undoMove);
-    document.getElementById("redoButton").addEventListener("click", redoMove);
-    document.getElementById("restartButton").addEventListener("click", restartGame);
-    document.getElementById("aiButton").addEventListener("click", aiDo);
+    document.getElementById("undoButton").addEventListener("click", function () {
+        socket.emit('undo_move')
+    });
+    document.getElementById("redoButton").addEventListener("click", function () {
+        socket.emit('redo_move')
+    });
+    document.getElementById("restartButton").addEventListener("click", function () {
+        socket.emit('restart_game')
+    });
+    document.getElementById("minimaxButton").addEventListener("click", function () {
+        socket.emit('minimax_move')
+    });
+    document.getElementById("mctsButton").addEventListener("click", function () {
+        socket.emit('mcts_move')
+    });
 
     fetch('/init_state')
         .then(response => response.json())
@@ -185,77 +196,3 @@ function onCellClick(row, col) {
     // console.log('Clicked cell:', row, col);
 }
 
-function undoMove() {
-    // 发送 AJAX 请求到后端执行悔棋操作
-    // fetch('/undo', {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //     }
-    // })
-    //     .then(response => response.json())
-    //     .then(data => {
-    //         updateChessboard(data.board); // 更新棋盘
-    //         updateTotalScore(data.score); // 更新分数
-    //         toggleColor(data.step); // 切换颜色
-    //     })
-    //     .catch(error => console.error('Error:', error));
-
-    socket.emit('undo_move')
-}
-
-function redoMove() {
-    // 发送 AJAX 请求到后端执行重悔操作
-    // fetch('/redo', {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //     }
-    // })
-    //     .then(response => response.json())
-    //     .then(data => {
-    //         updateChessboard(data.board); // 更新棋盘
-    //         updateTotalScore(data.score); // 更新分数
-    //         toggleColor(data.step); // 切换颜色
-    //     })
-    //     .catch(error => console.error('Error:', error));
-    socket.emit('redo_move')
-}
-
-function restartGame() {
-    // 发送 AJAX 请求到后端重启游戏
-    // fetch('/restart', {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //     }
-    //     // 不需要发送任何数据，因为悔棋操作通常不需要额外的信息
-    // })
-    //     .then(response => response.json())
-    //     .then(data => {
-    //         updateChessboard(data.board); // 更新棋盘
-    //         updateTotalScore(data.score); // 更新分数
-    //         toggleColor(data.step); // 切换颜色
-    //     })
-    //     .catch(error => console.error('Error:', error));
-    socket.emit('restart_game')
-}
-
-function aiDo() {
-    // 发送 AJAX 请求到后端，让 AI 执棋
-    // fetch('/ai', {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //     }
-    // })
-    //     .then(response => response.json())
-    //     .then(data => {
-    //         console.log('AI move received:', data); // 打印响应数据，用于调试
-    //         updateChessboard(data.board); // 更新棋盘
-    //         updateTotalScore(data.score); // 更新分数
-    //         toggleColor(data.step); // 切换颜色
-    //     })
-    //     .catch(error => console.error('Error:', error));
-    socket.emit('ai_move')
-}

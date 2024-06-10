@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Celestial Chess</title>
     <style>
+        .main {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;  /* 设置间距 */
+        }
         #celestial {
             /* 初始颜色，可以根据需要调整 */
             color: grey; 
@@ -29,23 +34,58 @@
         }
     </style>
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link rel="icon" href="/static/favicon.png" type="image/png">
+    <link rel="stylesheet" href="/static/sidebar.css">
 </head>
 <body>
-    <h1 style="text-align:center;"> 
-        <span id="celestial">Celestial</span> Chess
-    </h1>
-    <table id="chessboard"></table>
-
-    <div id="score" style="text-align:center; font-size: 18px; margin-bottom: 10px;">
-        Total Score: <span id="totalScore">0</span>
-        
-    </div>
-    <div style="text-align:center; margin-bottom: 10px;">
-        <button id="undoButton">悔棋</button>
-        <button id="redoButton">重悔</button>
-        <button id="restartButton">重开</button>
-        <button id="aiButton">AI执棋</button>
+    <nav>
+        <ul class="menus">
+            <li class="menu_item">
+                <i class="fa fa-th-large" aria-hidden="true"></i>
+                
+                <ul>
+                    <li id="undoButton">悔棋</li>
+                    <li id="redoButton">重悔</li>
+                    <li id="restartButton">重开</li>
+                </ul>
+            </li>
+            <li class="menu_item">
+                <i class="fa fa-check-square" aria-hidden="true"></i>
+                
+                <ul>
+                    <li id="minimaxButton">Minimax执棋</li>
+                    <li id="mctsButton">MCTS执棋</li>
+                </ul>
+            </li>
+            <li class="menu_item">
+                <i class="fa fa-comment" aria-hidden="true"></i>
+                
+                <ul>
+                    <li>Dialog 弹出框</li>
+                </ul>
+            </li>
+            <li class="menu_item">
+                <i class="fa fa-tags" aria-hidden="true"></i>
+                
+                <ul>
+                    <li>Badge 徽标</li>
+                </ul>
+            </li>
+            <li class="menu_item">
+                <i class="fa fa-bars" aria-hidden="true"></i>
+                
+                <ul>
+                    <li>Score: <span id="totalScore">0</span></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+    <div class="main">
+        <h1 style="text-align:center;"> 
+            <span id="celestial">Celestial</span> Chess
+        </h1>
+        <table id="chessboard"></table>
     </div>
 
     <script src="/static/script.js"></script>

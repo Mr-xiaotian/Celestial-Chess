@@ -39,7 +39,8 @@ def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = 
 
 if __name__ == '__main__':
     minimax_ai = MinimaxAI(3)
-    mcts_ai = MCTSAI(1000)
-    test_game = ChessGame((5,5), 2)
+    mcts_ai_0 = MCTSAI(1000, flag=True)
+    mcts_ai_1 = MCTSAI(1000, flag=False)
+    test_game = ChessGame((11, 11), 3)
 
-    ai_battle(mcts_ai, mcts_ai, test_game)
+    ai_battle(mcts_ai_0, mcts_ai_1, test_game)

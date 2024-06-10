@@ -90,6 +90,8 @@ class ChessGame:
     def mark_adjacent_black_holes(self, row, col):
         """标记黑洞周围的格子为黑洞区域"""
         black_power = self.power - 1
+        if row + black_power - 1 >= self.board_range[0]:
+            return
         queue = deque([(row + black_power - 1, col, 0)])
         visited = set()
 
@@ -168,8 +170,8 @@ class ChessGame:
         """获取所有最好的合法移动"""
         all_moves = self.get_all_moves()
         color = self.get_color()  # 获取当前玩家的颜色
-        center_rows = range(self.power - 1, self.board_range[0] - self.power + 1)
-        center_cols = range(0, self.board_range[1] - self.power + 1)
+        center_rows = range(0, self.board_range[0] - self.power + 1)
+        center_cols = range(self.power - 1, self.board_range[1] - self.power + 1)
 
         # 初步筛选
         filtered_moves = [
@@ -178,6 +180,8 @@ class ChessGame:
 
         if not filtered_moves:
             filtered_moves = all_moves
+
+        return filtered_moves
 
         perfect_score = float('-inf') if color == 1 else float('inf')
         perfect_moves = []
