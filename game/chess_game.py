@@ -35,6 +35,9 @@ class ChessGame:
         根据新规则更新棋盘状态，并考虑黑洞点的影响。
         """
         assert (
+            0 <= row < self.board_range[0] and 0 <= col < self.board_range[1]
+        ), f"落子点({row},{col})超出棋盘范围"
+        assert (
             self.chessboard[row][col][0] == 0
         ), f"须在值为0处落子, ({row},{col})为{self.chessboard[row][col][0]}"
 

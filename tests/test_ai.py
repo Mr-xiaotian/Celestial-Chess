@@ -6,10 +6,10 @@ from time import time
 from ai import AIAlgorithm, MinimaxAI, MCTSAI
 from game.chess_game import ChessGame
 
-def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = ChessGame()):
+def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = ChessGame(), display=True):
     ai_blue_name = ai_blue.__class__.__name__
     ai_red_name = ai_red.__class__.__name__
-    print(f'游戏开始！\n蓝方AI: {ai_blue_name}\n红方AI: {ai_red_name}\n')
+    print(f'游戏开始！\n蓝方AI: {ai_blue_name}\n红方AI: {ai_red_name}\n') if display else None
 
     first_time = time()
     while True:
@@ -22,25 +22,27 @@ def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = 
 
         test_game.update_chessboard(*move, color)
         test_game.show_chessboard()
-        print(f'第{test_game.step}步: {"蓝方" if color==1 else "红方"} 落子在 {move}')
-        print(f'获胜概率: {test_game.get_current_win_rate():.2%}')
-        print(f'分数: {test_game.get_score()}')
-        print(f'用时: {time()-last_time:.2f}s\n')
+        print(f'第{test_game.step}步: {"蓝方" if color==1 else "红方"} 落子在 {move}') if display else None
+        print(f'获胜概率: {test_game.get_current_win_rate():.2%}') if display else None
+        print(f'分数: {test_game.get_score()}') if display else None
+        print(f'用时: {time()-last_time:.2f}s\n') if display else None
 
         if test_game.is_game_over():
             if test_game.who_is_winner()==1:
-                print(f'{"蓝方"+ai_blue_name} 获胜！')
+                print(f'{"蓝方"+ai_blue_name} 获胜！') if display else None
             elif test_game.who_is_winner()==-1:
-                print(f'{"红方"+ai_red_name} 获胜！')
+                print(f'{"红方"+ai_red_name} 获胜！') if display else None
             else:
-                print('平局！')
-            print(f'总用时:{time()-first_time:.2f}s')
+                print('平局！') if display else None
+            print(f'总用时:{time()-first_time:.2f}s') if display else None
             break
+
+    return test_game
 
 if __name__ == '__main__':
     minimax_ai = MinimaxAI(3)
     mcts_ai_0 = MCTSAI(1000, flag=True)
     mcts_ai_1 = MCTSAI(1000, flag=False)
-    test_game = ChessGame((11, 11), 3)
+    test_game = ChessGame((5, 5), 2)
 
-    ai_battle(mcts_ai_0, mcts_ai_1, test_game)
+    ai_battle(mcts_ai_0, minimax_ai, test_game)
