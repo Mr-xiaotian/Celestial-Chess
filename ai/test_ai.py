@@ -21,7 +21,7 @@ def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = 
             move = ai_red.find_best_move(test_game)
 
         test_game.update_chessboard(*move, color)
-        test_game.show_chessboard()
+        test_game.show_chessboard() if display else None
         print(f'第{test_game.step}步: {"蓝方" if color==1 else "红方"} 落子在 {move}') if display else None
         print(f'获胜概率: {test_game.get_current_win_rate():.2%}') if display else None
         print(f'分数: {test_game.get_score()}') if display else None
