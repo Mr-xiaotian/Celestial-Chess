@@ -39,4 +39,4 @@ mini_batch_size = 32
 learning_rate = 0.1
 
 # 训练神经网络
-net.train(train_data[:1000], epochs, mini_batch_size, learning_rate, test_data[:100])
+net.train(train_data[:1000], epochs, mini_batch_size, learning_rate, test_data[:10])
