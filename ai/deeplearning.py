@@ -39,12 +39,50 @@ class DeepLearningAI(AIAlgorithm):
         self.model.load_state_dict(torch.load(model_path))
         self.model.eval()
 
+    def mask_invalid_moves(self, output, board_state):
+        """
+        将已经有落子的点在输出中屏蔽。
+        :param output: 模型输出，形状为 (batch_size, 25)
+        :param board_state: 当前棋盘状态，形状为 (batch_size, 3, 5, 5)
+        :return: 屏蔽后的输出
+        """
+        batch_size = output.size(0)
+        output = output.view(batch_size, 5, 5)
+        
+        # 找到已经有落子的点
+        occupied = torch.any(board_state[:, :1, :, :] != 0, dim=1)  # (batch_size, 5, 5)
+        # print(occupied)
+        
+        # 将这些点的输出设为极小值
+        output[occupied] = -float('inf')
+        
+        return output.view(batch_size, -1)
+    
+    def process_board(self, game):
+        color = game.get_color()
+        
+        processed_board = []
+        for row in game.chessboard:
+            processed_row = []
+            for cell in row:
+                processed_cell = cell + [color]
+                if processed_cell[0] == float("inf"):
+                    processed_cell[0] = 5
+                processed_row.append(processed_cell)
+            processed_board.append(processed_row)
+        return processed_board
+
     def find_best_move(self, game: ChessGame):
-        board_state = np.array(game.chessboard).reshape(1, 5, 5, 3)
+        chessboard = self.process_board(game)
+
+        board_state = np.array(chessboard).reshape(1, 5, 5, 3)
         board_state = torch.tensor(board_state, dtype=torch.float32).permute(0, 3, 1, 2).cuda()
         with torch.no_grad():
             outputs = self.model(board_state)
-            print(outputs)
-            move_index = torch.argmax(outputs).item()
+            masked_outputs = self.mask_invalid_moves(outputs, board_state)
+            print(masked_outputs.reshape(5,5))
+            move_index = torch.argmax(masked_outputs).item()
             move = (move_index // 5, move_index % 5)
+
+        game.set_current_win_rate()
         return move

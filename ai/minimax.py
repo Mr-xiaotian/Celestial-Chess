@@ -1,6 +1,5 @@
 import pickle
 from typing import Tuple
-from copy import deepcopy
 from .ai_algorithm import AIAlgorithm, logger
 from game.chess_game import ChessGame
 
@@ -19,7 +18,6 @@ class MinimaxAI(AIAlgorithm):
         color = game.get_color()
         logger.debug(f"MinimaxAI is thinking in depth {depth}...\n{game.format_matrix(game.chessboard)}")
         self.load_transposition_table(game)
-        # original_board = deepcopy(self.chessboard)  # 复制当前棋盘状态
 
         if color == 1:
             best_score = float("-inf")
