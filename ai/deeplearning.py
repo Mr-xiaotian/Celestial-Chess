@@ -10,8 +10,8 @@ from game.chess_game import ChessGame
 class ChessModel(nn.Module):
     def __init__(self):
         super(ChessModel, self).__init__()
-        # 第一个卷积层，输入通道数为2（棋盘的当前值和总负载值），输出通道数为32，卷积核大小为3x3，填充为1
-        self.conv1 = nn.Conv2d(2, 32, kernel_size=3, padding=1)
+        # 第一个卷积层，输入通道数为3（棋盘的当前值和总负载值），输出通道数为32，卷积核大小为3x3，填充为1
+        self.conv1 = nn.Conv2d(3, 32, kernel_size=3, padding=1)
         # 第二个卷积层，输入通道数为32，输出通道数为64，卷积核大小为3x3，填充为1
         self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
         # 第一个全连接层，输入大小为64 * 5 * 5，输出大小为128
@@ -40,7 +40,7 @@ class DeepLearningAI(AIAlgorithm):
         self.model.eval()
 
     def find_best_move(self, game: ChessGame):
-        board_state = np.array(game.chessboard).reshape(1, 5, 5, 2)
+        board_state = np.array(game.chessboard).reshape(1, 5, 5, 3)
         board_state = torch.tensor(board_state, dtype=torch.float32).permute(0, 3, 1, 2).cuda()
         with torch.no_grad():
             outputs = self.model(board_state)
