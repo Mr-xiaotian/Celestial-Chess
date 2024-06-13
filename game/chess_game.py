@@ -93,8 +93,6 @@ class ChessGame:
     def mark_adjacent_black_holes(self, row, col):
         """标记黑洞周围的格子为黑洞区域"""
         black_power = self.power - 1
-        if row + black_power - 1 >= self.board_range[0]:
-            return
         queue = deque([(row + black_power - 1, col, 0)])
         visited = set()
 
@@ -104,18 +102,17 @@ class ChessGame:
                 continue
             elif distance >= black_power:
                 continue
-
-            self.chessboard[r][c][0] = self.BLACK_HOLE
+            
+            try:
+                self.chessboard[r][c][0] = self.BLACK_HOLE
+            except IndexError as e:
+                pass
             visited.add((r, c))
             
             # 向四个方向扩展
             for dr, dc in [(0, 1), (0, -1), (-1, 0)]:
                 nr, nc = r + dr, c + dc
-                if (
-                    0 <= nr < self.board_range[0]
-                    and 0 <= nc < self.board_range[1]
-                ):
-                    queue.append((nr, nc, distance + 1))
+                queue.append((nr, nc, distance + 1))
 
     def undo(self):
         """悔棋"""

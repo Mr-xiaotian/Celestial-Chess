@@ -44,6 +44,7 @@ class DeepLearningAI(AIAlgorithm):
         board_state = torch.tensor(board_state, dtype=torch.float32).permute(0, 3, 1, 2).cuda()
         with torch.no_grad():
             outputs = self.model(board_state)
+            print(outputs)
             move_index = torch.argmax(outputs).item()
             move = (move_index // 5, move_index % 5)
         return move
