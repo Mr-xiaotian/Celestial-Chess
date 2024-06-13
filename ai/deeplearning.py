@@ -25,7 +25,7 @@ class ChessModel(nn.Module):
         # 通过第二个卷积层，然后进行ReLU激活
         x = F.relu(self.conv2(x))
         # 将特征图展平为一维向量
-        x = x.view(-1, 64 * 5 * 5)
+        x = x.reshape(-1, 64 * 5 * 5)
         # 通过第一个全连接层，然后进行ReLU激活
         x = F.relu(self.fc1(x))
         # 通过第二个全连接层，得到输出

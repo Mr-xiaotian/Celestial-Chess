@@ -88,7 +88,7 @@ class MinimaxAI(AIAlgorithm):
         """
         加载transposition table
         """
-        transposition_file = f"transposition_table/transposition_table({game.power}&{game.board_range[0]}_{game.board_range[1]})(sha256).pickle"
+        transposition_file = f"../transposition_table/transposition_table({game.power}&{game.board_range[0]}_{game.board_range[1]})(sha256).pickle"
         try:
             with open(transposition_file, "rb") as file:
                 self.transposition_table = pickle.load(file)
@@ -114,7 +114,7 @@ class MinimaxAI(AIAlgorithm):
         """
         保存transposition table到文件
         """
-        transposition_file = f"transposition_table/transposition_table({game.power}&{game.board_range[0]}_{game.board_range[1]})(sha256).pickle"
+        transposition_file = f"../transposition_table/transposition_table({game.power}&{game.board_range[0]}_{game.board_range[1]})(sha256).pickle"
         if not self.transposition_table_change:
             self.transposition_table = dict()
             self.transposition_table_change = False
