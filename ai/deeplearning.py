@@ -35,8 +35,9 @@ class ChessModel(nn.Module):
 
 class DeepLearningAI(AIAlgorithm):
     def __init__(self, model_path):
-        self.model = ChessModel().cuda()
-        self.model.load_state_dict(torch.load(model_path))
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model = ChessModel().to(self.device)
+        self.model.load_state_dict(torch.load(model_path, map_location=self.device))
         self.model.eval()
 
     def process_output(self, output, board_state):
@@ -72,7 +73,8 @@ class DeepLearningAI(AIAlgorithm):
         probabilities = F.softmax(outputs, dim=1)
         
         # 取概率的最大值作为获胜概率
-        win_prob = torch.max(probabilities)[0].item()
+        # print(probabilities.reshape(5,5))
+        win_prob = torch.max(probabilities).item()
         
         return win_prob
     
@@ -94,7 +96,7 @@ class DeepLearningAI(AIAlgorithm):
         chessboard = self.process_board(game)
 
         board_state = np.array(chessboard).reshape(1, 5, 5, 3)
-        board_state = torch.tensor(board_state, dtype=torch.float32).permute(0, 3, 1, 2).cuda()
+        board_state = torch.tensor(board_state, dtype=torch.float32).permute(0, 3, 1, 2).to(self.device)
         with torch.no_grad():
             outputs = self.model(board_state)
             masked_outputs = self.process_output(outputs, board_state)
@@ -102,6 +104,6 @@ class DeepLearningAI(AIAlgorithm):
             move_index = torch.argmax(masked_outputs).item()
             move = (move_index // 5, move_index % 5)
 
-        win_rate = self.calculate_win_probability(masked_outputs)
-        game.set_current_win_rate(win_rate)
+        # win_rate = self.calculate_win_probability(masked_outputs)
+        game.set_current_win_rate()
         return move
