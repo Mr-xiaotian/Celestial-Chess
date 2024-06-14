@@ -39,12 +39,12 @@ class DeepLearningAI(AIAlgorithm):
         self.model.load_state_dict(torch.load(model_path))
         self.model.eval()
 
-    def mask_invalid_moves(self, output, board_state):
+    def process_output(self, output, board_state):
         """
-        将已经有落子的点在输出中屏蔽。
+        将已经有落子的点在输出中屏蔽, 并输出最大数值所在的行列。
         :param output: 模型输出，形状为 (batch_size, 25)
         :param board_state: 当前棋盘状态，形状为 (batch_size, 3, 5, 5)
-        :return: 屏蔽后的输出
+        :return: (row, col)
         """
         batch_size = output.size(0)
         output = output.view(batch_size, 5, 5)
@@ -55,10 +55,28 @@ class DeepLearningAI(AIAlgorithm):
         
         # 将这些点的输出设为极小值
         output[occupied] = -float('inf')
+        print(output)
         
         return output.view(batch_size, -1)
+
+    def calculate_win_probability(self, outputs):
+        """
+        计算当前局面的获胜概率
+        :param outputs: 模型输出，形状为 (batch_size, 25)
+        :return: 获胜概率，标量
+        """
+        # 将 -inf 替换为一个非常小的有限值
+        outputs[outputs == -float('inf')] = -1e10
+
+        # 使用Softmax将得分转换为概率分布
+        probabilities = F.softmax(outputs, dim=1)
+        
+        # 取概率的最大值作为获胜概率
+        win_prob = torch.max(probabilities)[0].item()
+        
+        return win_prob
     
-    def process_board(self, game):
+    def process_board(self, game: ChessGame):
         color = game.get_color()
         
         processed_board = []
@@ -79,10 +97,11 @@ class DeepLearningAI(AIAlgorithm):
         board_state = torch.tensor(board_state, dtype=torch.float32).permute(0, 3, 1, 2).cuda()
         with torch.no_grad():
             outputs = self.model(board_state)
-            masked_outputs = self.mask_invalid_moves(outputs, board_state)
-            print(masked_outputs.reshape(5,5))
+            masked_outputs = self.process_output(outputs, board_state)
+
             move_index = torch.argmax(masked_outputs).item()
             move = (move_index // 5, move_index % 5)
 
-        game.set_current_win_rate()
+        win_rate = self.calculate_win_probability(masked_outputs)
+        game.set_current_win_rate(win_rate)
         return move
