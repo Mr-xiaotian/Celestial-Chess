@@ -44,7 +44,7 @@ class MCTSNode:
         self.visits += 1
         self.wins += win
 
-    def best_child(self, c_param=0.9):
+    def get_best_child(self, c_param=0.9):
         """使用UCB1策略选择最佳子节点"""
         choices_weights = [
             self.UCB1(child, c_param)
@@ -96,7 +96,7 @@ def tree_policy(node: MCTSNode) -> MCTSNode:
         if not node.is_fully_expanded():
             return node.expand()
         else:
-            node = node.best_child()
+            node = node.get_best_child()
     return node
 
 class MCTSAI(AIAlgorithm):
@@ -118,5 +118,5 @@ class MCTSAI(AIAlgorithm):
             node = tree_policy(root)
             reward = node.simulate()
             node.backpropagate(reward)
-        return root.best_child(c_param=0)
+        return root.get_best_child(c_param=0)
     

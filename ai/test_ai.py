@@ -7,9 +7,9 @@ from ai import AIAlgorithm, MinimaxAI, MCTSAI
 from game.chess_game import ChessGame
 
 def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = ChessGame(), display=True):
-    ai_blue_name = ai_blue.__class__.__name__
-    ai_red_name = ai_red.__class__.__name__
-    print(f'游戏开始！\n蓝方AI: {ai_blue_name}\n红方AI: {ai_red_name}\n') if display else None
+    print(f'游戏开始！\n蓝方AI: {ai_blue.__class__.__name__}\n红方AI: {ai_red.__class__.__name__}\n') if display else None
+    ai_blue_name = "蓝方" + ai_blue.__class__.__name__
+    ai_red_name = "红方" + ai_red.__class__.__name__
 
     first_time = time()
     while True:
@@ -22,16 +22,16 @@ def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = 
 
         test_game.update_chessboard(*move, color)
         test_game.show_chessboard() if display else None
-        print(f'第{test_game.step}步: {"蓝方" if color==1 else "红方"} 落子在 {move}') if display else None
+        print(f'第{test_game.step}步: {ai_blue_name if color==1 else ai_red_name} 落子在 {move}') if display else None
         print(f'获胜概率: {test_game.get_current_win_rate():.2%}') if display else None
         print(f'分数: {test_game.get_score()}') if display else None
         print(f'用时: {time()-last_time:.2f}s\n') if display else None
 
         if test_game.is_game_over():
             if test_game.who_is_winner()==1:
-                print(f'{"蓝方"+ai_blue_name} 获胜！') if display else None
+                print(f'{ai_blue_name} 获胜！') if display else None
             elif test_game.who_is_winner()==-1:
-                print(f'{"红方"+ai_red_name} 获胜！') if display else None
+                print(f'{ai_red_name} 获胜！') if display else None
             else:
                 print('平局！') if display else None
             print(f'总用时:{time()-first_time:.2f}s') if display else None

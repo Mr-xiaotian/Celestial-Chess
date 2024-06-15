@@ -56,7 +56,7 @@ class DeepLearningAI(AIAlgorithm):
         
         # 将这些点的输出设为极小值
         output[occupied] = -float('inf')
-        print(output)
+        # print(output)
         
         return output.view(batch_size, -1)
 
