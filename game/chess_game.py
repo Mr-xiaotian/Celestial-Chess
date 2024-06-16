@@ -169,7 +169,7 @@ class ChessGame:
     def get_perfect_moves(self):
         """获取所有最好的合法移动"""
         all_moves = self.get_all_moves()
-        color = self.get_color()  # 获取当前玩家的颜色
+        # color = self.get_color()  # 获取当前玩家的颜色
         center_rows = range(0, self.board_range[0] - self.power + 1)
         center_cols = range(self.power - 1, self.board_range[1] - self.power + 1)
 

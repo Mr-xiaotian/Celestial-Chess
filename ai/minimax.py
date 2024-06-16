@@ -10,6 +10,7 @@ class MinimaxAI(AIAlgorithm):
 
         self.transposition_table = dict()
         self.transposition_table_change = False
+        self.transposition_file = "./transposition_table/transposition_table({0}&{1}_{2})(sha256).pickle"
 
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
         best_move = None
@@ -86,7 +87,7 @@ class MinimaxAI(AIAlgorithm):
         """
         加载transposition table
         """
-        transposition_file = f"../transposition_table/transposition_table({game.power}&{game.board_range[0]}_{game.board_range[1]})(sha256).pickle"
+        transposition_file = self.transposition_file.format(game.power, game.board_range[0], game.board_range[1])
         try:
             with open(transposition_file, "rb") as file:
                 self.transposition_table = pickle.load(file)
@@ -112,7 +113,7 @@ class MinimaxAI(AIAlgorithm):
         """
         保存transposition table到文件
         """
-        transposition_file = f"../transposition_table/transposition_table({game.power}&{game.board_range[0]}_{game.board_range[1]})(sha256).pickle"
+        transposition_file = self.transposition_file.format(game.power, game.board_range[0], game.board_range[1])
         if not self.transposition_table_change:
             self.transposition_table = dict()
             self.transposition_table_change = False
