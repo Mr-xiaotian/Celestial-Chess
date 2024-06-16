@@ -167,7 +167,10 @@ class ChessGame:
         return move_list
     
     def get_perfect_moves(self):
-        """获取所有最好的合法移动"""
+        """
+        获取所有最好的合法移动
+        仅在深度较浅时有用
+        """
         all_moves = self.get_all_moves()
         # color = self.get_color()  # 获取当前玩家的颜色
         center_rows = range(0, self.board_range[0] - self.power + 1)
@@ -183,22 +186,22 @@ class ChessGame:
 
         return filtered_moves
 
-        perfect_score = float('-inf') if color == 1 else float('inf')
-        perfect_moves = []
+        # perfect_score = float('-inf') if color == 1 else float('inf')
+        # perfect_moves = []
 
-        for move in filtered_moves:
-            row, col = move
-            self.update_chessboard(row, col, color)  # 更新棋盘状态
-            score = self.get_score()  # 计算得分
-            self.undo()  # 回溯棋盘状态
+        # for move in filtered_moves:
+        #     row, col = move
+        #     self.update_chessboard(row, col, color)  # 更新棋盘状态
+        #     score = self.get_score()  # 计算得分
+        #     self.undo()  # 回溯棋盘状态
 
-            if (color == 1 and score > perfect_score) or (color == -1 and score < perfect_score):
-                perfect_score = score
-                perfect_moves = [move]
-            elif score == perfect_score:
-                perfect_moves.append(move)
+        #     if (color == 1 and score > perfect_score) or (color == -1 and score < perfect_score):
+        #         perfect_score = score
+        #         perfect_moves = [move]
+        #     elif score == perfect_score:
+        #         perfect_moves.append(move)
             
-        return perfect_moves
+        # return perfect_moves
         
     def get_board_key(self):
         '''获取棋盘的哈希值'''
