@@ -8,8 +8,7 @@ from collections import deque
 from tools_func import get_zero_index, get_first_channel
 
 class ChessGame:
-    BLACK_HOLE = float("inf")
-    INIT_CELL = [0, 0]
+    BLACK_HOLE = np.inf
 
     def __init__(self, board_range=(5, 5), power=2) -> None:
         self.chessboard = np.zeros((board_range[0], board_range[1], 2), dtype=float)
@@ -152,7 +151,7 @@ class ChessGame:
 
     def get_all_moves(self):
         """获取所有合法移动"""
-        return get_zero_index(self.chessboard)
+        return get_zero_index(self.chessboard, self.board_range)
 
     def get_perfect_moves(self):
         """
