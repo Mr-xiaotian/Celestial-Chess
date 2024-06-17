@@ -3,7 +3,9 @@ from numba import njit
 from collections import deque
 
 @njit
-def get_zero_index(chessboard, board_range):
+def get_zero_index(chessboard, board_range, execute=True):
+    if not execute:
+        return
     move_list = []
     for row_idx in range(board_range[0]):
         for col_idx in range(board_range[1]):
@@ -12,36 +14,37 @@ def get_zero_index(chessboard, board_range):
     return move_list
 
 @njit
-def get_first_channel(chessboard):
+def get_first_channel(chessboard, execute=True):
+    if not execute:
+        return
     return [[cell[0] for cell in row] for row in chessboard]
 
 @njit
-def update_by_bfs(chessboard, row, col, color, power, board_range):
-        visited = set()
-        queue = deque([(row, col, 0)])  # 使用队列进行BFS搜索
+def update_by_bfs(chessboard, row, col, color, power, board_range, execute=True):
+    if not execute:
+        return
+    visited = np.zeros((board_range[0], board_range[1]), dtype=np.bool_)
+    queue = np.empty((board_range[0] * board_range[1], 3), dtype=np.int32)
+    head, tail = 0, 1
+    queue[head] = (row, col, power)
 
-        while queue:
-            r, c, distance = queue.popleft()
-            if (r, c) in visited:
+    while head < tail:
+        r, c, distance = queue[head]
+        head += 1
+
+        if visited[r, c] or distance <= 0 or chessboard[r, c, 0] == np.inf:
+            continue
+
+        visited[r, c] = True
+
+        chessboard[r, c, 0] += distance * color
+        chessboard[r, c, 1] += distance
+
+        for dr, dc in [(0, 1), (0, -1), (1, 0)]:
+            nr, nc = r + dr, c + dc
+            if nr >= board_range[0]:
                 continue
-            elif distance >= power:
-                continue
-            elif chessboard[r][c][0] is np.inf:  # 检查是否为黑洞点
-                continue
+            queue[tail] = (nr, nc%board_range[1], distance - 1)
+            tail += 1
 
-            visited.add((r, c))
-
-            change = max(power - distance, 0)
-            chessboard[r][c][0] += change * color
-            chessboard[r][c][1] += change
-            
-            # 只向左侧、右侧和下方扩展搜索区域
-            for dr, dc in [(0, 1), (0, -1), (1, 0)]:
-                nr, nc = r + dr, c + dc
-                if (
-                    0 <= nr < board_range[0]
-                    and 0 <= nc < board_range[1]
-                ):
-                    queue.append((nr, nc, distance + 1))
-
-        return visited
+    return visited

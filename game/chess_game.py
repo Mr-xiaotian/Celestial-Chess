@@ -5,7 +5,7 @@ Vision: 1.3
 import hashlib
 import numpy as np
 from collections import deque
-from tools_func import get_zero_index, get_first_channel
+from .tools_func import get_zero_index, get_first_channel, update_by_bfs
 
 class ChessGame:
     BLACK_HOLE = np.inf
@@ -20,8 +20,11 @@ class ChessGame:
         self.history_move = {0: None}
         self.step = 0
         self.current_win_rate: float = 0.0
+
+        get_zero_index(np.zeros((board_range[0], board_range[1], 2), dtype=float), board_range, False)
+        get_first_channel(np.zeros((board_range[0], board_range[1], 2), dtype=float), False)
+        update_by_bfs(np.zeros((board_range[0], board_range[1], 2), dtype=float), 0, 0, 0, power, board_range, False)
         
-    
     def update_chessboard(self, row, col, color):
         """
         根据新规则更新棋盘状态，并考虑黑洞点的影响。
@@ -45,34 +48,7 @@ class ChessGame:
 
     def update_adjacent_cells(self, row, col, color):
         """更新落子点周围的格子，考虑黑洞点对路径的阻挡作用，同时只影响下方的格子"""
-        visited = set()
-        queue = deque([(row, col, 0)])  # 使用队列进行BFS搜索
-
-        while queue:
-            r, c, distance = queue.popleft()
-            if (r, c) in visited:
-                continue
-            elif distance >= self.power:
-                continue
-            elif self.chessboard[r][c][0] is self.BLACK_HOLE:  # 检查是否为黑洞点
-                continue
-
-            visited.add((r, c))
-
-            change = max(self.power - distance, 0)
-            self.chessboard[r][c][0] += change * color
-            self.chessboard[r][c][1] += change
-            
-            # 只向左侧、右侧和下方扩展搜索区域
-            for dr, dc in [(0, 1), (0, -1), (1, 0)]:
-                nr, nc = r + dr, c + dc
-                if (
-                    0 <= nr < self.board_range[0]
-                    and 0 <= nc < self.board_range[1]
-                ):
-                    queue.append((nr, nc, distance + 1))
-
-        return visited
+        visited = update_by_bfs(self.chessboard, row, col, color, self.power, self.board_range)
 
     def mark_black_holes(self, visited: set):
         """标记黑洞区域"""

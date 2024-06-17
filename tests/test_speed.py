@@ -26,7 +26,6 @@ game = ChessGame(board_range=(5, 5), power=2)
 mcts_ai = MCTSAI(10000, flag=True)
 cProfile.run('profile_mcts()', 'profile/profile_output')
 
-
 now_time = strftime("%m-%d-%H-%M", localtime())
 with open(f'profile/profile_results({now_time}).txt', 'w') as f:
     stats = pstats.Stats('profile/profile_output', stream=f)
