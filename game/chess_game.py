@@ -1,11 +1,11 @@
 """
 Author: 晓天
-Vision: 1.2
+Vision: 1.3
 """
 import hashlib
-from copy import deepcopy
-from time import strftime, localtime
+import numpy as np
 from collections import deque
+from time import strftime, localtime
 from loguru import logger
 
 logger.remove()  # remove the default handler
@@ -17,14 +17,12 @@ class ChessGame:
     INIT_CELL = [0, 0]
 
     def __init__(self, board_range=(5, 5), power=2) -> None:
-        self.chessboard = [
-            [self.INIT_CELL[:] for _ in range(board_range[1])] for _ in range(board_range[0])
-        ]
+        self.chessboard = np.zeros((board_range[0], board_range[1], 2), dtype=float)
         self.power = power
         self.board_range = board_range
         self.threshold = self.power * 2 + 1
 
-        self.history_board = {0: deepcopy(self.chessboard)}
+        self.history_board = {0: np.copy(self.chessboard)}
         self.history_move = {0: None}
         self.step = 0
         self.current_win_rate: float = 0.0
@@ -48,7 +46,7 @@ class ChessGame:
         self.mark_black_holes(visited)
 
         self.step += 1
-        self.history_board[self.step] = deepcopy(self.chessboard)
+        self.history_board[self.step] = np.copy(self.chessboard)
         self.history_move[self.step] = (row, col)
 
     def update_adjacent_cells(self, row, col, color):
@@ -117,18 +115,18 @@ class ChessGame:
     def undo(self):
         """悔棋"""
         self.step -= 1 if self.step >= 1 else 0
-        self.chessboard = deepcopy(self.history_board[self.step])
+        self.chessboard = np.copy(self.history_board[self.step])
 
     def redo(self):
         """重悔"""
         if self.step + 1 in self.history_board.keys():
             self.step += 1
-            self.chessboard = deepcopy(self.history_board[self.step])
+            self.chessboard = np.copy(self.history_board[self.step])
 
     def restart(self):
         """重开"""
         self.step = 0
-        self.chessboard = deepcopy(self.history_board[self.step])
+        self.chessboard = np.copy(self.history_board[self.step])
 
     def set_current_win_rate(self, win_rate: float = 0.0):
         """设置当前玩家的胜率"""
@@ -171,18 +169,15 @@ class ChessGame:
         获取所有最好的合法移动
         仅在深度较浅时有用
         """
-        all_moves = self.get_all_moves()
-        # color = self.get_color()  # 获取当前玩家的颜色
-        center_rows = range(0, self.board_range[0] - self.power + 1)
-        center_cols = range(self.power - 1, self.board_range[1] - self.power + 1)
-
-        # 初步筛选
-        filtered_moves = [
-            move for move in all_moves if move[0] in center_rows and move[1] in center_cols
-        ]
+        filtered_moves = []
+        for row in range(0, self.board_range[0] - self.power + 1):
+            for col in range(self.power - 1, self.board_range[1] - self.power + 1):
+                if abs(self.chessboard[row][col][0]) != 0:
+                    continue
+                filtered_moves.append((row, col))
 
         if not filtered_moves:
-            filtered_moves = all_moves
+            filtered_moves = self.get_all_moves()
 
         return filtered_moves
 

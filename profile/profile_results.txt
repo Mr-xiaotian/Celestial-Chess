@@ -1,0 +1,30 @@
+Mon Jun 17 15:04:09 2024    logs/profile_output
+
+         112 function calls in 0.000 seconds
+
+   Ordered by: cumulative time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    0.000    0.000 {built-in method builtins.exec}
+        1    0.000    0.000    0.000    0.000 <string>:1(<module>)
+        1    0.000    0.000    0.000    0.000 q:\Project\Celestial-Chess\tests\test_speed:13(profile_code)
+        2    0.000    0.000    0.000    0.000 q:\Project\Celestial-Chess\game\chess_game.py:32(update_chessboard)
+        2    0.000    0.000    0.000    0.000 q:\Project\Celestial-Chess\game\chess_game.py:53(update_adjacent_cells)
+        3    0.000    0.000    0.000    0.000 Q:\ProgramData\miniforge3\envs\toolenv\lib\copy.py:128(deepcopy)
+        1    0.000    0.000    0.000    0.000 q:\Project\Celestial-Chess\game\chess_game.py:20(__init__)
+        2    0.000    0.000    0.000    0.000 q:\Project\Celestial-Chess\game\chess_game.py:84(mark_black_holes)
+        3    0.000    0.000    0.000    0.000 {method '__deepcopy__' of 'numpy.ndarray' objects}
+        3    0.000    0.000    0.000    0.000 Q:\ProgramData\miniforge3\envs\toolenv\lib\copy.py:243(_keep_alive)
+        8    0.000    0.000    0.000    0.000 {built-in method builtins.max}
+        1    0.000    0.000    0.000    0.000 {built-in method numpy.zeros}
+       22    0.000    0.000    0.000    0.000 {method 'append' of 'collections.deque' objects}
+       24    0.000    0.000    0.000    0.000 {method 'popleft' of 'collections.deque' objects}
+        8    0.000    0.000    0.000    0.000 {method 'add' of 'set' objects}
+        9    0.000    0.000    0.000    0.000 {built-in method builtins.id}
+        6    0.000    0.000    0.000    0.000 {method 'get' of 'dict' objects}
+        8    0.000    0.000    0.000    0.000 {method 'pop' of 'set' objects}
+        3    0.000    0.000    0.000    0.000 {built-in method builtins.getattr}
+        3    0.000    0.000    0.000    0.000 {built-in method builtins.issubclass}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+
+

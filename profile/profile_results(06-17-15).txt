@@ -1,0 +1,80 @@
+Mon Jun 17 15:11:30 2024    logs/profile_output
+
+         22169907 function calls (20880584 primitive calls) in 12.771 seconds
+
+   Ordered by: cumulative time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000   14.145   14.145 {built-in method builtins.exec}
+        1    0.000    0.000   14.144   14.144 <string>:1(<module>)
+        1    0.000    0.000   14.144   14.144 q:\Project\Celestial-Chess\tests\test_speed:13(profile_code)
+        1    0.000    0.000   14.144   14.144 q:\Project\Celestial-Chess\ai\mcts.py:107(find_best_move)
+        1    0.035    0.035   14.144   14.144 q:\Project\Celestial-Chess\ai\mcts.py:115(MCTS)
+    10000    0.316    0.000   10.133    0.001 q:\Project\Celestial-Chess\ai\mcts.py:66(simulate)
+   135072    0.368    0.000    4.271    0.000 q:\Project\Celestial-Chess\game\chess_game.py:32(update_chessboard)
+    10000    0.051    0.000    3.947    0.000 q:\Project\Celestial-Chess\ai\mcts.py:93(tree_policy)
+1364431/165073    1.757    0.000    3.724    0.000 Q:\ProgramData\miniforge3\envs\toolenv\lib\copy.py:128(deepcopy)
+    30001    0.103    0.000    2.854    0.000 Q:\ProgramData\miniforge3\envs\toolenv\lib\copy.py:259(_reconstruct)
+   135072    2.360    0.000    2.709    0.000 q:\Project\Celestial-Chess\game\chess_game.py:53(update_adjacent_cells)
+    10000    0.045    0.000    2.679    0.000 q:\Project\Celestial-Chess\ai\mcts.py:55(expand)
+   135073    2.237    0.000    2.587    0.000 q:\Project\Celestial-Chess\game\chess_game.py:159(get_all_moves)
+90003/30001    0.323    0.000    2.565    0.000 Q:\ProgramData\miniforge3\envs\toolenv\lib\copy.py:227(_deepcopy_dict)
+   175035    0.225    0.000    2.222    0.000 q:\Project\Celestial-Chess\game\chess_game.py:226(is_game_over)
+   175035    0.096    0.000    1.998    0.000 q:\Project\Celestial-Chess\game\chess_game.py:209(get_board_value)
+   175035    0.528    0.000    1.902    0.000 q:\Project\Celestial-Chess\game\chess_game.py:211(<listcomp>)
+    10001    0.021    0.000    1.307    0.000 q:\Project\Celestial-Chess\ai\mcts.py:11(__init__)
+    19964    0.027    0.000    0.832    0.000 q:\Project\Celestial-Chess\ai\mcts.py:47(get_best_child)
+    19964    0.132    0.000    0.785    0.000 q:\Project\Celestial-Chess\ai\mcts.py:49(<listcomp>)
+   462350    0.385    0.000    0.653    0.000 q:\Project\Celestial-Chess\ai\mcts.py:38(UCB1)
+   109890    0.173    0.000    0.557    0.000 Q:\ProgramData\miniforge3\envs\toolenv\lib\copy.py:210(_deepcopy_tuple)
+   135072    0.359    0.000    0.520    0.000 q:\Project\Celestial-Chess\game\chess_game.py:84(mark_black_holes)
+    10000    0.024    0.000    0.514    0.000 q:\Project\Celestial-Chess\game\chess_game.py:237(who_is_winner)
+   394967    0.321    0.000    0.397    0.000 Q:\ProgramData\miniforge3\envs\toolenv\lib\copy.py:243(_keep_alive)
+   109890    0.066    0.000    0.376    0.000 Q:\ProgramData\miniforge3\envs\toolenv\lib\copy.py:211(<listcomp>)
+    16440    0.020    0.000    0.352    0.000 q:\Project\Celestial-Chess\game\chess_game.py:144(get_score)
+    16440    0.079    0.000    0.323    0.000 {built-in method builtins.sum}
+  2758863    0.263    0.000    0.263    0.000 {method 'get' of 'dict' objects}
+  3376825    0.262    0.000    0.262    0.000 {built-in method builtins.abs}
+   274963    0.253    0.000    0.253    0.000 {method '__deepcopy__' of 'numpy.ndarray' objects}
+   396222    0.244    0.000    0.244    0.000 q:\Project\Celestial-Chess\game\chess_game.py:146(<genexpr>)
+   125072    0.079    0.000    0.241    0.000 Q:\ProgramData\miniforge3\envs\toolenv\lib\random.py:375(choice)
+  2154365    0.189    0.000    0.189    0.000 {built-in method builtins.id}
+   125072    0.112    0.000    0.149    0.000 Q:\ProgramData\miniforge3\envs\toolenv\lib\random.py:239(_randbelow_with_getrandbits)
+   462351    0.129    0.000    0.129    0.000 q:\Project\Celestial-Chess\ai\mcts.py:30(get_win_rate)
+   475829    0.121    0.000    0.121    0.000 {built-in method builtins.max}
+    20806    0.107    0.000    0.119    0.000 q:\Project\Celestial-Chess\game\chess_game.py:92(mark_adjacent_black_holes)
+  1257066    0.113    0.000    0.113    0.000 {method 'append' of 'list' objects}
+  1334680    0.101    0.000    0.101    0.000 {method 'popleft' of 'collections.deque' objects}
+  1178802    0.097    0.000    0.097    0.000 {method 'append' of 'collections.deque' objects}
+   462350    0.073    0.000    0.073    0.000 {built-in method math.log}
+    60002    0.018    0.000    0.069    0.000 Q:\ProgramData\miniforge3\envs\toolenv\lib\copy.py:264(<genexpr>)
+   859574    0.068    0.000    0.068    0.000 Q:\ProgramData\miniforge3\envs\toolenv\lib\copy.py:182(_deepcopy_atomic)
+   462350    0.067    0.000    0.067    0.000 {built-in method math.sqrt}
+   476671    0.058    0.000    0.058    0.000 {method 'add' of 'set' objects}
+   334965    0.048    0.000    0.048    0.000 {built-in method builtins.getattr}
+   455865    0.042    0.000    0.042    0.000 {method 'pop' of 'set' objects}
+   145073    0.042    0.000    0.042    0.000 q:\Project\Celestial-Chess\game\chess_game.py:213(get_color)
+   304964    0.032    0.000    0.032    0.000 {built-in method builtins.issubclass}
+39963/10000    0.029    0.000    0.029    0.000 q:\Project\Celestial-Chess\ai\mcts.py:86(backpropagate)
+    30001    0.029    0.000    0.029    0.000 {method '__reduce_ex__' of 'object' objects}
+   204543    0.022    0.000    0.022    0.000 {method 'getrandbits' of '_random.Random' objects}
+    30001    0.015    0.000    0.020    0.000 Q:\ProgramData\miniforge3\envs\toolenv\lib\copyreg.py:100(__newobj__)
+    29963    0.013    0.000    0.017    0.000 q:\Project\Celestial-Chess\ai\mcts.py:26(is_fully_expanded)
+   155035    0.017    0.000    0.017    0.000 {built-in method builtins.len}
+   125072    0.014    0.000    0.014    0.000 {method 'bit_length' of 'int' objects}
+    32880    0.014    0.000    0.014    0.000 q:\Project\Celestial-Chess\game\chess_game.py:154(get_balance_num)
+    30001    0.011    0.000    0.011    0.000 {method 'update' of 'dict' objects}
+    90003    0.011    0.000    0.011    0.000 {method 'items' of 'dict' objects}
+    60002    0.010    0.000    0.010    0.000 {built-in method builtins.isinstance}
+    19964    0.006    0.000    0.006    0.000 {method 'index' of 'list' objects}
+    30001    0.005    0.000    0.005    0.000 {built-in method __new__ of type object at 0x00007FF9DD149F00}
+    30002    0.005    0.000    0.005    0.000 {built-in method builtins.hasattr}
+    10000    0.003    0.000    0.003    0.000 {method 'pop' of 'list' objects}
+        1    0.000    0.000    0.000    0.000 Q:\ProgramData\miniforge3\envs\toolenv\lib\copyreg.py:109(_slotnames)
+        1    0.000    0.000    0.000    0.000 q:\Project\Celestial-Chess\ai\mcts.py:34(get_current_move)
+        1    0.000    0.000    0.000    0.000 q:\Project\Celestial-Chess\game\chess_game.py:140(get_current_move)
+        1    0.000    0.000    0.000    0.000 q:\Project\Celestial-Chess\game\chess_game.py:132(set_current_win_rate)
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+        1    0.000    0.000    0.000    0.000 {method 'get' of 'mappingproxy' objects}
+
+
