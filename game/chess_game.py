@@ -5,23 +5,8 @@ Vision: 1.3
 import hashlib
 import numpy as np
 from collections import deque
-from time import strftime, localtime
-from numba import njit
-from loguru import logger
+from tools_func import get_zero_index, get_first_channel
 
-logger.remove()  # remove the default handler
-now_time = strftime("%Y-%m-%d", localtime())
-logger.add(f"logs/chess_manager({now_time}).log", format="{time:YYYY-MM-DD HH:mm:ss} {level} {message}")
-
-
-@njit
-def get_zero_index(chessboard):
-    move_list = []
-    for row_idx in range(chessboard.shape[0]):
-        for col_idx in range(chessboard.shape[1]):
-            if chessboard[row_idx, col_idx, 0] == 0:
-                move_list.append((row_idx, col_idx))
-    return move_list
 class ChessGame:
     BLACK_HOLE = float("inf")
     INIT_CELL = [0, 0]
@@ -212,7 +197,7 @@ class ChessGame:
     
     def get_board_value(self):
         '''获取棋盘的值'''
-        return [[cell[0] for cell in row] for row in self.chessboard]
+        return get_first_channel(self.chessboard)
     
     def get_color(self):
         '''获取当前玩家的颜色的颜色'''
