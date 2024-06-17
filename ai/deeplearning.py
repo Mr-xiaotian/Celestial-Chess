@@ -10,13 +10,13 @@ from game.chess_game import ChessGame
 class ChessModel(nn.Module):
     def __init__(self):
         super(ChessModel, self).__init__()
-        # 第一个卷积层，输入通道数为3（棋盘的当前值和总负载值），输出通道数为32，卷积核大小为3x3，填充为1
-        self.conv1 = nn.Conv2d(3, 32, kernel_size=3, padding=1)
-        # 第二个卷积层，输入通道数为32，输出通道数为64，卷积核大小为3x3，填充为1
-        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
-        # 第一个全连接层，输入大小为64 * 5 * 5，输出大小为128
+        # 卷积层，通道数为3 - 16 - 32 - 64，卷积核大小为3x3，填充为1
+        self.conv1 = nn.Conv2d(3, 16, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(16, 32, kernel_size=3, padding=1)
+        self.conv3 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
+
+        # 全连接层，输入大小为64*5*5 - 128 - 25（棋盘的5x5个可能的移动位置）
         self.fc1 = nn.Linear(64 * 5 * 5, 128)
-        # 第二个全连接层，输入大小为128，输出大小为25（棋盘的5x5个可能的移动位置）
         self.fc2 = nn.Linear(128, 25)
 
     def forward(self, x):
@@ -24,6 +24,7 @@ class ChessModel(nn.Module):
         x = F.relu(self.conv1(x))
         # 通过第二个卷积层，然后进行ReLU激活
         x = F.relu(self.conv2(x))
+        x = F.relu(self.conv3(x))
         # 将特征图展平为一维向量
         x = x.reshape(-1, 64 * 5 * 5)
         # 通过第一个全连接层，然后进行ReLU激活
