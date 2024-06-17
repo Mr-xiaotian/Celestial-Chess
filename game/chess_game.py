@@ -6,12 +6,22 @@ import hashlib
 import numpy as np
 from collections import deque
 from time import strftime, localtime
+from numba import njit
 from loguru import logger
 
 logger.remove()  # remove the default handler
 now_time = strftime("%Y-%m-%d", localtime())
 logger.add(f"logs/chess_manager({now_time}).log", format="{time:YYYY-MM-DD HH:mm:ss} {level} {message}")
 
+
+@njit
+def get_zero_index(chessboard):
+    move_list = []
+    for row_idx in range(chessboard.shape[0]):
+        for col_idx in range(chessboard.shape[1]):
+            if chessboard[row_idx, col_idx, 0] == 0:
+                move_list.append((row_idx, col_idx))
+    return move_list
 class ChessGame:
     BLACK_HOLE = float("inf")
     INIT_CELL = [0, 0]
@@ -156,14 +166,9 @@ class ChessGame:
         return balance_num
 
     def get_all_moves(self):
-        """获取所有合法的移动"""
-        move_list = []
-        for row_idx, row in enumerate(self.chessboard):
-            for col_idx, cell in enumerate(row):
-                if abs(cell[0]) == 0:
-                    move_list.append((row_idx, col_idx))
-        return move_list
-    
+        """获取所有合法移动"""
+        return get_zero_index(self.chessboard)
+
     def get_perfect_moves(self):
         """
         获取所有最好的合法移动
