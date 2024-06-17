@@ -5,7 +5,7 @@ Vision: 1.3
 import hashlib
 import numpy as np
 from collections import deque
-from .tools_func import get_zero_index, get_first_channel, update_by_bfs
+from tools.tools_func import *
 
 class ChessGame:
     BLACK_HOLE = np.inf
@@ -21,9 +21,12 @@ class ChessGame:
         self.step = 0
         self.current_win_rate: float = 0.0
 
-        get_zero_index(np.zeros((board_range[0], board_range[1], 2), dtype=float), board_range, False)
-        get_first_channel(np.zeros((board_range[0], board_range[1], 2), dtype=float), False)
-        update_by_bfs(np.zeros((board_range[0], board_range[1], 2), dtype=float), 0, 0, 0, power, board_range, False)
+        init_board = np.zeros((board_range[0], board_range[1], 2), dtype=float)
+
+        optimized_not_exist_zero_index(init_board)
+        get_zero_index(init_board, board_range)
+        get_first_channel(init_board)
+        update_by_bfs(init_board, 0, 0, 0, power, board_range)
         
     def update_chessboard(self, row, col, color):
         """
@@ -192,11 +195,7 @@ class ChessGame:
         判断游戏是否结束
         :return: 游戏是否结束
         '''
-        for row_value in self.get_board_value():
-            for cell_value in row_value:
-                if cell_value == 0:
-                    return False
-        return True
+        optimized_not_exist_zero_index(self.chessboard)
     
     def who_is_winner(self):
         '''
@@ -205,17 +204,20 @@ class ChessGame:
         '''
         if not self.is_game_over():
             return None
+
+        score = self.get_score()
+        balance_num = self.get_balance_num()
         if self.get_color() == -1:
-            if self.get_score() > self.get_balance_num():
+            if score > balance_num:
                 return 1
-            elif self.get_score() == self.get_balance_num():
+            elif score == balance_num:
                 return 0
             else:
                 return -1
         else:
-            if self.get_score() < -1 * self.get_balance_num():
+            if score < -1 * balance_num:
                 return -1
-            elif self.get_score() == -1 * self.get_balance_num():
+            elif score == -1 * balance_num:
                 return 0
             else:
                 return 1

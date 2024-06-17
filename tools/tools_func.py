@@ -3,26 +3,26 @@ from numba import njit
 from collections import deque
 
 @njit
-def get_zero_index(chessboard, board_range, execute=True):
-    if not execute:
-        return
-    move_list = []
+def optimized_not_exist_zero_index(chessboard):
+    return not np.any(chessboard[:, :, 0] == 0)
+
+@njit
+def get_zero_index(chessboard, board_range):
+    move_list = np.empty((board_range[0] * board_range[1], 2), dtype=np.int32)
+    count = 0
     for row_idx in range(board_range[0]):
         for col_idx in range(board_range[1]):
             if chessboard[row_idx, col_idx, 0] == 0:
-                move_list.append((row_idx, col_idx))
-    return move_list
+                move_list[count] = (row_idx, col_idx)
+                count += 1
+    return move_list[:count]  # 截取有效的部分
 
 @njit
-def get_first_channel(chessboard, execute=True):
-    if not execute:
-        return
+def get_first_channel(chessboard):
     return [[cell[0] for cell in row] for row in chessboard]
 
 @njit
-def update_by_bfs(chessboard, row, col, color, power, board_range, execute=True):
-    if not execute:
-        return
+def update_by_bfs(chessboard, row, col, color, power, board_range):
     visited = np.zeros((board_range[0], board_range[1]), dtype=np.bool_)
     queue = np.empty((board_range[0] * board_range[1], 3), dtype=np.int32)
     head, tail = 0, 1
