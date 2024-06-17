@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(data => {
             power = data.power; // 初始化power
             renderChessboard(data.weight, data.height); // 初始化棋盘size
-            updateChessboard(data.board); // 初始化棋盘
+            updateChessboard(data.board, data.move); // 初始化棋盘
             updateTotalScore(data.score); // 初始化分数
             toggleColor(data.step); // 根据步数切换颜色
         })
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (data.error) {
             console.error('Error:', data.error);
         } else {
-            updateChessboard(data.board);
+            updateChessboard(data.board, data.move);
             updateTotalScore(data.score);
             toggleColor(data.step);
         }
@@ -57,7 +57,7 @@ function renderChessboard(weight, height) {
     }
 }
 
-function updateChessboard(board) {
+function updateChessboard(board, move) {
     for (let i = 0; i < board.length; i++) {
         for (let j = 0; j < board[i].length; j++) {
             let cell = document.getElementById('chessboard').rows[i].cells[j];
@@ -87,13 +87,11 @@ function updateChessboard(board) {
                 numberSpan.textContent = load;
             }
             cell.appendChild(numberSpan);
-
-            // 根据负载显示特殊标记
-            if (load >= power && load < 2 * power) {
+            
+            // 判断 move 是否等于 [i, j]
+            if (move != null && arraysEqual(move, [i, j])) {
                 // 显示菱形
-                // drawDiamond(cell);
-                
-            } else if (load >= 2 * power) {
+                drawDiamond(cell);
                 // 显示圆形
                 // drawCircle(cell);
             }
@@ -116,39 +114,46 @@ function getColor(value) {
     }
 }
 
-function drawSquare(cell) {
+function arraysEqual(arr1, arr2) {
+    if (arr1.length !== arr2.length) {
+        return false;
+    }
+    for (let i = 0; i < arr1.length; i++) {
+        if (arr1[i] !== arr2[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function drawDiamond(cell) {
     // clearShape(cell);
 
-    let svgns = "http://www.w3.org/2000/svg";
-    let svg = document.createElementNS(svgns, "svg");
-    svg.setAttribute("width", "100%");
-    svg.setAttribute("height", "100%");
+    let diamond = document.createElement('div');
+    diamond.style.position = 'absolute';
+    diamond.style.width = '70%'; // 菱形的宽度
+    diamond.style.height = '70%'; // 菱形的高度
+    diamond.style.backgroundColor = 'transparent';
+    diamond.style.border = '2px solid #FAFAD2';
+    diamond.style.boxSizing = 'border-box'; // 包含边框在内的宽高
+    diamond.style.transform = 'translate(-50%, -50%) rotate(45deg)';
+    diamond.style.top = '50%';
+    diamond.style.left = '50%';
 
-    let diamond = document.createElementNS(svgns, "polygon");
-    let cellWidth = cell.offsetWidth;
-    let cellHeight = cell.offsetHeight;
-    let points = [
-        (cellWidth / 2) + ",0",        // 上中点
-        "0," + (cellHeight / 2),       // 左中点
-        (cellWidth / 2) + "," + cellHeight, // 下中点
-        cellWidth + "," + (cellHeight / 2)  // 右中点
-    ].join(" ");
-    diamond.setAttribute("points", points);
-    diamond.setAttribute("style", "fill:transparent;stroke:lightgrey;stroke-width:1");
-
-    svg.appendChild(diamond);
-    cell.appendChild(svg);
+    cell.appendChild(diamond);
 }
 
 function drawCircle(cell) {
     // clearShape(cell);
 
     let circle = document.createElement('div');
+    circle.style.position = 'absolute';
     circle.style.width = '100%';
     circle.style.height = '100%';
     circle.style.borderRadius = '50%';
-    circle.style.border = '2px solid lightgrey';
+    circle.style.border = '2px solid #FAFAD2';
     circle.style.boxSizing = 'border-box'; // 包含边框在内的宽高
+    circle.style.transform = 'translate(0, -50%)';
 
     cell.appendChild(circle);
 }

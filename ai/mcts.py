@@ -1,6 +1,7 @@
 from __future__ import annotations
 import math
 import random
+import numpy as np
 from copy import deepcopy
 from typing import Tuple, List
 from .ai_algorithm import AIAlgorithm, logger
@@ -17,11 +18,11 @@ class MCTSNode:
         self.visits = 0  # 访问次数
         self.wins = 0  # 胜利次数
 
-        self.flag = flag  # 是否是未尝试的走法
+        self.flag = flag  # 是否启用另一种走法
         if flag:
             self.untried_moves = game_state.get_all_moves()  # 未尝试的走法列表
         else:
-            self.untried_moves = game_state.get_perfect_moves()  # 未尝试的走法列表
+            self.untried_moves = game_state.get_perfect_moves()  # 另一种走法列表
 
     def is_fully_expanded(self) -> bool:
         """检查节点是否已完全展开"""
@@ -54,10 +55,14 @@ class MCTSNode:
 
     def expand(self):
         """扩展一个新子节点并返回"""
-        new_game_state = deepcopy(self.game_state)
-        move = self.untried_moves.pop()
+        # 选择第一个未尝试的移动并删除它
+        move = self.untried_moves[0]
+        self.untried_moves = np.delete(self.untried_moves, 0, axis=0)
+
         color = self.game_state.get_color()
         target_color = self.target_color
+
+        new_game_state = deepcopy(self.game_state)
         new_game_state.update_chessboard(*move, color)
         child_node = MCTSNode(new_game_state, parent=self, target_color=target_color, flag=self.flag)
         self.children.append(child_node)

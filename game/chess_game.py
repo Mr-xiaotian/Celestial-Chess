@@ -32,12 +32,10 @@ class ChessGame:
         """
         根据新规则更新棋盘状态，并考虑黑洞点的影响。
         """
-        assert (
-            0 <= row < self.board_range[0] and 0 <= col < self.board_range[1]
-        ), f"落子点({row},{col})超出棋盘范围"
-        assert (
-            self.chessboard[row][col][0] == 0
-        ), f"须在值为0处落子, ({row},{col})为{self.chessboard[row][col][0]}"
+        if not (0 <= row < self.board_range[0] and 0 <= col < self.board_range[1]):
+            raise ValueError(f"落子点({row},{col})超出棋盘范围")
+        if self.chessboard[row, col, 0] != 0:
+            raise ValueError(f"须在值为0处落子, ({row},{col})为{self.chessboard[row, col, 0]}")
 
         # 更新落子点及周围点的值
         visited = self.update_adjacent_cells(row, col, color)
@@ -51,15 +49,17 @@ class ChessGame:
 
     def update_adjacent_cells(self, row, col, color):
         """更新落子点周围的格子，考虑黑洞点对路径的阻挡作用，同时只影响下方的格子"""
-        visited = update_by_bfs(self.chessboard, row, col, color, self.power, self.board_range)
+        return update_by_bfs(self.chessboard, row, col, color, self.power, self.board_range)
 
-    def mark_black_holes(self, visited: set):
+    def mark_black_holes(self, visited: np.array):
         """标记黑洞区域"""
-        while visited:
-            row, col = visited.pop()
-            if self.chessboard[row][col][1] >= self.threshold:  # 检查是否超过极限值
-                # 标记为黑洞区域
-                self.mark_adjacent_black_holes(row, col)
+        for row_idx in range(self.board_range[0]):
+            for col_idx in range(self.board_range[1]):
+                if not visited[row_idx, col_idx]:
+                    continue
+                if self.chessboard[row_idx][col_idx][1] >= self.threshold:  # 检查是否超过极限值
+                    # 标记为黑洞区域
+                    self.mark_adjacent_black_holes(row_idx, col_idx)
 
     def mark_adjacent_black_holes(self, row, col):
         """标记黑洞周围的格子为黑洞区域"""
@@ -195,7 +195,7 @@ class ChessGame:
         判断游戏是否结束
         :return: 游戏是否结束
         '''
-        optimized_not_exist_zero_index(self.chessboard)
+        return optimized_not_exist_zero_index(self.chessboard)
     
     def who_is_winner(self):
         '''

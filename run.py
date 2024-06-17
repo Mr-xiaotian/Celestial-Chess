@@ -7,9 +7,9 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "your_secret_key"
 socketio = SocketIO(app)
 
-size = 5  # 棋盘大小
+size = 11  # 棋盘大小
 weight, height = (size, size)
-power = 2  # 棋子力量
+power = 3  # 棋子力量
 
 # 假设棋盘初始状态
 board = [[[0, 0] for _ in range(height)] for _ in range(weight)]
@@ -28,11 +28,11 @@ def convert_inf_to_string(value):
 def prepare_board_for_json(board):
     return [[[convert_inf_to_string(cell[0]),cell[1]] for cell in row] for row in board]
 
-def update_board(row, col, color):
-    game.update_chessboard(row, col, color)
+def get_update_board(game):
     prepared_board = prepare_board_for_json(game.chessboard)
     score = game.get_score()
-    return {"board": prepared_board, "score": score, "step": game.step}
+    move = game.get_current_move()
+    return {"board": prepared_board, "move": move, "score": score, "step": game.step}
 
 
 @app.route("/")
@@ -45,6 +45,7 @@ def init_state():
     # 获取初始棋局状态
     prepared_board = prepare_board_for_json(game.chessboard)
     score = game.get_score()
+    move = game.get_current_move()
     return jsonify({"power": power, "weight": weight, "height": height,  
                     "board": prepared_board, "score": score, "step": game.step})
 
@@ -56,7 +57,8 @@ def handle_play_move(data):
     color = data["color"]  # 前端发送了颜色信息
 
     try:
-        response = update_board(row, col, color)
+        game.update_chessboard(row, col, color)
+        response = get_update_board(game)
         socketio.emit("update_board", response)
     except AssertionError as e:
         socketio.emit("update_board", {"error": str(e)}), 400
@@ -65,10 +67,10 @@ def handle_play_move(data):
 @socketio.on("undo_move")
 def handle_undo_move():
     game.undo()
-    prepared_board = prepare_board_for_json(game.chessboard)
-    score = game.get_score()
+    
     try:
-        socketio.emit("update_board", {"board": prepared_board, "score": score, "step": game.step})
+        response = get_update_board(game)
+        socketio.emit("update_board", response)
     except AssertionError as e:
         socketio.emit("update_board", {"error": str(e)}), 400
 
@@ -76,10 +78,10 @@ def handle_undo_move():
 @socketio.on("redo_move")
 def handle_redo_move():
     game.redo()
-    prepared_board = prepare_board_for_json(game.chessboard)
-    score = game.get_score()
+    
     try:
-        socketio.emit("update_board", {"board": prepared_board, "score": score, "step": game.step})
+        response = get_update_board(game)
+        socketio.emit("update_board", response)
     except AssertionError as e:
         socketio.emit("update_board", {"error": str(e)}), 400
 
@@ -87,10 +89,10 @@ def handle_redo_move():
 @socketio.on("restart_game")
 def handle_restart_game():
     game.restart()
-    prepared_board = prepare_board_for_json(game.chessboard)
-    score = game.get_score()
+    
     try:
-        socketio.emit("update_board", {"board": prepared_board, "score": score, "step": game.step})
+        response = get_update_board(game)
+        socketio.emit("update_board", response)
     except AssertionError as e:
         socketio.emit("update_board", {"error": str(e)}), 400
 

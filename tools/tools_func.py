@@ -24,27 +24,34 @@ def get_first_channel(chessboard):
 @njit
 def update_by_bfs(chessboard, row, col, color, power, board_range):
     visited = np.zeros((board_range[0], board_range[1]), dtype=np.bool_)
-    queue = np.empty((board_range[0] * board_range[1], 3), dtype=np.int32)
+    queue_r = np.empty(board_range[0] * board_range[1], dtype=np.int32)
+    queue_c = np.empty(board_range[0] * board_range[1], dtype=np.int32)
+    queue_d = np.empty(board_range[0] * board_range[1], dtype=np.int32)
     head, tail = 0, 1
-    queue[head] = (row, col, power)
+    queue_r[0] = row
+    queue_c[0] = col
+    queue_d[0] = 0
 
     while head < tail:
-        r, c, distance = queue[head]
+        r, c, distance = queue_r[head], queue_c[head], queue_d[head]
         head += 1
 
-        if visited[r, c] or distance <= 0 or chessboard[r, c, 0] == np.inf:
+        if visited[r, c] or distance >= power or chessboard[r, c, 0] == np.inf:
             continue
 
         visited[r, c] = True
 
-        chessboard[r, c, 0] += distance * color
-        chessboard[r, c, 1] += distance
+        change = max(power - distance, 0)
+        chessboard[r, c, 0] += change * color
+        chessboard[r, c, 1] += change
 
         for dr, dc in [(0, 1), (0, -1), (1, 0)]:
             nr, nc = r + dr, c + dc
             if nr >= board_range[0]:
                 continue
-            queue[tail] = (nr, nc%board_range[1], distance - 1)
+            queue_r[tail] = nr
+            queue_c[tail] = nc%board_range[1]
+            queue_d[tail] = distance + 1
             tail += 1
 
     return visited
