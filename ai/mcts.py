@@ -43,10 +43,8 @@ class MCTSNode:
     
     def get_best_child(self, c_param=0.9):
         """使用UCB1策略选择最佳子节点"""
-        win_rates = np.array([child.get_win_rate() for child in self.children], dtype=np.float64)
-        child_visits = np.array([child.visits for child in self.children], dtype=np.float64)
-
-        best_index = get_best_child_and_ucb(win_rates, child_visits, self.visits, c_param)
+        rates_visits = np.array([[child.get_win_rate(),child.visits] for child in self.children], dtype=np.float64)
+        best_index = get_best_child_and_ucb(rates_visits, self.visits, c_param)
 
         return self.children[best_index]
 
