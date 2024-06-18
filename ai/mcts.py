@@ -40,16 +40,19 @@ class MCTSNode:
         """更新节点的胜利次数和访问次数"""
         self.visits += 1
         self.wins += win
-
+    
     def get_best_child(self, c_param=0.9):
         """使用UCB1策略选择最佳子节点"""
         win_rates = np.array([child.get_win_rate() for child in self.children], dtype=np.float64)
-        best_index = get_best_child_and_ucb(win_rates, self.visits, c_param)
+        child_visits = np.array([child.visits for child in self.children], dtype=np.float64)
+
+        best_index = get_best_child_and_ucb(win_rates, child_visits, self.visits, c_param)
 
         return self.children[best_index]
 
     def expand(self):
         """扩展一个新子节点并返回"""
+
         # 选择第一个未尝试的移动并删除它
         move = self.untried_moves[0]
         self.untried_moves = np.delete(self.untried_moves, 0, axis=0)
@@ -105,7 +108,8 @@ class MCTSAI(AIAlgorithm):
         self.flag = flag
 
         init_win_rates = np.zeros(itermax, dtype=np.float64)
-        get_best_child_and_ucb(init_win_rates, 1, 1)
+        init_visits = np.ones(itermax, dtype=np.float64)
+        get_best_child_and_ucb(init_win_rates, init_visits, 1, 1)
 
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
         target_color = game.get_color()
