@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, render_template
 from flask_socketio import SocketIO
 from game.chess_game import ChessGame
 from ai import MinimaxAI, MCTSAI

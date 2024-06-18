@@ -1,6 +1,6 @@
 import numpy as np
 from numba import njit
-from collections import deque
+
 
 @njit
 def optimized_not_exist_zero_index(chessboard):
