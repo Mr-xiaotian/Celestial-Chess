@@ -1,11 +1,11 @@
 from __future__ import annotations
-import math
 import random
 import numpy as np
 from copy import deepcopy
 from typing import Tuple, List
 from .ai_algorithm import AIAlgorithm, logger
 from game.chess_game import ChessGame
+from tools.mcts_func import *
 
 
 class MCTSNode:
@@ -35,26 +35,22 @@ class MCTSNode:
     def get_current_move(self) -> Tuple[int, int]:
         """获取当前节点的移动"""
         return self.game_state.get_current_move()
-    
-    def UCB1(self, child: MCTSNode, c_param):
-        """使用UCB1策略选择最佳子节点"""
-        return (1-c_param) * child.get_win_rate() + c_param * math.sqrt((math.log(self.visits) / child.visits))
 
     def update(self, win: bool):
         """更新节点的胜利次数和访问次数"""
         self.visits += 1
         self.wins += win
-
+    
     def get_best_child(self, c_param=0.9):
         """使用UCB1策略选择最佳子节点"""
-        choices_weights = [
-            self.UCB1(child, c_param)
-            for child in self.children
-        ]
-        return self.children[choices_weights.index(max(choices_weights))]
+        rates_visits = np.array([[child.get_win_rate(),child.visits] for child in self.children], dtype=np.float64)
+        best_index = get_best_child_and_ucb(rates_visits, self.visits, c_param)
+
+        return self.children[best_index]
 
     def expand(self):
         """扩展一个新子节点并返回"""
+
         # 选择第一个未尝试的移动并删除它
         move = self.untried_moves[0]
         self.untried_moves = np.delete(self.untried_moves, 0, axis=0)
@@ -62,9 +58,9 @@ class MCTSNode:
         color = self.game_state.get_color()
         target_color = self.target_color
 
-        new_game_state = deepcopy(self.game_state)
-        new_game_state.update_chessboard(*move, color)
-        child_node = MCTSNode(new_game_state, parent=self, target_color=target_color, flag=self.flag)
+        self.game_state.update_chessboard(*move, color)
+        child_node = MCTSNode(self.game_state, parent=self, target_color=target_color, flag=self.flag)
+        self.game_state.undo()
         self.children.append(child_node)
         return child_node
 
@@ -108,6 +104,10 @@ class MCTSAI(AIAlgorithm):
     def __init__(self, itermax: int = 1000, flag=True) -> None:
         self.itermax = itermax
         self.flag = flag
+
+        init_win_rates = np.zeros(itermax, dtype=np.float64)
+        init_visits = np.ones(itermax, dtype=np.float64)
+        get_best_child_and_ucb(init_win_rates, init_visits, 1, 1)
 
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
         target_color = game.get_color()

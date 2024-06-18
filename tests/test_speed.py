@@ -23,7 +23,7 @@ def profile_mcts():
     mcts_ai.find_best_move(game)
 
 game = ChessGame(board_range=(5, 5), power=2)
-mcts_ai = MCTSAI(10000, flag=True)
+mcts_ai = MCTSAI(50000, flag=True)
 cProfile.run('profile_mcts()', 'profile/profile_output')
 
 now_time = strftime("%m-%d-%H-%M", localtime())

@@ -16,24 +16,31 @@ class ChessGame:
         self.board_range = board_range
         self.threshold = self.power * 2 + 1
 
-        self.history_board = {0: np.copy(self.chessboard)}
-        self.history_move = {0: None}
-        self.step = 0
+        max_steps = board_range[0] * board_range[1]
+        self.history_board = np.zeros((max_steps, board_range[0], board_range[1], 2), dtype=float)
+        self.history_move = np.zeros((max_steps, 2), dtype=int)
+
+        self.history_board[0] = self.chessboard
+        self.history_move[0] = (-1, -1)
+
+        self.step: int = 0
         self.current_win_rate: float = 0.0
 
         init_board = np.zeros((board_range[0], board_range[1], 2), dtype=float)
+        init_visited = np.zeros((board_range[0], board_range[1]), dtype=np.bool_)
 
         optimized_not_exist_zero_index(init_board)
         get_zero_index(init_board, board_range)
         get_first_channel(init_board)
         update_by_bfs(init_board, 0, 0, 0, power, board_range)
+        mark_and_expand_over_threshold(init_board, init_visited, board_range, self.threshold, power)
         
     def update_chessboard(self, row, col, color):
         """
         根据新规则更新棋盘状态，并考虑黑洞点的影响。
         """
-        if not (0 <= row < self.board_range[0] and 0 <= col < self.board_range[1]):
-            raise ValueError(f"落子点({row},{col})超出棋盘范围")
+        # if not (0 <= row < self.board_range[0] and 0 <= col < self.board_range[1]):
+        #     raise ValueError(f"落子点({row},{col})超出棋盘范围")
         if self.chessboard[row, col, 0] != 0:
             raise ValueError(f"须在值为0处落子, ({row},{col})为{self.chessboard[row, col, 0]}")
 
@@ -51,39 +58,9 @@ class ChessGame:
         """更新落子点周围的格子，考虑黑洞点对路径的阻挡作用，同时只影响下方的格子"""
         return update_by_bfs(self.chessboard, row, col, color, self.power, self.board_range)
 
-    def mark_black_holes(self, visited: np.array):
+    def mark_black_holes(self, visited):
         """标记黑洞区域"""
-        for row_idx in range(self.board_range[0]):
-            for col_idx in range(self.board_range[1]):
-                if not visited[row_idx, col_idx]:
-                    continue
-                if self.chessboard[row_idx][col_idx][1] >= self.threshold:  # 检查是否超过极限值
-                    # 标记为黑洞区域
-                    self.mark_adjacent_black_holes(row_idx, col_idx)
-
-    def mark_adjacent_black_holes(self, row, col):
-        """标记黑洞周围的格子为黑洞区域"""
-        black_power = self.power - 1
-        queue = deque([(row + black_power - 1, col, 0)])
-        visited = set()
-
-        while queue:
-            r, c, distance = queue.popleft()
-            if (r, c) in visited:
-                continue
-            elif distance >= black_power:
-                continue
-            
-            try:
-                self.chessboard[r][c][0] = self.BLACK_HOLE
-            except IndexError as e:
-                pass
-            visited.add((r, c))
-            
-            # 向四个方向扩展
-            for dr, dc in [(0, 1), (0, -1), (-1, 0)]:
-                nr, nc = r + dr, c + dc
-                queue.append((nr, nc, distance + 1))
+        mark_and_expand_over_threshold(self.chessboard, visited, self.board_range, self.threshold, self.power)
 
     def undo(self):
         """悔棋"""
@@ -148,23 +125,6 @@ class ChessGame:
             filtered_moves = self.get_all_moves()
 
         return filtered_moves
-
-        # perfect_score = float('-inf') if color == 1 else float('inf')
-        # perfect_moves = []
-
-        # for move in filtered_moves:
-        #     row, col = move
-        #     self.update_chessboard(row, col, color)  # 更新棋盘状态
-        #     score = self.get_score()  # 计算得分
-        #     self.undo()  # 回溯棋盘状态
-
-        #     if (color == 1 and score > perfect_score) or (color == -1 and score < perfect_score):
-        #         perfect_score = score
-        #         perfect_moves = [move]
-        #     elif score == perfect_score:
-        #         perfect_moves.append(move)
-            
-        # return perfect_moves
         
     def get_board_key(self):
         '''获取棋盘的哈希值'''

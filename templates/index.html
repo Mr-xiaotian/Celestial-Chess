@@ -9,6 +9,7 @@
             display: flex;
             flex-direction: column;
             gap: 20px;  /* 设置间距 */
+            margin-left: 50px;
         }
         #celestial {
             /* 初始颜色，可以根据需要调整 */
@@ -20,8 +21,8 @@
             border-collapse: collapse;
             margin: auto;
             /* display: grid; */
-            width: 80vh;  /* 100% viewport width */
-            height: 80vh;  
+            width: min(80vh, 80vw);  /* 100% viewport width */
+            height: min(80vh, 80vw);  
         }
         td {
             text-align: center;
@@ -87,6 +88,7 @@
             <span id="celestial">Celestial</span> Chess
         </h1>
         <table id="chessboard"></table>
+        <!-- <li>Score: <span id="totalScore">0</span></li> -->
     </div>
 
     <script src="/static/script.js"></script>

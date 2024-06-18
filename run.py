@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, render_template
 from flask_socketio import SocketIO
 from game.chess_game import ChessGame
 from ai import MinimaxAI, MCTSAI
@@ -99,31 +99,32 @@ def handle_restart_game():
 
 @socketio.on("minimax_move")
 def handle_minimax_move():
-    # AI执棋逻辑
+    # MinimaxAI执棋
     if game.is_game_over():
         return
     color = game.get_color()
     move = minimax_ai.find_best_move(game)
     try:
-        response = update_board(*move, color)
+        game.update_chessboard(*move, color)
+        response = get_update_board(game)
         socketio.emit("update_board", response)
     except AssertionError as e:
         socketio.emit("update_board", {"error": str(e)}), 400
 
 @socketio.on("mcts_move")
 def handle_mcts_move():
-    # AI执棋逻辑
+    # MCTSAI执棋
     if game.is_game_over():
         return
     color = game.get_color()
     move = mcts_ai.find_best_move(game)
     try:
-        response = update_board(*move, color)
+        game.update_chessboard(*move, color)
+        response = get_update_board(game)
         socketio.emit("update_board", response)
     except AssertionError as e:
         socketio.emit("update_board", {"error": str(e)}), 400
 
 
 if __name__ == "__main__":
-    # app.run(debug=True)
     socketio.run(app, debug=True)
