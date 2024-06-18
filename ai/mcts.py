@@ -9,7 +9,7 @@ from tools.mcts_func import *
 
 
 class MCTSNode:
-    def __init__(self, game_state: ChessGame, parent=None, target_color=None, flag=True):
+    def __init__(self, game_state: ChessGame, parent=None, target_color=None):
         self.game_state = game_state  # 当前节点的游戏状态
         self.parent: MCTSNode = parent  # 父节点
         self.target_color = target_color # 目标颜色
@@ -18,11 +18,8 @@ class MCTSNode:
         self.visits = 0  # 访问次数
         self.wins = 0  # 胜利次数
 
-        self.flag = flag  # 是否启用另一种走法
-        if flag:
-            self.untried_moves = game_state.get_all_moves()  # 未尝试的走法列表
-        else:
-            self.untried_moves = game_state.get_perfect_moves()  # 另一种走法列表
+        self.current_color = self.game_state.get_color()  # 当前颜色
+        self.untried_moves = game_state.get_all_moves()  # 未尝试的走法列表
 
     def is_fully_expanded(self) -> bool:
         """检查节点是否已完全展开"""
@@ -55,12 +52,10 @@ class MCTSNode:
         move = self.untried_moves[0]
         self.untried_moves = np.delete(self.untried_moves, 0, axis=0)
 
-        color = self.game_state.get_color()
-        target_color = self.target_color
-
         new_game_state = self.game_state.copy()
-        new_game_state.update_chessboard(*move, color)
-        child_node = MCTSNode(new_game_state, parent=self, target_color=target_color, flag=self.flag)
+        new_game_state.update_chessboard(*move, self.current_color)
+        child_node = MCTSNode(new_game_state, parent=self, 
+                              target_color=self.target_color)
         self.children.append(child_node)
         return child_node
 
@@ -69,10 +64,7 @@ class MCTSNode:
         current_simulation_state = self.game_state.copy()
         current_color = current_simulation_state.get_color()
         while not current_simulation_state.is_game_over():
-            if self.flag:
-                possible_moves = current_simulation_state.get_all_moves()
-            else:
-                possible_moves = current_simulation_state.get_perfect_moves()  # 未尝试的走法列表
+            possible_moves = current_simulation_state.get_all_moves()  # 未尝试的走法列表
             move = random.choice(possible_moves)
             current_color *= -1
             current_simulation_state.update_chessboard(*move, current_color)
@@ -111,7 +103,7 @@ class MCTSAI(AIAlgorithm):
 
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
         """使用 MCTS 算法选择最佳移动"""
-        root = MCTSNode(game.copy(), target_color=game.get_color(), flag=self.flag) # 创建一个MCTSNode对象，表示根节点
+        root = MCTSNode(game.copy(), target_color=game.get_color()) # 创建一个MCTSNode对象，表示根节点
         best_child = self.MCTS(root) # 使用MCTS算法选择最佳的子节点
         game.set_current_win_rate(best_child.get_win_rate())
 

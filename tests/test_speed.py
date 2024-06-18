@@ -23,6 +23,7 @@ def profile_mcts():
     mcts_ai.find_best_move(game)
 
 game = ChessGame(board_range=(5, 5), power=2)
+game.init_cfunc()
 mcts_ai = MCTSAI(50000, flag=True)
 cProfile.run('profile_mcts()', 'profile/profile_output')
 

@@ -11,30 +11,30 @@ class ChessGame:
 
     def __init__(self, board_range=(5, 5), power=2) -> None:
         self.chessboard = np.zeros((board_range[0], board_range[1], 2), dtype=float)
-        self.power = power
         self.board_range = board_range
+        self.power = power
         self.threshold = self.power * 2 + 1
+        self.balance_num = self.get_balance_num()
 
         max_steps = board_range[0] * board_range[1] * 2
         self.history_board = np.zeros((max_steps, board_range[0], board_range[1], 2), dtype=float)
         self.history_move = np.zeros((max_steps, 2), dtype=int)
-
         self.history_board[0] = self.chessboard
         self.history_move[0] = (-1, -1)
 
         self.step: int = 0
         self.current_win_rate: float = 0.0
         self.current_move = (-1, -1)
-        self.balance_num = self.get_balance_num()
 
-        init_board = np.zeros((board_range[0], board_range[1], 2), dtype=float)
-        init_visited = np.zeros((board_range[0], board_range[1]), dtype=np.bool_)
+    def init_cfunc(self):
+        init_board = np.zeros((self.board_range[0], self.board_range[1], 2), dtype=float)
+        init_visited = np.zeros((self.board_range[0], self.board_range[1]), dtype=np.bool_)
 
         optimized_not_exist_zero_index(init_board)
-        get_zero_index(init_board, board_range)
+        get_zero_index(init_board, self.board_range)
         get_first_channel(init_board)
-        update_by_bfs(init_board, 0, 0, 0, power, board_range)
-        mark_and_expand_over_threshold(init_board, init_visited, board_range, self.threshold, power)
+        update_by_bfs(init_board, 0, 0, 0, self.power, self.board_range)
+        mark_and_expand_over_threshold(init_board, init_visited, self.board_range, self.threshold, self.power)
 
     def copy(self):
         """

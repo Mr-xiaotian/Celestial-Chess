@@ -14,6 +14,7 @@ power = 3  # 棋子力量
 # 假设棋盘初始状态
 board = [[[0, 0] for _ in range(height)] for _ in range(weight)]
 game = ChessGame((weight, height), power)
+game.init_cfunc()
 minimax_ai = MinimaxAI(5)
 mcts_ai = MCTSAI(1000)
 

@@ -10,11 +10,12 @@ def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = 
     print(f'游戏开始！\n蓝方AI: {ai_blue.__class__.__name__}\n红方AI: {ai_red.__class__.__name__}\n') if display else None
     ai_blue_name = "蓝方" + ai_blue.__class__.__name__
     ai_red_name = "红方" + ai_red.__class__.__name__
+    color = 1
 
     first_time = time()
     while True:
         last_time = time()
-        color = test_game.get_color()
+        color *= -1
         if color == 1:
             move = ai_blue.find_best_move(test_game)
         else:
@@ -48,5 +49,6 @@ if __name__ == '__main__':
     mcts_ai_0 = MCTSAI(10000, flag=True)
     mcts_ai_1 = MCTSAI(50000, flag=True)
     test_game = ChessGame((5, 5), 2)
+    test_game.init_cfunc()
 
     ai_battle(mcts_ai_0, mcts_ai_0, test_game)
