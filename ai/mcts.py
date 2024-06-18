@@ -10,7 +10,7 @@ from tools.mcts_func import *
 
 class MCTSNode:
     def __init__(self, game_state: ChessGame, parent=None, target_color=None, flag=True):
-        self.game_state = deepcopy(game_state)  # 当前节点的游戏状态
+        self.game_state = game_state  # 当前节点的游戏状态
         self.parent: MCTSNode = parent  # 父节点
         self.target_color = target_color # 目标颜色
 
@@ -44,7 +44,7 @@ class MCTSNode:
     def get_best_child(self, c_param=0.9):
         """使用UCB1策略选择最佳子节点"""
         rates_visits = np.array([[child.get_win_rate(),child.visits] for child in self.children], dtype=np.float64)
-        best_index = get_best_child_and_ucb(rates_visits, self.visits, c_param)
+        best_index = get_best_index(rates_visits, self.visits, c_param)
 
         return self.children[best_index]
 
@@ -58,23 +58,24 @@ class MCTSNode:
         color = self.game_state.get_color()
         target_color = self.target_color
 
-        self.game_state.update_chessboard(*move, color)
-        child_node = MCTSNode(self.game_state, parent=self, target_color=target_color, flag=self.flag)
-        self.game_state.undo()
+        new_game_state = self.game_state.copy()
+        new_game_state.update_chessboard(*move, color)
+        child_node = MCTSNode(new_game_state, parent=self, target_color=target_color, flag=self.flag)
         self.children.append(child_node)
         return child_node
 
     def simulate(self) -> float:
         """从当前节点进行一次完整的随机模拟"""
-        current_simulation_state = deepcopy(self.game_state)
+        current_simulation_state = self.game_state.copy()
+        current_color = current_simulation_state.get_color()
         while not current_simulation_state.is_game_over():
             if self.flag:
                 possible_moves = current_simulation_state.get_all_moves()
             else:
                 possible_moves = current_simulation_state.get_perfect_moves()  # 未尝试的走法列表
             move = random.choice(possible_moves)
-            color = current_simulation_state.get_color()
-            current_simulation_state.update_chessboard(*move, color)
+            current_color *= -1
+            current_simulation_state.update_chessboard(*move, current_color)
         
         winner = current_simulation_state.who_is_winner()
         if winner == self.target_color:
@@ -105,13 +106,12 @@ class MCTSAI(AIAlgorithm):
         self.itermax = itermax
         self.flag = flag
 
-        init_win_rates = np.zeros(itermax, dtype=np.float64)
-        init_visits = np.ones(itermax, dtype=np.float64)
-        get_best_child_and_ucb(init_win_rates, init_visits, 1, 1)
+        init_rates_visits = np.ones((itermax, 2), dtype=np.float64)
+        get_best_index(init_rates_visits, 1, 1)
 
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
-        target_color = game.get_color()
-        root = MCTSNode(game, target_color=target_color, flag=self.flag) # 创建一个MCTSNode对象，表示根节点
+        """使用 MCTS 算法选择最佳移动"""
+        root = MCTSNode(game.copy(), target_color=game.get_color(), flag=self.flag) # 创建一个MCTSNode对象，表示根节点
         best_child = self.MCTS(root) # 使用MCTS算法选择最佳的子节点
         game.set_current_win_rate(best_child.get_win_rate())
 

@@ -4,7 +4,6 @@ Vision: 1.3
 """
 import hashlib
 import numpy as np
-from collections import deque
 from tools.tools_func import *
 
 class ChessGame:
@@ -16,7 +15,7 @@ class ChessGame:
         self.board_range = board_range
         self.threshold = self.power * 2 + 1
 
-        max_steps = board_range[0] * board_range[1]
+        max_steps = board_range[0] * board_range[1] * 2
         self.history_board = np.zeros((max_steps, board_range[0], board_range[1], 2), dtype=float)
         self.history_move = np.zeros((max_steps, 2), dtype=int)
 
@@ -25,6 +24,8 @@ class ChessGame:
 
         self.step: int = 0
         self.current_win_rate: float = 0.0
+        self.current_move = (-1, -1)
+        self.balance_num = self.get_balance_num()
 
         init_board = np.zeros((board_range[0], board_range[1], 2), dtype=float)
         init_visited = np.zeros((board_range[0], board_range[1]), dtype=np.bool_)
@@ -34,6 +35,16 @@ class ChessGame:
         get_first_channel(init_board)
         update_by_bfs(init_board, 0, 0, 0, power, board_range)
         mark_and_expand_over_threshold(init_board, init_visited, board_range, self.threshold, power)
+
+    def copy(self):
+        """
+        复制当前棋局状态，用于回溯。
+        """
+        new_game = ChessGame(self.board_range, self.power)
+        new_game.chessboard = np.copy(self.chessboard)
+        new_game.current_move = self.current_move
+        new_game.step = self.step
+        return new_game
         
     def update_chessboard(self, row, col, color):
         """
@@ -53,6 +64,7 @@ class ChessGame:
         self.step += 1
         self.history_board[self.step] = np.copy(self.chessboard)
         self.history_move[self.step] = (row, col)
+        self.current_move = (row, col)
 
     def update_adjacent_cells(self, row, col, color):
         """更新落子点周围的格子，考虑黑洞点对路径的阻挡作用，同时只影响下方的格子"""
@@ -66,17 +78,20 @@ class ChessGame:
         """悔棋"""
         self.step -= 1 if self.step >= 1 else 0
         self.chessboard = np.copy(self.history_board[self.step])
+        self.current_move = self.history_move[self.step]
 
     def redo(self):
         """重悔"""
         if self.step + 1 in self.history_board.keys():
             self.step += 1
             self.chessboard = np.copy(self.history_board[self.step])
+            self.current_move = self.history_move[self.step]
 
     def restart(self):
         """重开"""
         self.step = 0
         self.chessboard = np.copy(self.history_board[self.step])
+        self.current_move = self.history_move[self.step]
 
     def set_current_win_rate(self, win_rate: float = 0.0):
         """设置当前玩家的胜率"""
@@ -88,7 +103,7 @@ class ChessGame:
     
     def get_current_move(self):
         """获取当前玩家的移动"""
-        return self.history_move[self.step]
+        return self.current_move
 
     def get_score(self):
         """计算棋盘上所有非无穷大格子的总分数"""
@@ -98,7 +113,7 @@ class ChessGame:
             for cell in row
             if cell[0] != self.BLACK_HOLE
         )
-        return total_score - self.get_balance_num()
+        return total_score - self.balance_num
     
     def get_balance_num(self):
         """计算平衡数"""
@@ -166,18 +181,17 @@ class ChessGame:
             return None
 
         score = self.get_score()
-        balance_num = self.get_balance_num()
         if self.get_color() == -1:
-            if score > balance_num:
+            if score > self.balance_num:
                 return 1
-            elif score == balance_num:
+            elif score == self.balance_num:
                 return 0
             else:
                 return -1
         else:
-            if score < -1 * balance_num:
+            if score < -1 * self.balance_num:
                 return -1
-            elif score == -1 * balance_num:
+            elif score == -1 * self.balance_num:
                 return 0
             else:
                 return 1

@@ -3,7 +3,7 @@ import numpy as np
 from numba import njit
 
 @njit
-def get_best_child_and_ucb(rates_visits, parent_visit, c_param):
+def get_best_index(rates_visits, parent_visit: int, c_param: float):
     best_index = -1
     best_value = -np.inf
     
