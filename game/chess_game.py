@@ -16,9 +16,14 @@ class ChessGame:
         self.board_range = board_range
         self.threshold = self.power * 2 + 1
 
-        self.history_board = {0: np.copy(self.chessboard)}
-        self.history_move = {0: None}
-        self.step = 0
+        max_steps = board_range[0] * board_range[1]
+        self.history_board = np.zeros((max_steps, board_range[0], board_range[1], 2), dtype=float)
+        self.history_move = np.zeros((max_steps, 2), dtype=int)
+
+        self.history_board[0] = self.chessboard
+        self.history_move[0] = (-1, -1)
+
+        self.step: int = 0
         self.current_win_rate: float = 0.0
 
         init_board = np.zeros((board_range[0], board_range[1], 2), dtype=float)
@@ -34,8 +39,8 @@ class ChessGame:
         """
         根据新规则更新棋盘状态，并考虑黑洞点的影响。
         """
-        if not (0 <= row < self.board_range[0] and 0 <= col < self.board_range[1]):
-            raise ValueError(f"落子点({row},{col})超出棋盘范围")
+        # if not (0 <= row < self.board_range[0] and 0 <= col < self.board_range[1]):
+        #     raise ValueError(f"落子点({row},{col})超出棋盘范围")
         if self.chessboard[row, col, 0] != 0:
             raise ValueError(f"须在值为0处落子, ({row},{col})为{self.chessboard[row, col, 0]}")
 
@@ -120,23 +125,6 @@ class ChessGame:
             filtered_moves = self.get_all_moves()
 
         return filtered_moves
-
-        # perfect_score = float('-inf') if color == 1 else float('inf')
-        # perfect_moves = []
-
-        # for move in filtered_moves:
-        #     row, col = move
-        #     self.update_chessboard(row, col, color)  # 更新棋盘状态
-        #     score = self.get_score()  # 计算得分
-        #     self.undo()  # 回溯棋盘状态
-
-        #     if (color == 1 and score > perfect_score) or (color == -1 and score < perfect_score):
-        #         perfect_score = score
-        #         perfect_moves = [move]
-        #     elif score == perfect_score:
-        #         perfect_moves.append(move)
-            
-        # return perfect_moves
         
     def get_board_key(self):
         '''获取棋盘的哈希值'''
