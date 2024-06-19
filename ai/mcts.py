@@ -27,7 +27,7 @@ class MCTSNode:
     
     def get_win_rate(self) -> float:
         """计算节点的胜率"""
-        return self.wins / self.visits if self.visits > 0 else 0
+        return self.wins / self.visits
     
     def get_current_move(self) -> Tuple[int, int]:
         """获取当前节点的移动"""
@@ -100,6 +100,7 @@ class MCTSAI(AIAlgorithm):
 
         init_rates_visits = np.ones((itermax, 2), dtype=np.float64)
         get_best_index(init_rates_visits, 1, 1)
+        safe_divide(0.5, 1)
 
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
         """使用 MCTS 算法选择最佳移动"""
