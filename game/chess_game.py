@@ -11,31 +11,40 @@ class ChessGame:
 
     def __init__(self, board_range=(5, 5), power=2) -> None:
         self.chessboard = np.zeros((board_range[0], board_range[1], 2), dtype=float)
-        self.board_range = board_range
-        self.power = power
-        self.threshold = self.power * 2 + 1
-        self.balance_num = self.get_balance_num()
 
-        max_steps = board_range[0] * board_range[1] * 2
-        self.history_board = np.zeros((max_steps, board_range[0], board_range[1], 2), dtype=float)
+        # 仅定义模拟运行必须的参数
+        self.board_range = board_range
+        self.power: int = power
+        self.threshold: int = self.power * 2 + 1
+        self.balance_num: float = self.get_balance_num()
+
+        self.step: int = 0
+        self.current_move = (-1, -1)
+
+    def init_history(self):
+        """
+        初始化历史棋局状态, 只在正式运行时启用。
+        """
+        max_steps = self.board_range[0] * self.board_range[1] * 2
+
+        self.history_board = np.zeros((max_steps, self.board_range[0], self.board_range[1], 2), dtype=float)
         self.history_move = np.zeros((max_steps, 2), dtype=int)
         self.history_board[0] = self.chessboard
         self.history_move[0] = (-1, -1)
 
-        self.step: int = 0
-        self.current_win_rate: float = 0.0
-        self.current_move = (-1, -1)
-
     def init_cfunc(self):
-        init_board = np.zeros((self.board_range[0], self.board_range[1], 2), dtype=float)
-        init_visited = np.zeros((self.board_range[0], self.board_range[1]), dtype=np.bool_)
+        """
+        初始化numba计算函数, 第一次实例化ChessGame时使用。
+        """
+        init_board = np.zeros((5, 5, 2), dtype=float)
+        init_visited = np.zeros((5, 5), dtype=np.bool_)
 
         optimized_not_exist_zero_index(init_board)
-        get_zero_index(init_board, self.board_range)
+        get_zero_index(init_board, (5,5))
         calculate_no_inf(init_board)
-        get_first_channel(init_board, self.board_range)
-        update_by_bfs(init_board, self.board_range, 0, 0, 1, 1)
-        mark_and_expand_over_threshold(init_board, init_visited, self.board_range, 1, 1)
+        get_first_channel(init_board, (5,5))
+        expand_by_bfs(init_board, (5,5), 0, 0, 1, 1)
+        mark_and_expand_over_threshold(init_board, init_visited, (5,5), 1, 1)
 
     def copy(self):
         """
@@ -60,20 +69,26 @@ class ChessGame:
         visited = self.update_adjacent_cells(row, col, color)
 
         # 检查并标记黑洞
-        self.mark_black_holes(visited)
+        self.update_black_holes(visited)
 
+        # 更新必要棋盘状态
         self.step += 1
-        self.history_board[self.step] = np.copy(self.chessboard)
-        self.history_move[self.step] = (row, col)
         self.current_move = (row, col)
 
     def update_adjacent_cells(self, row, col, color):
         """更新落子点周围的格子，考虑黑洞点对路径的阻挡作用，同时只影响下方的格子"""
-        return update_by_bfs(self.chessboard, self.board_range, row, col, color, self.power)
+        return expand_by_bfs(self.chessboard, self.board_range, row, col, color, self.power)
 
-    def mark_black_holes(self, visited):
+    def update_black_holes(self, visited):
         """标记黑洞区域"""
         mark_and_expand_over_threshold(self.chessboard, visited, self.board_range, self.threshold, self.power)
+
+    def update_history(self, row, col):
+        """
+        更新历史记录
+        """
+        self.history_board[self.step] = np.copy(self.chessboard)
+        self.history_move[self.step] = (row, col)
 
     def undo(self):
         """悔棋"""
@@ -237,16 +252,4 @@ class ChessGame:
         formatted_string = "[\n" + ",\n".join(formatted_rows) + "\n]"
         return formatted_string
 
-    
-
-if __name__ == "__main__":
-    game = ChessGame((5,5), power=2)
-    game.update_chessboard(2, 2, 1)
-    game.update_chessboard(2,1,-1)
-    # # game.undo()
-    # # print(game.step, game.history_board)
-    # game.show_chessboard()
-    # print(game.get_all_moves())
-    # game.find_best_move(1, 1)
-    print(game.format_matrix(game.chessboard))
 

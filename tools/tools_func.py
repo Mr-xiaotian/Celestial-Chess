@@ -39,7 +39,7 @@ def get_first_channel(chessboard, board_range):
 # @njit(types.float64(types.float64[:, :, :]), types.UniTuple(types.int32, 2),
 #       types.int32, types.int32, types.int32, types.int32)
 @njit
-def update_by_bfs(chessboard, board_range, row, col, color, power):
+def expand_by_bfs(chessboard, board_range, row, col, color, power):
     visited = np.zeros((board_range[0], board_range[1]), dtype=np.bool_)
     queue_r = np.empty(board_range[0] * board_range[1], dtype=np.int32)
     queue_c = np.empty(board_range[0] * board_range[1], dtype=np.int32)

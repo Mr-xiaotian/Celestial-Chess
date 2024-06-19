@@ -31,15 +31,10 @@ class MCTSNode:
     def get_current_move(self) -> Tuple[int, int]:
         """获取当前节点的移动"""
         return self.game_state.get_current_move()
-
-    def update(self, win: bool):
-        """更新节点的胜利次数和访问次数"""
-        self.visits += 1
-        self.wins += win
     
     def get_best_child(self, c_param=0.9):
         """使用UCB1策略选择最佳子节点"""
-        rates_visits = np.array([[child.get_win_rate(),child.visits] for child in self.children], dtype=np.float64)
+        rates_visits = np.array([[child.wins / child.visits, child.visits] for child in self.children], dtype=np.float64)
         best_index = get_best_index(rates_visits, self.visits, c_param)
 
         return self.children[best_index]
@@ -102,9 +97,8 @@ class MCTSAI(AIAlgorithm):
         self.itermax = itermax
         self.flag = flag
 
-        init_rates_visits = np.ones((itermax, 2), dtype=np.float64)
+        init_rates_visits = np.ones((2, 2), dtype=np.float64)
         get_best_index(init_rates_visits, 1, 1)
-        safe_divide(0.5, 1)
 
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
         """使用 MCTS 算法选择最佳移动"""

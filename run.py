@@ -11,10 +11,11 @@ size = 11  # 棋盘大小
 weight, height = (size, size)
 power = 3  # 棋子力量
 
-# 假设棋盘初始状态
 board = [[[0, 0] for _ in range(height)] for _ in range(weight)]
 game = ChessGame((weight, height), power)
 game.init_cfunc()
+game.init_history()
+
 minimax_ai = MinimaxAI(5)
 mcts_ai = MCTSAI(1000)
 
@@ -29,7 +30,7 @@ def convert_inf_to_string(value):
 def prepare_board_for_json(board):
     return [[[convert_inf_to_string(cell[0]),cell[1]] for cell in row] for row in board]
 
-def get_update_board(game):
+def get_update_board(game: ChessGame):
     prepared_board = prepare_board_for_json(game.chessboard)
     score = game.get_score()
     move = game.get_current_move()
@@ -59,6 +60,7 @@ def handle_play_move(data):
 
     try:
         game.update_chessboard(row, col, color)
+        game.update_history(row, col)
         response = get_update_board(game)
         socketio.emit("update_board", response)
     except AssertionError as e:
@@ -107,6 +109,7 @@ def handle_minimax_move():
     move = minimax_ai.find_best_move(game)
     try:
         game.update_chessboard(*move, color)
+        game.update_history(*move)
         response = get_update_board(game)
         socketio.emit("update_board", response)
     except AssertionError as e:
@@ -121,6 +124,7 @@ def handle_mcts_move():
     move = mcts_ai.find_best_move(game)
     try:
         game.update_chessboard(*move, color)
+        game.update_history(*move)
         response = get_update_board(game)
         socketio.emit("update_board", response)
     except AssertionError as e:
