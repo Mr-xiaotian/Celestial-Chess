@@ -43,8 +43,8 @@ class ChessGame:
         get_zero_index(init_board, (5,5))
         calculate_no_inf(init_board)
         get_first_channel(init_board, (5,5))
-        expand_by_bfs(init_board, (5,5), 0, 0, 1, 1)
-        mark_and_expand_over_threshold(init_board, init_visited, (5,5), 1, 1)
+        expand_by_bfs(init_board, (5,5), 0, 0, 1, 1, 1)
+        expand_over_threshold(init_board, init_visited, (5,5), 1)
 
     def copy(self):
         """
@@ -60,16 +60,14 @@ class ChessGame:
         """
         根据新规则更新棋盘状态，并考虑黑洞点的影响。
         """
-        # if not (0 <= row < self.board_range[0] and 0 <= col < self.board_range[1]):
-        #     raise ValueError(f"落子点({row},{col})超出棋盘范围")
         if self.chessboard[row, col, 0] != 0:
             raise ValueError(f"须在值为0处落子, ({row},{col})为{self.chessboard[row, col, 0]}")
 
         # 更新落子点及周围点的值
-        visited = self.update_adjacent_cells(row, col, color)
+        over_threshold_array = self.update_adjacent_cells(row, col, color)
 
         # 检查并标记黑洞
-        self.update_black_holes(visited)
+        self.update_black_holes(over_threshold_array)
 
         # 更新必要棋盘状态
         self.step += 1
@@ -77,11 +75,11 @@ class ChessGame:
 
     def update_adjacent_cells(self, row, col, color):
         """更新落子点周围的格子，考虑黑洞点对路径的阻挡作用，同时只影响下方的格子"""
-        return expand_by_bfs(self.chessboard, self.board_range, row, col, color, self.power)
+        return expand_by_bfs(self.chessboard, self.board_range, row, col, color, self.threshold, self.power)
 
-    def update_black_holes(self, visited):
-        """标记黑洞区域"""
-        mark_and_expand_over_threshold(self.chessboard, visited, self.board_range, self.threshold, self.power)
+    def update_black_holes(self, over_threshold_array):
+        """扩张黑洞区域"""
+        expand_over_threshold(self.chessboard, over_threshold_array, self.board_range, self.power)
 
     def update_history(self, row, col):
         """

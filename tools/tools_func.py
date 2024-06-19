@@ -39,8 +39,10 @@ def get_first_channel(chessboard, board_range):
 # @njit(types.float64(types.float64[:, :, :]), types.UniTuple(types.int32, 2),
 #       types.int32, types.int32, types.int32, types.int32)
 @njit
-def expand_by_bfs(chessboard, board_range, row, col, color, power):
+def expand_by_bfs(chessboard, board_range, row, col, color, threshold, power):
     visited = np.zeros((board_range[0], board_range[1]), dtype=np.bool_)
+    over_threshold_array = np.zeros((board_range[0], board_range[1]), dtype=np.bool_)
+    
     queue_r = np.empty(board_range[0] * board_range[1], dtype=np.int32)
     queue_c = np.empty(board_range[0] * board_range[1], dtype=np.int32)
     queue_d = np.empty(board_range[0] * board_range[1], dtype=np.int32)
@@ -61,6 +63,9 @@ def expand_by_bfs(chessboard, board_range, row, col, color, power):
         chessboard[r, c, 0] += distance * color
         chessboard[r, c, 1] += distance
 
+        if chessboard[r, c, 0] >= threshold:
+            over_threshold_array[r, c] = True
+
         for dr, dc in [(0, 1), (0, -1), (1, 0)]:
             nr, nc = r + dr, c + dc
             if nr >= board_range[0]:
@@ -70,12 +75,12 @@ def expand_by_bfs(chessboard, board_range, row, col, color, power):
             queue_d[tail] = distance - 1
             tail += 1
 
-    return visited
+    return over_threshold_array
 
 # @njit(types.float64(types.float64[:, :, :]), types.float64(types.float64[:, :]), 
 #       types.UniTuple(types.int32, 2), types.int32, types.int32)
 @njit
-def mark_and_expand_over_threshold(chessboard, visited, board_range, threshold, power):
+def expand_over_threshold(chessboard, over_threshold_array, board_range, power):
     queue_r = np.empty(board_range[0] * board_range[1], dtype=np.int32)
     queue_c = np.empty(board_range[0] * board_range[1], dtype=np.int32)
     queue_d = np.empty(board_range[0] * board_range[1], dtype=np.int32)
@@ -84,13 +89,12 @@ def mark_and_expand_over_threshold(chessboard, visited, board_range, threshold, 
 
     for row_idx in range(board_range[0]):
         for col_idx in range(board_range[1]):
-            if not visited[row_idx, col_idx]:
+            if not over_threshold_array[row_idx, col_idx]:
                 continue
-            if chessboard[row_idx, col_idx, 1] >= threshold:
-                queue_r[queue_len] = row_idx + black_power - 1
-                queue_c[queue_len] = col_idx
-                queue_d[queue_len] = black_power
-                queue_len += 1
+            queue_r[queue_len] = row_idx + black_power - 1
+            queue_c[queue_len] = col_idx
+            queue_d[queue_len] = black_power
+            queue_len += 1
 
     visited_expansion = np.zeros((board_range[0], board_range[1]), dtype=np.bool_)
 
