@@ -32,9 +32,10 @@ class ChessGame:
 
         optimized_not_exist_zero_index(init_board)
         get_zero_index(init_board, self.board_range)
-        get_first_channel(init_board)
-        update_by_bfs(init_board, 0, 0, 0, self.power, self.board_range)
-        mark_and_expand_over_threshold(init_board, init_visited, self.board_range, self.threshold, self.power)
+        calculate_no_inf(init_board)
+        get_first_channel(init_board, self.board_range)
+        update_by_bfs(init_board, self.board_range, 0, 0, 1, 1)
+        mark_and_expand_over_threshold(init_board, init_visited, self.board_range, 1, 1)
 
     def copy(self):
         """
@@ -68,7 +69,7 @@ class ChessGame:
 
     def update_adjacent_cells(self, row, col, color):
         """更新落子点周围的格子，考虑黑洞点对路径的阻挡作用，同时只影响下方的格子"""
-        return update_by_bfs(self.chessboard, row, col, color, self.power, self.board_range)
+        return update_by_bfs(self.chessboard, self.board_range, row, col, color, self.power)
 
     def mark_black_holes(self, visited):
         """标记黑洞区域"""
@@ -107,12 +108,7 @@ class ChessGame:
 
     def get_score(self):
         """计算棋盘上所有非无穷大格子的总分数"""
-        total_score = sum(
-            cell[0]
-            for row in self.chessboard
-            for cell in row
-            if cell[0] != self.BLACK_HOLE
-        )
+        total_score = calculate_no_inf(self.chessboard)
         return total_score - self.balance_num
     
     def get_balance_num(self):
@@ -150,7 +146,7 @@ class ChessGame:
     
     def get_board_value(self):
         '''获取棋盘的值'''
-        return get_first_channel(self.chessboard)
+        return get_first_channel(self.chessboard, self.board_range)
     
     def get_color(self):
         '''获取当前玩家的颜色的颜色'''

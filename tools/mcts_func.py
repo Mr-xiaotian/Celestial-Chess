@@ -15,3 +15,8 @@ def get_best_index(rates_visits, parent_visit: int, c_param: float):
             best_index = i
 
     return best_index
+
+@njit
+def safe_divide(numerator: float, denominator: int) -> float:
+    """安全地计算除法"""
+    return numerator / denominator if denominator > 0 else 0

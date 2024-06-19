@@ -1,12 +1,12 @@
 import numpy as np
-from numba import njit
+from numba import njit, types
 
 
-@njit
+@njit(types.boolean(types.float64[:, :, :]))
 def optimized_not_exist_zero_index(chessboard):
     return not np.any(chessboard[:, :, 0] == 0)
 
-@njit
+@njit(types.int32[:, :](types.float64[:, :, :], types.UniTuple(types.int32, 2)))
 def get_zero_index(chessboard, board_range):
     move_list = np.empty((board_range[0] * board_range[1], 2), dtype=np.int32)
     count = 0
@@ -17,12 +17,29 @@ def get_zero_index(chessboard, board_range):
                 count += 1
     return move_list[:count]  # 截取有效的部分
 
-@njit
-def get_first_channel(chessboard):
-    return [[cell[0] for cell in row] for row in chessboard]
+@njit(types.int32(types.float64[:, :, :]))
+def calculate_no_inf(chessboard):
+    total_score = 0
+    for row in chessboard:
+        for cell in row:
+            if cell[0] != np.inf:
+                total_score += cell[0]
+    return total_score
 
+@njit(types.float64[:, :](types.float64[:, :, :], types.UniTuple(types.int32, 2)))
+def get_first_channel(chessboard, board_range):
+    rows, cols = board_range
+    first_channel = np.empty((rows, cols), dtype=np.float64)
+    for i in range(rows):
+        for j in range(cols):
+            first_channel[i, j] = chessboard[i, j, 0]
+    return first_channel
+
+
+# @njit(types.float64(types.float64[:, :, :]), types.UniTuple(types.int32, 2),
+#       types.int32, types.int32, types.int32, types.int32)
 @njit
-def update_by_bfs(chessboard, row, col, color, power, board_range):
+def update_by_bfs(chessboard, board_range, row, col, color, power):
     visited = np.zeros((board_range[0], board_range[1]), dtype=np.bool_)
     queue_r = np.empty(board_range[0] * board_range[1], dtype=np.int32)
     queue_c = np.empty(board_range[0] * board_range[1], dtype=np.int32)
@@ -55,6 +72,8 @@ def update_by_bfs(chessboard, row, col, color, power, board_range):
 
     return visited
 
+# @njit(types.float64(types.float64[:, :, :]), types.float64(types.float64[:, :]), 
+#       types.UniTuple(types.int32, 2), types.int32, types.int32)
 @njit
 def mark_and_expand_over_threshold(chessboard, visited, board_range, threshold, power):
     queue_r = np.empty(board_range[0] * board_range[1], dtype=np.int32)
