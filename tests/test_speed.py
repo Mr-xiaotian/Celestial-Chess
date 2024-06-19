@@ -7,7 +7,7 @@ import pstats
 from time import strftime, localtime
 from ai import AIAlgorithm, MinimaxAI, MCTSAI
 from game.chess_game import ChessGame
-from tools.custom_deepcopy import custom_deepcopy
+import subprocess
 
 
 '''
@@ -25,10 +25,15 @@ def profile_mcts():
 game = ChessGame(board_range=(5, 5), power=2)
 game.init_cfunc()
 mcts_ai = MCTSAI(50000, flag=True)
-cProfile.run('profile_mcts()', 'profile/profile_output')
 
 now_time = strftime("%m-%d-%H-%M", localtime())
-with open(f'profile/profile_results({now_time}).txt', 'w') as f:
-    stats = pstats.Stats('profile/profile_output', stream=f)
-    stats.sort_stats('cumulative')
-    stats.print_stats()
+output_file = f'profile/profile_output({now_time}).prof'
+cProfile.run('profile_mcts()', output_file)
+
+# with open(f'profile/profile_results({now_time}).txt', 'w') as f:
+#     stats = pstats.Stats(output_file, stream=f)
+#     stats.sort_stats('cumulative')
+#     stats.print_stats()
+
+subprocess.run(['snakeviz', output_file])
+# subprocess.run(['gprof2dot', '-f', 'pstats', 'profile/profile_output', '|', 'dot', '-Tpng', '-o', f'profile/profile_results({now_time}).png'])

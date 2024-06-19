@@ -1,7 +1,6 @@
 from __future__ import annotations
 import random
 import numpy as np
-from copy import deepcopy
 from typing import Tuple, List
 from .ai_algorithm import AIAlgorithm, logger
 from game.chess_game import ChessGame
@@ -46,8 +45,9 @@ class MCTSNode:
         return self.children[best_index]
 
     def expand(self):
-        """扩展一个新子节点并返回"""
-
+        """
+        扩展一个新子节点并返回
+        """
         # 选择第一个未尝试的移动并删除它
         move = self.untried_moves[0]
         self.untried_moves = np.delete(self.untried_moves, 0, axis=0)
@@ -60,9 +60,13 @@ class MCTSNode:
         return child_node
 
     def simulate(self) -> float:
-        """从当前节点进行一次完整的随机模拟"""
+        """
+        从当前节点进行一次完整的随机模拟
+        """
+        current_color = self.current_color
+        target_color = self.target_color
         current_simulation_state = self.game_state.copy()
-        current_color = current_simulation_state.get_color()
+
         while not current_simulation_state.is_game_over():
             possible_moves = current_simulation_state.get_all_moves()  # 未尝试的走法列表
             move = random.choice(possible_moves)
@@ -70,9 +74,9 @@ class MCTSNode:
             current_simulation_state.update_chessboard(*move, current_color)
         
         winner = current_simulation_state.who_is_winner()
-        if winner == self.target_color:
+        if winner == target_color:
             return 1.0
-        elif winner == -1 * self.target_color:
+        elif winner == -1 * target_color:
             return 0.0
         else:
             return 0.5
