@@ -36,6 +36,13 @@ def get_update_board(game: ChessGame):
     move = game.get_current_move()
     return {"board": prepared_board, "move": move, "score": score, "step": game.step}
 
+def sendDataToBackend(game: ChessGame):
+    try:
+        response = get_update_board(game)
+        socketio.emit("update_board", response)
+    except AssertionError as e:
+        socketio.emit("update_board", {"error": str(e)}), 400
+
 
 @app.route("/")
 def index():
@@ -47,7 +54,7 @@ def init_state():
     # 获取初始棋局状态
     prepared_board = prepare_board_for_json(game.chessboard)
     score = game.get_score()
-    move = game.get_current_move()
+    # move = game.get_current_move()
     return jsonify({"power": power, "weight": weight, "height": height,  
                     "board": prepared_board, "score": score, "step": game.step})
 
@@ -58,46 +65,28 @@ def handle_play_move(data):
     col = data["col"]
     color = data["color"]  # 前端发送了颜色信息
 
-    try:
+    if game.is_move_valid(row, col):
         game.update_chessboard(row, col, color)
         game.update_history(row, col)
-        response = get_update_board(game)
-        socketio.emit("update_board", response)
-    except AssertionError as e:
-        socketio.emit("update_board", {"error": str(e)}), 400
+        sendDataToBackend(game)
 
 
 @socketio.on("undo_move")
 def handle_undo_move():
     game.undo()
-    
-    try:
-        response = get_update_board(game)
-        socketio.emit("update_board", response)
-    except AssertionError as e:
-        socketio.emit("update_board", {"error": str(e)}), 400
+    sendDataToBackend(game)
 
 
 @socketio.on("redo_move")
 def handle_redo_move():
     game.redo()
+    sendDataToBackend(game)
     
-    try:
-        response = get_update_board(game)
-        socketio.emit("update_board", response)
-    except AssertionError as e:
-        socketio.emit("update_board", {"error": str(e)}), 400
-
 
 @socketio.on("restart_game")
 def handle_restart_game():
     game.restart()
-    
-    try:
-        response = get_update_board(game)
-        socketio.emit("update_board", response)
-    except AssertionError as e:
-        socketio.emit("update_board", {"error": str(e)}), 400
+    sendDataToBackend(game)
 
 
 @socketio.on("minimax_move")
@@ -107,13 +96,10 @@ def handle_minimax_move():
         return
     color = game.get_color()
     move = minimax_ai.find_best_move(game)
-    try:
-        game.update_chessboard(*move, color)
-        game.update_history(*move)
-        response = get_update_board(game)
-        socketio.emit("update_board", response)
-    except AssertionError as e:
-        socketio.emit("update_board", {"error": str(e)}), 400
+
+    game.update_chessboard(*move, color)
+    game.update_history(*move)
+    sendDataToBackend(game)
 
 @socketio.on("mcts_move")
 def handle_mcts_move():
@@ -122,13 +108,10 @@ def handle_mcts_move():
         return
     color = game.get_color()
     move = mcts_ai.find_best_move(game)
-    try:
-        game.update_chessboard(*move, color)
-        game.update_history(*move)
-        response = get_update_board(game)
-        socketio.emit("update_board", response)
-    except AssertionError as e:
-        socketio.emit("update_board", {"error": str(e)}), 400
+
+    game.update_chessboard(*move, color)
+    game.update_history(*move)
+    sendDataToBackend(game)
 
 
 if __name__ == "__main__":

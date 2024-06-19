@@ -25,6 +25,7 @@ class ChessGame:
         """
         初始化历史棋局状态, 只在正式运行时启用。
         """
+        self.current_max_step: int = 0
         max_steps = self.board_range[0] * self.board_range[1] * 2
 
         self.history_board = np.zeros((max_steps, self.board_range[0], self.board_range[1], 2), dtype=float)
@@ -37,14 +38,12 @@ class ChessGame:
         初始化numba计算函数, 第一次实例化ChessGame时使用。
         """
         init_board = np.zeros((5, 5, 2), dtype=float)
-        init_visited = np.zeros((5, 5), dtype=np.bool_)
 
+        calculate_no_inf(init_board)
         optimized_not_exist_zero_index(init_board)
         get_zero_index(init_board, (5,5))
-        calculate_no_inf(init_board)
         get_first_channel(init_board, (5,5))
-        expand_by_bfs(init_board, (5,5), 0, 0, 1, 1, 1)
-        expand_over_threshold(init_board, init_visited, (5,5), 1)
+        expand_by_bfs_and_threshold(init_board, (5,5), 0, 0, 1, 1, 1)
 
     def copy(self):
         """
@@ -60,31 +59,18 @@ class ChessGame:
         """
         根据新规则更新棋盘状态，并考虑黑洞点的影响。
         """
-        if self.chessboard[row, col, 0] != 0:
-            raise ValueError(f"须在值为0处落子, ({row},{col})为{self.chessboard[row, col, 0]}")
-
-        # 更新落子点及周围点的值
-        over_threshold_array = self.update_adjacent_cells(row, col, color)
-
-        # 检查并标记黑洞
-        self.update_black_holes(over_threshold_array)
+        # 用bfs扩散落子点及周围点的值, 然后更新黑洞点
+        expand_by_bfs_and_threshold(self.chessboard, self.board_range, row, col, color, self.threshold, self.power)
 
         # 更新必要棋盘状态
         self.step += 1
         self.current_move = (row, col)
 
-    def update_adjacent_cells(self, row, col, color):
-        """更新落子点周围的格子，考虑黑洞点对路径的阻挡作用，同时只影响下方的格子"""
-        return expand_by_bfs(self.chessboard, self.board_range, row, col, color, self.threshold, self.power)
-
-    def update_black_holes(self, over_threshold_array):
-        """扩张黑洞区域"""
-        expand_over_threshold(self.chessboard, over_threshold_array, self.board_range, self.power)
-
     def update_history(self, row, col):
         """
         更新历史记录
         """
+        self.current_max_step += 1
         self.history_board[self.step] = np.copy(self.chessboard)
         self.history_move[self.step] = (row, col)
 
@@ -92,20 +78,20 @@ class ChessGame:
         """悔棋"""
         self.step -= 1 if self.step >= 1 else 0
         self.chessboard = np.copy(self.history_board[self.step])
-        self.current_move = self.history_move[self.step]
+        self.current_move = self.history_move[self.step].tolist()
 
     def redo(self):
         """重悔"""
-        if self.step + 1 in self.history_board.keys():
+        if self.step + 1 <= self.current_max_step:
             self.step += 1
             self.chessboard = np.copy(self.history_board[self.step])
-            self.current_move = self.history_move[self.step]
+            self.current_move = self.history_move[self.step].tolist()
 
     def restart(self):
         """重开"""
         self.step = 0
         self.chessboard = np.copy(self.history_board[self.step])
-        self.current_move = self.history_move[self.step]
+        self.current_move = self.history_move[self.step].tolist()
 
     def set_current_win_rate(self, win_rate: float = 0.0):
         """设置当前玩家的胜率"""
@@ -151,11 +137,16 @@ class ChessGame:
         return filtered_moves
         
     def get_board_key(self):
-        '''获取棋盘的哈希值'''
-        data_str = str(self.chessboard) # 将数据转换为字符串形式
-        hash_object = hashlib.sha256(data_str.encode()) # 使用 hashlib 库中的 sha256 函数来生成哈希值
-        hash_hex = hash_object.hexdigest() # 获取十六进制表示的哈希值
-        return hash_hex
+        '''
+        获取棋盘的哈希值
+        '''
+        # 将数组转换为字节数据
+        arr_bytes = self.chessboard.tobytes()
+        
+        # 计算 SHA-256 哈希值
+        sha256_hash = hashlib.sha256(arr_bytes).hexdigest()
+        
+        return sha256_hash
     
     def get_board_value(self):
         '''获取棋盘的值'''
@@ -180,6 +171,21 @@ class ChessGame:
         :return: 游戏是否结束
         '''
         return optimized_not_exist_zero_index(self.chessboard)
+    
+    def is_move_valid(self, row, col):
+        '''
+        判断移动是否有效
+        :param move: 移动
+        :return: 移动是否有效
+        '''
+        if self.chessboard[row, col, 0] != 0:
+            # raise ValueError(f"须在值为0处落子, ({row},{col})为{self.chessboard[row, col, 0]}")
+            return False
+        elif row >= self.board_range[0] or row < 0 or col >= self.board_range[1] or col < 0:
+            # raise ValueError(f"超出棋盘范围, ({row},{col})")
+            return False
+        else:
+            return True
     
     def who_is_winner(self):
         '''

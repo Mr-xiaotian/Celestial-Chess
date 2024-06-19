@@ -30,10 +30,5 @@ now_time = strftime("%m-%d-%H-%M", localtime())
 output_file = f'profile/profile_output({now_time}).prof'
 cProfile.run('profile_mcts()', output_file)
 
-# with open(f'profile/profile_results({now_time}).txt', 'w') as f:
-#     stats = pstats.Stats(output_file, stream=f)
-#     stats.sort_stats('cumulative')
-#     stats.print_stats()
-
 subprocess.run(['snakeviz', output_file])
 # subprocess.run(['gprof2dot', '-f', 'pstats', 'profile/profile_output', '|', 'dot', '-Tpng', '-o', f'profile/profile_results({now_time}).png'])
