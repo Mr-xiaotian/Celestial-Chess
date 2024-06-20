@@ -18,11 +18,15 @@ class MCTSNode:
         self.wins = 0  # 胜利次数
 
         self.current_color = self.game_state.get_color()  # 当前颜色
-        self.untried_moves = game_state.get_all_moves()  # 未尝试的走法列表
+
+        untried_moves = game_state.get_all_moves()  # 未尝试的走法列表
+        self.untried_moves = untried_moves
+        self.max_untried_index = len(untried_moves)  # 未尝试的走法最大索引
+        self.untried_index = 0  # 未尝试的走法索引
 
     def is_fully_expanded(self) -> bool:
         """检查节点是否已完全展开"""
-        return len(self.untried_moves) == 0
+        return self.untried_index == self.max_untried_index
     
     def get_win_rate(self) -> float:
         """计算节点的胜率"""
@@ -44,8 +48,8 @@ class MCTSNode:
         扩展一个新子节点并返回
         """
         # 选择第一个未尝试的移动并删除它
-        move = self.untried_moves[0]
-        self.untried_moves = np.delete(self.untried_moves, 0, axis=0)
+        move = self.untried_moves[self.untried_index]
+        self.untried_index += 1
 
         new_game_state = self.game_state.copy()
         new_game_state.update_chessboard(*move, self.current_color)
@@ -65,10 +69,10 @@ class MCTSNode:
         while not current_simulation_state.is_game_over():
             possible_moves = current_simulation_state.get_all_moves()  # 未尝试的走法列表
             move = random.choice(possible_moves)
-            current_color *= -1
             current_simulation_state.update_chessboard(*move, current_color)
+            current_color *= -1
         
-        winner = current_simulation_state.who_is_winner()
+        winner = current_simulation_state.who_is_winner(current_color * -1)
         if winner == target_color:
             return 1.0
         elif winner == -1 * target_color:

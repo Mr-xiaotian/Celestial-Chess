@@ -188,29 +188,26 @@ class ChessGame:
         else:
             return True
     
-    def who_is_winner(self):
+    def who_is_winner(self, color = None):
         '''
         判断当前玩家是否获胜
         :return: 1 蓝方获胜，-1 红方获胜，0 平局
         '''
-        if not self.is_game_over():
-            return None
-
         score = self.get_score()
-        if self.get_color() == -1:
-            if score > self.balance_num:
-                return 1
-            elif score == self.balance_num:
-                return 0
-            else:
-                return -1
+        balance_num = self.balance_num
+        color = color if color is not None else self.get_color()
+
+        if color == 1:
+            comparison = score + balance_num
         else:
-            if score < -1 * self.balance_num:
-                return -1
-            elif score == -1 * self.balance_num:
-                return 0
-            else:
-                return 1
+            comparison = score - balance_num
+
+        if comparison > 0:
+            return 1
+        elif comparison == 0:
+            return 0
+        else:
+            return -1
 
     def show_chessboard(self):
         '''打印棋盘'''
