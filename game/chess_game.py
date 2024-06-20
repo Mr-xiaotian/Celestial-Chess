@@ -133,7 +133,7 @@ class ChessGame:
                 filtered_moves.append((row, col))
 
         if not filtered_moves:
-            filtered_moves = self.get_all_moves()
+            filtered_moves = get_zero_index(self.chessboard, self.board_range)
 
         return filtered_moves
         
