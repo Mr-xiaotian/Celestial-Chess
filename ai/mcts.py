@@ -101,7 +101,7 @@ class MCTSAI(AIAlgorithm):
         self.itermax = itermax
         self.complate_mode = complate_mode
 
-        init_rates_visits = np.ones((2, 2), dtype=np.float64)
+        init_rates_visits = np.empty((2, 2), dtype=np.float64)
         get_best_index(init_rates_visits, 1, 1)
 
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:

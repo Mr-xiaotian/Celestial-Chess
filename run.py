@@ -8,14 +8,13 @@ app.config["SECRET_KEY"] = "your_secret_key"
 socketio = SocketIO(app)
 
 chess_state = ((11, 11), 3)
-(weight, height), power = chess_state # 棋盘大小，power
+(row_len, col_len), power = chess_state # 棋盘大小，power
 
-board = [[[0, 0] for _ in range(height)] for _ in range(weight)]
-game = ChessGame((weight, height), power)
+game = ChessGame(*chess_state)
 game.init_cfunc()
 game.init_history()
 
-minimax_ai = MinimaxAI(5, chess_state)
+minimax_ai = MinimaxAI(5, *chess_state)
 mcts_ai = MCTSAI(1000)
 
 def convert_inf_to_string(value):
@@ -54,7 +53,7 @@ def init_state():
     prepared_board = prepare_board_for_json(game.chessboard)
     score = game.get_score()
     # move = game.get_current_move()
-    return jsonify({"power": power, "weight": weight, "height": height,  
+    return jsonify({"power": power, "row_len": row_len, "col_len": col_len,  
                     "board": prepared_board, "score": score, "step": game.step})
 
 

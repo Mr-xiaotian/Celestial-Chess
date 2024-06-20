@@ -5,16 +5,16 @@ from game.chess_game import ChessGame
 
 
 class MinimaxAI(AIAlgorithm):
-    def __init__(self, depth: int, chess_state: Tuple[Tuple[int, int], int], complate_mode: bool = True) -> None:
+    def __init__(self, depth: int, board_range: Tuple[int, int] = (5, 5), power: int = 2, complate_mode: bool = True) -> None:
         self.depth = depth
 
         if complate_mode:
             self.complate_mode = complate_mode
-            (row, col), power = chess_state
+            row_len, col_len = board_range
 
             self.transposition_table = dict()
             self.transposition_table_change = False
-            self.transposition_file = f"./transposition_table/transposition_table({row}&{col}_{power})(sha256).pickle"
+            self.transposition_file = f"./transposition_table/transposition_table({row_len}&{col_len}_{power})(sha256).pickle"
             self.load_transposition_table()
 
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:

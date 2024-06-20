@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(response => response.json())
         .then(data => {
             power = data.power; // 初始化power
-            renderChessboard(data.weight, data.height); // 初始化棋盘size
+            renderChessboard(data.row_len, data.col_len); // 初始化棋盘size
             updateChessboard(data.board, data.move); // 初始化棋盘
             updateTotalScore(data.score); // 初始化分数
             toggleColor(data.step); // 根据步数切换颜色
@@ -42,13 +42,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-function renderChessboard(weight, height) {
+function renderChessboard(row_len, col_len) {
     const chessboard = document.getElementById('chessboard');
     chessboard.innerHTML = '';  // 清除现有棋盘
 
-    for (let i = 0; i < weight; i++) {
+    for (let i = 0; i < row_len; i++) {
         let row = chessboard.insertRow();
-        for (let j = 0; j < height; j++) {
+        for (let j = 0; j < col_len; j++) {
             let cell = row.insertCell();
             cell.addEventListener('click', function () {
                 onCellClick(i, j);

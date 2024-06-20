@@ -26,10 +26,11 @@ class ChessGame:
         初始化历史棋局状态, 只在正式运行时启用。
         """
         self.current_max_step: int = 0
-        max_steps = self.board_range[0] * self.board_range[1] * 2
+        row_len, col_len = self.board_range
+        max_steps = row_len * col_len * 2
 
-        self.history_board = np.zeros((max_steps, self.board_range[0], self.board_range[1], 2), dtype=float)
-        self.history_move = np.zeros((max_steps, 2), dtype=int)
+        self.history_board = np.empty((max_steps, row_len, col_len, 2), dtype=float)
+        self.history_move = np.empty((max_steps, 2), dtype=int)
         self.history_board[0] = self.chessboard
         self.history_move[0] = (-1, -1)
 
@@ -37,7 +38,7 @@ class ChessGame:
         """
         初始化numba计算函数, 第一次实例化ChessGame时使用。
         """
-        init_board = np.zeros((5, 5, 2), dtype=float)
+        init_board = np.empty((5, 5, 2), dtype=float)
 
         calculate_no_inf(init_board)
         optimized_not_exist_zero_index(init_board)
@@ -179,10 +180,11 @@ class ChessGame:
         :param move: 移动
         :return: 移动是否有效
         '''
+        row_len, col_len = self.board_range
         if self.chessboard[row, col, 0] != 0:
             # raise ValueError(f"须在值为0处落子, ({row},{col})为{self.chessboard[row, col, 0]}")
             return False
-        elif row >= self.board_range[0] or row < 0 or col >= self.board_range[1] or col < 0:
+        elif row >= row_len or row < 0 or col >= col_len or col < 0:
             # raise ValueError(f"超出棋盘范围, ({row},{col})")
             return False
         else:

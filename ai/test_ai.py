@@ -48,11 +48,12 @@ def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = 
     return test_game
 
 if __name__ == '__main__':
-    test_game = ChessGame((5, 5), 2)
+    chess_state = ((5, 5), 2)
+    test_game = ChessGame(*chess_state)
     test_game.init_cfunc()
     test_game.init_history()
 
-    minimax_ai = MinimaxAI(5, ((5, 5), 2), complate_mode=True)
+    minimax_ai = MinimaxAI(5, *chess_state, complate_mode=True)
     mcts_ai_0 = MCTSAI(10000, complate_mode=True)
     mcts_ai_1 = MCTSAI(1000, complate_mode=True)
 
