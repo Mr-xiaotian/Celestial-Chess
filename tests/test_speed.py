@@ -27,10 +27,10 @@ def profile_minimax():
 
 game = ChessGame(board_range=(5, 5), power=2)
 game.init_cfunc()
-mcts_ai = MCTSAI(50000, flag=False)
-minimax_ai = MinimaxAI(5, use_table=False)
+mcts_ai = MCTSAI(50000, complate_mode=False)
+minimax_ai = MinimaxAI(5, ((5,5), 2), complate_mode=False)
 
-target_func = 'profile_minimax()'
+target_func = 'profile_mcts()'
 now_time = strftime("%m-%d-%H-%M", localtime())
 output_file = f'profile/{target_func}({now_time}).prof'
 cProfile.run(target_func, output_file)
