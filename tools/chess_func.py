@@ -37,6 +37,7 @@ def get_first_channel(chessboard, board_range):
 
 @njit
 def bfs_expand_with_power_threshold(chessboard, board_range, row, col, color, power, threshold):
+    # 第一层存储power_expand的visit信息, 第二层存储threshold_expand的visit信息
     visited = np.zeros((board_range[0], board_range[1], 2), dtype=np.bool_)
 
     board_size = board_range[0] * board_range[1]
