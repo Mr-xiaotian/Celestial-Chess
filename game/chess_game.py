@@ -1,10 +1,10 @@
 """
 Author: 晓天
-Vision: 1.3
+Vision: 1.4
 """
 import hashlib
 import numpy as np
-from tools.tools_func import *
+from tools.chess_func import *
 
 class ChessGame:
     BLACK_HOLE = np.inf
@@ -78,20 +78,20 @@ class ChessGame:
         """悔棋"""
         self.step -= 1 if self.step >= 1 else 0
         self.chessboard = np.copy(self.history_board[self.step])
-        self.current_move = self.history_move[self.step].tolist()
+        self.current_move = self.history_move[self.step]
 
     def redo(self):
         """重悔"""
         if self.step + 1 <= self.current_max_step:
             self.step += 1
             self.chessboard = np.copy(self.history_board[self.step])
-            self.current_move = self.history_move[self.step].tolist()
+            self.current_move = self.history_move[self.step]
 
     def restart(self):
         """重开"""
         self.step = 0
         self.chessboard = np.copy(self.history_board[self.step])
-        self.current_move = self.history_move[self.step].tolist()
+        self.current_move = self.history_move[self.step]
 
     def set_current_win_rate(self, win_rate: float = 0.0):
         """设置当前玩家的胜率"""
@@ -103,7 +103,8 @@ class ChessGame:
     
     def get_current_move(self):
         """获取当前玩家的移动"""
-        return self.current_move
+        current_move = self.current_move
+        return (int(current_move[0]), int(current_move[1]))
 
     def get_score(self):
         """计算棋盘上所有非无穷大格子的总分数"""

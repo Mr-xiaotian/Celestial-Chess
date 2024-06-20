@@ -23,6 +23,7 @@ def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = 
         test_game.update_chessboard(*move, color)
 
         if display:
+            test_game.update_history(*move)
             test_game.show_chessboard()
             print(f'第{test_game.step}步: {ai_blue_name if color==1 else ai_red_name} 落子在 {move}')
             print(f'获胜概率: {test_game.get_current_win_rate():.2%}')
@@ -47,10 +48,12 @@ def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = 
     return test_game
 
 if __name__ == '__main__':
+    test_game = ChessGame((5, 5), 2)
+    test_game.init_cfunc()
+    test_game.init_history()
+
     minimax_ai = MinimaxAI(5)
     mcts_ai_0 = MCTSAI(10000, flag=True)
     mcts_ai_1 = MCTSAI(1000, flag=True)
-    test_game = ChessGame((5, 5), 2)
-    test_game.init_cfunc()
 
-    ai_battle(mcts_ai_0, mcts_ai_1, test_game)
+    ai_battle(mcts_ai_0, minimax_ai, test_game)

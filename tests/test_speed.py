@@ -22,13 +22,18 @@ filename
 def profile_mcts():
     mcts_ai.find_best_move(game)
 
+def profile_minimax():
+    minimax_ai.find_best_move(game)
+
 game = ChessGame(board_range=(5, 5), power=2)
 game.init_cfunc()
-mcts_ai = MCTSAI(50000, flag=True)
+mcts_ai = MCTSAI(50000, flag=False)
+minimax_ai = MinimaxAI(5, use_table=False)
 
+target_func = 'profile_minimax()'
 now_time = strftime("%m-%d-%H-%M", localtime())
-output_file = f'profile/profile_output({now_time}).prof'
-cProfile.run('profile_mcts()', output_file)
+output_file = f'profile/{target_func}({now_time}).prof'
+cProfile.run(target_func, output_file)
 
 subprocess.run(['snakeviz', output_file])
 # subprocess.run(['gprof2dot', '-f', 'pstats', 'profile/profile_output', '|', 'dot', '-Tpng', '-o', f'profile/profile_results({now_time}).png'])

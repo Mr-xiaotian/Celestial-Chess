@@ -93,9 +93,9 @@ def tree_policy(node: MCTSNode) -> MCTSNode:
     return node
 
 class MCTSAI(AIAlgorithm):
-    def __init__(self, itermax: int = 1000, flag=True) -> None:
+    def __init__(self, itermax: int = 1000, complate_mode=True) -> None:
         self.itermax = itermax
-        self.flag = flag
+        self.complate_mode = complate_mode
 
         init_rates_visits = np.ones((2, 2), dtype=np.float64)
         get_best_index(init_rates_visits, 1, 1)
@@ -104,7 +104,7 @@ class MCTSAI(AIAlgorithm):
         """使用 MCTS 算法选择最佳移动"""
         root = MCTSNode(game.copy(), target_color=game.get_color()) # 创建一个MCTSNode对象，表示根节点
         best_child = self.MCTS(root) # 使用MCTS算法选择最佳的子节点
-        game.set_current_win_rate(best_child.get_win_rate())
+        game.set_current_win_rate(best_child.get_win_rate()) if self.complate_mode else None
 
         return best_child.get_current_move()
 
