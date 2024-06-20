@@ -43,7 +43,7 @@ class ChessGame:
         optimized_not_exist_zero_index(init_board)
         get_zero_index(init_board, (5,5))
         get_first_channel(init_board, (5,5))
-        expand_by_bfs_and_threshold(init_board, (5,5), 0, 0, 1, 1, 1)
+        bfs_expand_with_power_threshold(init_board, (5,5), 0, 0, 1, 1, 1)
 
     def copy(self):
         """
@@ -60,7 +60,7 @@ class ChessGame:
         根据新规则更新棋盘状态，并考虑黑洞点的影响。
         """
         # 用bfs扩散落子点及周围点的值, 然后更新黑洞点
-        expand_by_bfs_and_threshold(self.chessboard, self.board_range, row, col, color, self.threshold, self.power)
+        bfs_expand_with_power_threshold(self.chessboard, self.board_range, row, col, color, self.power, self.threshold)
 
         # 更新必要棋盘状态
         self.step += 1

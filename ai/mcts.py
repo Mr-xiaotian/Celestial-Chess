@@ -72,7 +72,7 @@ class MCTSNode:
             current_simulation_state.update_chessboard(*move, current_color)
             current_color *= -1
         
-        winner = current_simulation_state.who_is_winner(current_color * -1)
+        winner = current_simulation_state.who_is_winner(current_color)
         if winner == target_color:
             return 1.0
         elif winner == -1 * target_color:

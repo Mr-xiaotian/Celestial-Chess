@@ -7,16 +7,15 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "your_secret_key"
 socketio = SocketIO(app)
 
-size = 5  # 棋盘大小
-weight, height = (size, size)
-power = 2  # 棋子力量
+chess_state = ((5, 5), 2)
+(weight, height), power = chess_state # 棋盘大小，power
 
 board = [[[0, 0] for _ in range(height)] for _ in range(weight)]
 game = ChessGame((weight, height), power)
 game.init_cfunc()
 game.init_history()
 
-minimax_ai = MinimaxAI(5)
+minimax_ai = MinimaxAI(5, chess_state)
 mcts_ai = MCTSAI(1000)
 
 def convert_inf_to_string(value):

@@ -3,7 +3,6 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import cProfile
-import pstats
 from time import strftime, localtime
 from ai import AIAlgorithm, MinimaxAI, MCTSAI
 from game.chess_game import ChessGame

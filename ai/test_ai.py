@@ -56,4 +56,4 @@ if __name__ == '__main__':
     mcts_ai_0 = MCTSAI(10000, complate_mode=True)
     mcts_ai_1 = MCTSAI(1000, complate_mode=True)
 
-    ai_battle(mcts_ai_0, minimax_ai, test_game)
+    ai_battle(mcts_ai_0, mcts_ai_0, test_game)

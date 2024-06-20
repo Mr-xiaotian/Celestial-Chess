@@ -36,7 +36,7 @@ def get_first_channel(chessboard, board_range):
     return first_channel
 
 @njit
-def expand_by_bfs_and_threshold(chessboard, board_range, row, col, color, threshold, power):
+def bfs_expand_with_power_threshold(chessboard, board_range, row, col, color, power, threshold):
     visited = np.zeros((board_range[0], board_range[1]), dtype=np.bool_)
 
     expand_queue_r = np.empty(board_range[0] * board_range[1], dtype=np.int32)
