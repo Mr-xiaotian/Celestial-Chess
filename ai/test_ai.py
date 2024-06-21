@@ -54,7 +54,7 @@ if __name__ == '__main__':
     test_game.init_cfunc()
     test_game.init_history()
 
-    minimax_ai = MinimaxAI(5, *chess_state, complate_mode=True)
+    # minimax_ai = MinimaxAI(5, *chess_state, complate_mode=True)
     mcts_ai_0 = MCTSAI(10000, complate_mode=True)
     mcts_ai_1 = MCTSAI(1000, complate_mode=True)
 

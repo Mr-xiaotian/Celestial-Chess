@@ -70,22 +70,12 @@ class MCTSNode:
         """
         从当前节点进行一次完整的随机模拟
         """
-        current_color = self.current_color
         root_color = self.root_color
         current_simulation_state = self.game_state.copy()
+        winner = current_simulation_state.run_random_simulation()
 
-        while not current_simulation_state.is_game_over():
-            random_move = current_simulation_state.get_random_move()
-            current_simulation_state.update_chessboard(*random_move, current_color)
-            current_color *= -1
-        
-        winner = current_simulation_state.who_is_winner(current_color)
-        if winner == root_color:
-            return 1.0
-        elif winner == -1 * root_color:
-            return 0.0
-        else:
-            return 0.5
+        # return {root_color: 1.0, -root_color: 0.0}.get(winner, 0.5) # about 74% speed of next line
+        return 1.0 if winner == root_color else 0.0 if winner == -root_color else 0.5
 
     def backpropagate(self, result: float):
         """将模拟结果向上传播到根节点"""

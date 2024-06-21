@@ -123,3 +123,19 @@ def bfs_expand_with_power_threshold(chessboard, board_range, row, col, color, po
             expand_queue_d[over_threshold_max_index] = distance - 1
             over_threshold_max_index += 1
 
+
+@njit(cache=True)
+def run_random_to_over(chessboard, board_range, current_color, power, threshold, balance_num):
+
+    while not np.any(chessboard[:, :, 0] == 0):
+        random_move = get_random_zero_index(chessboard, board_range)
+        chessboard = bfs_expand_with_power_threshold(chessboard, board_range, *random_move, current_color, power, threshold)
+        current_color *= -1
+    
+    comparison_score = current_color * balance_num
+    for row in chessboard:
+        for cell in row:
+            if cell[0] != np.inf:
+                comparison_score += cell[0]
+
+    return (comparison_score > 0) - (comparison_score < 0)
