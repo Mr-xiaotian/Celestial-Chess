@@ -3,11 +3,11 @@ import numpy as np
 from numba import njit, types
 
 
-@njit(types.boolean(types.float64[:, :, :]))
+@njit(types.boolean(types.float64[:, :, :]), cache=True)
 def optimized_not_exist_zero_index(chessboard):
     return not np.any(chessboard[:, :, 0] == 0)
 
-@njit(types.int32[:, :](types.float64[:, :, :], types.UniTuple(types.int32, 2)))
+@njit(types.int32[:, :](types.float64[:, :, :], types.UniTuple(types.int32, 2)), cache=True)
 def get_all_zero_index(chessboard, board_range):
     row_len, col_len = board_range
     move_list = np.empty((row_len * col_len, 2), dtype=np.int32)
@@ -21,7 +21,7 @@ def get_all_zero_index(chessboard, board_range):
                 count += 1
     return move_list[:count]  # 截取有效的部分
 
-@njit(types.UniTuple(types.int32, 2)(types.float64[:, :, :], types.UniTuple(types.int32, 2)))
+@njit(types.UniTuple(types.int32, 2)(types.float64[:, :, :], types.UniTuple(types.int32, 2)), cache=True)
 def get_random_zero_index(chessboard, board_range):
     row_len, col_len = board_range
     chosen_row, chosen_col = -1, -1
@@ -36,7 +36,7 @@ def get_random_zero_index(chessboard, board_range):
     
     return chosen_row, chosen_col
 
-@njit(types.int32(types.float64[:, :, :]))
+@njit(types.int32(types.float64[:, :, :]), cache=True)
 def calculate_no_inf(chessboard):
     total_score = 0
     for row in chessboard:
@@ -45,7 +45,7 @@ def calculate_no_inf(chessboard):
                 total_score += cell[0]
     return total_score
 
-@njit(types.float64[:, :](types.float64[:, :, :], types.UniTuple(types.int32, 2)))
+@njit(types.float64[:, :](types.float64[:, :, :], types.UniTuple(types.int32, 2)), cache=True)
 def get_first_channel(chessboard, board_range):
     rows, cols = board_range
     first_channel = np.empty((rows, cols), dtype=np.float64)
@@ -54,7 +54,7 @@ def get_first_channel(chessboard, board_range):
             first_channel[i, j] = chessboard[i, j, 0]
     return first_channel
 
-@njit
+@njit(cache=True)
 def bfs_expand_with_power_threshold(chessboard, board_range, row, col, color, power, threshold):
     # 第一层存储power_expand的visit信息, 第二层存储threshold_expand的visit信息
     visited = np.zeros((board_range[0], board_range[1], 2), dtype=np.bool_)

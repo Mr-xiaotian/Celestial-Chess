@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, render_template
 from flask_socketio import SocketIO
 from game.chess_game import ChessGame
-from ai import MinimaxAI, MCTSAI
+from ai import MinimaxAI, MCTSAI, MonkyAI
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "your_secret_key"
@@ -16,6 +16,7 @@ game.init_history()
 
 minimax_ai = MinimaxAI(5, *chess_state)
 mcts_ai = MCTSAI(1000)
+monky_ai = MonkyAI()
 
 def convert_inf_to_string(value):
     if value == float("inf"):
@@ -106,6 +107,18 @@ def handle_mcts_move():
         return
     color = game.get_color()
     move = mcts_ai.find_best_move(game)
+
+    game.update_chessboard(*move, color)
+    game.update_history(*move)
+    sendDataToBackend(game)
+
+@socketio.on("monky_move")
+def handle_mcts_move():
+    # MCTSAI执棋
+    if game.is_game_over():
+        return
+    color = game.get_color()
+    move = monky_ai.find_best_move(game)
 
     game.update_chessboard(*move, color)
     game.update_history(*move)

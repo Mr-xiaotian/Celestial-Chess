@@ -1,6 +1,7 @@
 import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+project_root = os.path.abspath(".")
+sys.path.insert(0, project_root)
 
 from time import time
 from ai import AIAlgorithm, MinimaxAI, MCTSAI

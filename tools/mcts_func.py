@@ -2,7 +2,7 @@ import math
 import numpy as np
 from numba import njit
 
-@njit
+@njit(cache=True)
 def get_best_index(rates_visits, parent_visit: int, c_param: float):
     best_index = -1
     best_value = -np.inf
