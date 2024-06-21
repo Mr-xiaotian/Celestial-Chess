@@ -8,10 +8,10 @@ from tools.mcts_func import *
 
 
 class MCTSNode:
-    def __init__(self, game_state: ChessGame, parent=None, target_color=None):
+    def __init__(self, game_state: ChessGame, parent=None, root_color=None):
         self.game_state = game_state  # 当前节点的游戏状态
         self.parent: MCTSNode = parent  # 父节点
-        self.target_color = target_color # 目标颜色
+        self.root_color = root_color # 目标颜色
 
         self.children: List[MCTSNode] = []  # 子节点列表
         self.visits = 0  # 访问次数
@@ -63,7 +63,7 @@ class MCTSNode:
         new_game_state = self.game_state.copy()
         new_game_state.update_chessboard(*move, self.current_color)
         child_node = MCTSNode(new_game_state, parent=self, 
-                              target_color=self.target_color)
+                              root_color=self.root_color)
         self.children.append(child_node)
         return child_node
 
@@ -71,17 +71,11 @@ class MCTSNode:
         """
         从当前节点进行一次完整的随机模拟
         """
-        
-        target_color = self.target_color
+        root_color = self.root_color
         current_simulation_state = self.game_state.copy()
 
         winner = current_simulation_state.simulate_by_random()
-        if winner == target_color:
-            return 1.0
-        elif winner == -1 * target_color:
-            return 0.0
-        else:
-            return 0.5
+        return 1.0 if winner == root_color else (0.0 if winner == -root_color else 0.5)
 
     def backpropagate(self, result: float):
         """将模拟结果向上传播到根节点"""
@@ -109,7 +103,7 @@ class MCTSAI(AIAlgorithm):
 
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
         """使用 MCTS 算法选择最佳移动"""
-        root = MCTSNode(game.copy(), target_color=game.get_color()) # 创建一个MCTSNode对象，表示根节点
+        root = MCTSNode(game.copy(), root_color=game.get_color()) # 创建一个MCTSNode对象，表示根节点
         best_child = self.MCTS(root) # 使用MCTS算法选择最佳的子节点
 
         if self.complate_mode:
