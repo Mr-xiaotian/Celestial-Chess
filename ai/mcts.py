@@ -36,6 +36,15 @@ class MCTSNode:
         """获取当前节点的移动"""
         return self.game_state.get_current_move()
     
+    def get_child_win_rate_board(self):
+        """获取子节点的胜率"""
+        row_len, col_len = self.game_state.board_range
+        child_win_rate_board = np.zeros((row_len, col_len), dtype=np.float64)
+        for child in self.children:
+            move = child.get_current_move()
+            child_win_rate_board[move] = child.get_win_rate()
+        return child_win_rate_board
+    
     def get_best_child(self, c_param=0.9):
         """使用UCB1策略选择最佳子节点"""
         rates_visits = np.array([[child.wins / child.visits, child.visits] for child in self.children], dtype=np.float64)
@@ -101,14 +110,22 @@ class MCTSAI(AIAlgorithm):
         self.itermax = itermax
         self.complate_mode = complate_mode
 
-        init_rates_visits = np.empty((2, 2), dtype=np.float64)
+        init_rates_visits = np.ones((2, 2), dtype=np.float64)
         get_best_index(init_rates_visits, 1, 1)
 
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
         """使用 MCTS 算法选择最佳移动"""
         root = MCTSNode(game.copy(), target_color=game.get_color()) # 创建一个MCTSNode对象，表示根节点
         best_child = self.MCTS(root) # 使用MCTS算法选择最佳的子节点
-        game.set_current_win_rate(best_child.get_win_rate()) if self.complate_mode else None
+
+        if self.complate_mode:
+            best_win_rate = best_child.get_win_rate()
+            current_win_rate_board = root.get_child_win_rate_board()
+            next_win_rate_board = best_child.get_child_win_rate_board()
+
+            game.set_current_win_rate(best_win_rate)
+            game.set_MCTSscore_board(next_win_rate_board)
+            print(current_win_rate_board)
 
         return best_child.get_current_move()
 

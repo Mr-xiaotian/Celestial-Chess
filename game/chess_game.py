@@ -94,6 +94,14 @@ class ChessGame:
         self.chessboard = np.copy(self.history_board[self.step])
         self.current_move = self.history_move[self.step]
 
+    def set_MCTSscore_board(self, mcts_score_board):
+        """设置MCTS得分板"""
+        self.mcts_score_board = mcts_score_board
+
+    def get_MCTSscore_board(self):
+        """获取MCTS得分板"""
+        return self.mcts_score_board
+
     def set_current_win_rate(self, win_rate: float = 0.0):
         """设置当前玩家的胜率"""
         self.current_win_rate = win_rate
