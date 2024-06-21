@@ -42,7 +42,8 @@ class ChessGame:
 
         calculate_no_inf(init_board)
         optimized_not_exist_zero_index(init_board)
-        get_zero_index(init_board, (5,5))
+        get_all_zero_index(init_board, (5,5))
+        get_random_zero_index(init_board, (5,5))
         get_first_channel(init_board, (5,5))
         bfs_expand_with_power_threshold(init_board, (5,5), 0, 0, 1, 1, 1)
 
@@ -127,7 +128,11 @@ class ChessGame:
 
     def get_all_moves(self):
         """获取所有合法移动"""
-        return get_zero_index(self.chessboard, self.board_range)
+        return get_all_zero_index(self.chessboard, self.board_range)
+    
+    def get_random_move(self):
+        """获取随机合法移动"""
+        return get_random_zero_index(self.chessboard, self.board_range)
 
     def get_perfect_moves(self):
         """
@@ -142,7 +147,7 @@ class ChessGame:
                 filtered_moves.append((row, col))
 
         if not filtered_moves:
-            filtered_moves = get_zero_index(self.chessboard, self.board_range)
+            filtered_moves = get_all_zero_index(self.chessboard, self.board_range)
 
         return filtered_moves
         

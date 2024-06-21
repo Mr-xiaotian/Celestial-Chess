@@ -7,15 +7,18 @@ from game.chess_game import ChessGame
 class MinimaxAI(AIAlgorithm):
     def __init__(self, depth: int, board_range: Tuple[int, int] = (5, 5), power: int = 2, complate_mode: bool = True) -> None:
         self.depth = depth
+        self.complate_mode = complate_mode
 
         if complate_mode:
-            self.complate_mode = complate_mode
             row_len, col_len = board_range
 
-            self.transposition_table = dict()
             self.transposition_table_change = False
-            self.transposition_file = f"./transposition_table/transposition_table({row_len}&{col_len}_{power})(sha256).pickle"
+            self.transposition_file = f"../transposition_table/transposition_table({row_len}&{col_len}_{power})(sha256).pickle"
             self.load_transposition_table()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.complate_mode:
+            self.save_transposition_table()
 
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
         best_move = None
@@ -91,6 +94,7 @@ class MinimaxAI(AIAlgorithm):
         """
         加载transposition table
         """
+        self.transposition_table = dict()
         transposition_file = self.transposition_file
         try:
             with open(transposition_file, "rb") as file:

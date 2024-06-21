@@ -1,3 +1,4 @@
+import random
 import numpy as np
 from numba import njit, types
 
@@ -7,15 +8,33 @@ def optimized_not_exist_zero_index(chessboard):
     return not np.any(chessboard[:, :, 0] == 0)
 
 @njit(types.int32[:, :](types.float64[:, :, :], types.UniTuple(types.int32, 2)))
-def get_zero_index(chessboard, board_range):
-    move_list = np.empty((board_range[0] * board_range[1], 2), dtype=np.int32)
+def get_all_zero_index(chessboard, board_range):
+    row_len, col_len = board_range
+    move_list = np.empty((row_len * col_len, 2), dtype=np.int32)
     count = 0
-    for row_idx in range(board_range[0]):
-        for col_idx in range(board_range[1]):
-            if chessboard[row_idx, col_idx, 0] == 0:
-                move_list[count] = (row_idx, col_idx)
+    for row_idx in range(row_len):
+        for col_idx in range(col_len):
+            if chessboard[row_idx, col_idx, 0] == 0.0:
+                # 直接赋值，而不是创建临时的元组
+                move_list[count, 0] = row_idx
+                move_list[count, 1] = col_idx
                 count += 1
     return move_list[:count]  # 截取有效的部分
+
+@njit(types.UniTuple(types.int32, 2)(types.float64[:, :, :], types.UniTuple(types.int32, 2)))
+def get_random_zero_index(chessboard, board_range):
+    row_len, col_len = board_range
+    chosen_row, chosen_col = -1, -1
+    count = 0
+    
+    for row_idx in range(row_len):
+        for col_idx in range(col_len):
+            if chessboard[row_idx, col_idx, 0] == 0.0:
+                count += 1
+                if random.randint(0, count - 1) == 0:
+                    chosen_row, chosen_col = row_idx, col_idx
+    
+    return chosen_row, chosen_col
 
 @njit(types.int32(types.float64[:, :, :]))
 def calculate_no_inf(chessboard):

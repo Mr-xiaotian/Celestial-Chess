@@ -76,9 +76,8 @@ class MCTSNode:
         current_simulation_state = self.game_state.copy()
 
         while not current_simulation_state.is_game_over():
-            possible_moves = current_simulation_state.get_all_moves()  # 未尝试的走法列表
-            move = random.choice(possible_moves)
-            current_simulation_state.update_chessboard(*move, current_color)
+            random_move = current_simulation_state.get_random_move()
+            current_simulation_state.update_chessboard(*random_move, current_color)
             current_color *= -1
         
         winner = current_simulation_state.who_is_winner(current_color)
