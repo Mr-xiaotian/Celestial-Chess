@@ -71,16 +71,11 @@ class MCTSNode:
         """
         从当前节点进行一次完整的随机模拟
         """
-        current_color = self.current_color
+        
         target_color = self.target_color
         current_simulation_state = self.game_state.copy()
 
-        while not current_simulation_state.is_game_over():
-            random_move = current_simulation_state.get_random_move()
-            current_simulation_state.update_chessboard(*random_move, current_color)
-            current_color *= -1
-        
-        winner = current_simulation_state.who_is_winner(current_color)
+        winner = current_simulation_state.simulate_by_random()
         if winner == target_color:
             return 1.0
         elif winner == -1 * target_color:

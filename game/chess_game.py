@@ -18,13 +18,15 @@ class ChessGame:
         self.threshold: int = self.power * 2 + 1
         self.balance_num: float = self.get_balance_num()
 
-        self.step: int = 0
+        self.current_color = 1
         self.current_move = (-1, -1)
 
     def init_history(self):
         """
         初始化历史棋局状态, 只在正式运行时启用。
         """
+        self.step: int = 0
+
         self.current_max_step: int = 0
         row_len, col_len = self.board_range
         max_steps = row_len * col_len * 2
@@ -54,7 +56,7 @@ class ChessGame:
         new_game = ChessGame(self.board_range, self.power)
         new_game.chessboard = np.copy(self.chessboard)
         new_game.current_move = self.current_move
-        new_game.step = self.step
+        new_game.current_color = self.current_color
         return new_game
         
     def update_chessboard(self, row, col, color):
@@ -65,13 +67,14 @@ class ChessGame:
         bfs_expand_with_power_threshold(self.chessboard, self.board_range, row, col, color, self.power, self.threshold)
 
         # 更新必要棋盘状态
-        self.step += 1
+        self.current_color *= -1
         self.current_move = (row, col)
 
     def update_history(self, row, col):
         """
         更新历史记录
         """
+        self.step += 1
         self.current_max_step += 1
         self.history_board[self.step] = np.copy(self.chessboard)
         self.history_move[self.step] = (row, col)
@@ -169,8 +172,7 @@ class ChessGame:
     
     def get_color(self):
         '''获取当前玩家的颜色的颜色'''
-        color = 1 if self.step % 2 == 0 else -1
-        return color
+        return self.current_color
     
     def get_format_board(self):
         '''获取棋盘的格式化'''
@@ -211,18 +213,23 @@ class ChessGame:
         score = self.get_score()
         balance_num = self.balance_num
         color = color if color is not None else self.get_color()
+        comparison = score + color * balance_num # color: 1 蓝方，-1 红方
 
-        if color == 1:
-            comparison = score + balance_num
-        else:
-            comparison = score - balance_num
-
-        if comparison > 0:
-            return 1
-        elif comparison == 0:
-            return 0
-        else:
-            return -1
+        return (comparison > 0) - (comparison < 0)
+    
+    def simulate_by_random(self):
+        '''
+        随机模拟游戏
+        :return: 1 蓝方获胜，-1 红方获胜，0 平局
+        '''
+        current_color = self.current_color
+        while not self.is_game_over():
+            random_move = self.get_random_move()
+            self.update_chessboard(*random_move, current_color)
+            current_color *= -1
+        
+        winner = self.who_is_winner(current_color)
+        return winner
 
     def show_chessboard(self):
         '''打印棋盘'''

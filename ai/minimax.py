@@ -13,7 +13,7 @@ class MinimaxAI(AIAlgorithm):
             row_len, col_len = board_range
 
             self.transposition_table_change = False
-            self.transposition_file = f"../transposition_table/transposition_table({row_len}&{col_len}_{power})(sha256).pickle"
+            self.transposition_file = f"./transposition_table/transposition_table({power}&{row_len}_{col_len})(sha256).pickle"
             self.load_transposition_table()
 
     def __exit__(self, exc_type, exc_val, exc_tb):

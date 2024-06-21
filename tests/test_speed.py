@@ -30,10 +30,10 @@ game.init_cfunc()
 mcts_ai = MCTSAI(50000, complate_mode=False)
 minimax_ai = MinimaxAI(5, *chess_state, complate_mode=False)
 
-target_func = 'profile_mcts()'
+target_func = 'profile_mcts'
 now_time = strftime("%m-%d-%H-%M", localtime())
 output_file = f'profile/{target_func}({now_time}).prof'
-cProfile.run(target_func, output_file)
+cProfile.run(target_func + '()', output_file)
 
 subprocess.run(['snakeviz', output_file])
 # subprocess.run(['gprof2dot', '-f', 'pstats', 'profile/profile_output', '|', 'dot', '-Tpng', '-o', f'profile/profile_results({now_time}).png'])
