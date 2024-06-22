@@ -26,8 +26,8 @@ class ChessGame:
         初始化历史棋局状态, 只在正式运行时启用。
         """
         self.step: int = 0
+        self.max_step: int = 0
 
-        self.current_max_step: int = 0
         row_len, col_len = self.board_range
         max_steps = row_len * col_len * 2
 
@@ -77,7 +77,7 @@ class ChessGame:
         更新历史记录
         """
         self.step += 1
-        self.current_max_step += 1
+        self.max_step += 1
         self.history_board[self.step] = np.copy(self.chessboard)
         self.history_move[self.step] = (row, col)
 
@@ -89,7 +89,7 @@ class ChessGame:
 
     def redo(self):
         """重悔"""
-        if self.step + 1 <= self.current_max_step:
+        if self.step + 1 <= self.max_step:
             self.step += 1
             self.chessboard = np.copy(self.history_board[self.step])
             self.current_move = self.history_move[self.step]

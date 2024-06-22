@@ -3,4 +3,4 @@ from .ai_algorithm import AIAlgorithm, logger
 from .minimax import MinimaxAI
 from .mcts import MCTSAI
 from .monky import MonkyAI
-from .test_ai import ai_battle
+from .test_ai import ai_battle, get_model_score_by_mcts

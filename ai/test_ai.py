@@ -3,8 +3,30 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from time import time
+from tqdm import tqdm
 from ai import AIAlgorithm, MinimaxAI, MCTSAI
 from game.chess_game import ChessGame
+
+def get_model_score_by_mcts(test_model, game_state):
+    score_dict = dict()
+    for mcts_iter in tqdm(range(10, 10000, 10)):
+        win = 0
+        test_mcts = MCTSAI(mcts_iter, complate_mode=False)
+        for _ in range(100):
+            test_game = ChessGame(*game_state)
+            test_game.init_history()
+            game = ai_battle(test_model, test_mcts, test_game, display=False)
+            winner = game.who_is_winner()
+            if winner == 1:
+                win += 1
+            elif winner == 0:
+                win += 0.5
+
+        score_dict[mcts_iter] = win / 100
+        if (10 * sum(score_dict.values()))/mcts_iter < 0.6:
+            return mcts_iter - 10, score_dict
+        
+    return score_dict
 
 def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = ChessGame(), display=True):
     print(f'游戏开始！\n蓝方AI: {ai_blue.__class__.__name__}\n红方AI: {ai_red.__class__.__name__}\n') if display else None
@@ -21,9 +43,9 @@ def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = 
             move = ai_red.find_best_move(test_game)
 
         test_game.update_chessboard(*move, color)
+        test_game.update_history(*move)
 
         if display:
-            test_game.update_history(*move)
             test_game.show_chessboard()
             print(f'第{test_game.step}步: {ai_blue_name if color==1 else ai_red_name} 落子在 {test_game.get_current_move()}')
             print(f'获胜概率: {test_game.get_current_win_rate():.2%}')
@@ -53,9 +75,8 @@ if __name__ == '__main__':
     test_game.init_cfunc()
     test_game.init_history()
 
-    minimax_ai = MinimaxAI(5, *chess_state, complate_mode=True)
+    # minimax_ai = MinimaxAI(5, *chess_state, complate_mode=True)
     mcts_ai_0 = MCTSAI(10000, complate_mode=True)
     mcts_ai_1 = MCTSAI(1000, complate_mode=True)
 
     ai_battle(mcts_ai_0, mcts_ai_0, test_game)
-    # test_game.simulate_by_random()

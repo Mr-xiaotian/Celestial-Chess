@@ -81,16 +81,13 @@ class DeepLearningAI(AIAlgorithm):
     
     def process_board(self, game: ChessGame):
         color = game.get_color()
-        
-        processed_board = []
-        for row in game.chessboard:
-            processed_row = []
+        color_channel = np.full((5, 5, 1), color)
+        processed_board = np.concatenate((game.chessboard, color_channel), axis=2)
+
+        for row in processed_board:
             for cell in row:
-                processed_cell = cell + [color]
-                if processed_cell[0] == float("inf"):
-                    processed_cell[0] = 5
-                processed_row.append(processed_cell)
-            processed_board.append(processed_row)
+                if cell[0] == float("inf"):
+                    cell[0] = 5
         return processed_board
 
     def find_best_move(self, game: ChessGame):
