@@ -48,6 +48,7 @@ class ChessGame:
         get_random_zero_index(init_board, (5,5))
         get_first_channel(init_board, (5,5))
         bfs_expand_with_power_threshold(init_board, (5,5), 0, 0, 1, 1, 1)
+        simulate_to_over_by_random(init_board, (5,5), 1, 2, 5, 2.5)
 
     def copy(self):
         """
@@ -222,8 +223,8 @@ class ChessGame:
         随机模拟游戏
         :return: 1 蓝方获胜，-1 红方获胜，0 平局
         '''
-        # return simulate_to_over_by_random(self.chessboard, self.board_range, self.current_color, 
-        #                                   self.power, self.threshold, self.balance_num)
+        return simulate_to_over_by_random(self.chessboard, self.board_range, self.current_color, 
+                                          self.power, self.threshold, self.balance_num)
         current_color = self.current_color
         while not self.is_game_over():
             random_move = self.get_random_move()

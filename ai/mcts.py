@@ -73,8 +73,8 @@ class MCTSNode:
         """
         root_color = self.root_color
         current_simulation_state = self.game_state.copy()
-
         winner = current_simulation_state.simulate_by_random()
+        
         return 1.0 if winner == root_color else (0.0 if winner == -root_color else 0.5)
 
     def backpropagate(self, result: float):

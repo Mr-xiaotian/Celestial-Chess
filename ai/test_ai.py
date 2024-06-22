@@ -58,3 +58,4 @@ if __name__ == '__main__':
     mcts_ai_1 = MCTSAI(1000, complate_mode=True)
 
     ai_battle(mcts_ai_0, mcts_ai_0, test_game)
+    # test_game.simulate_by_random()
