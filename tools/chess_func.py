@@ -143,25 +143,14 @@ def simulate_to_over_by_random(chessboard, board_range, current_color, power, th
     expand_queue_c = np.empty(max_size, dtype=np.int32)
     expand_queue_d = np.empty(max_size, dtype=np.int32)
     
-    flag = False
+    count = 0
     for row_idx in range(row_len):
         for col_idx in range(col_len):
             if chessboard[row_idx, col_idx, 0] == 0.0:
-                flag = True
-                break
-        if flag:
-            break
-    while flag:
-        chosen_row, chosen_col = -1, -1
-        count = 0
-        
-        for row_idx in range(row_len):
-            for col_idx in range(col_len):
-                if chessboard[row_idx, col_idx, 0] == 0.0:
-                    count += 1
-                    if random.randint(0, count - 1) == 0:
-                        chosen_row, chosen_col = row_idx, col_idx
-        
+                count += 1
+                if random.randint(0, count - 1) == 0:
+                    chosen_row, chosen_col = row_idx, col_idx
+    while count != 0:
         # 第一层存储power_expand的visit信息, 第二层存储threshold_expand的visit信息
         visited = np.zeros((row_len, col_len, 2), dtype=np.bool_)
 
@@ -223,14 +212,13 @@ def simulate_to_over_by_random(chessboard, board_range, current_color, power, th
 
         current_color *= -1
 
-        flag = False
+        count = 0
         for row_idx in range(row_len):
             for col_idx in range(col_len):
-                if chessboard[row_idx, col_idx, 0] == 0:
-                    flag = True
-                    break
-            if flag:
-                break
+                if chessboard[row_idx, col_idx, 0] == 0.0:
+                    count += 1
+                    if random.randint(0, count - 1) == 0:
+                        chosen_row, chosen_col = row_idx, col_idx
     
     comparison_score =  current_color * balance_num - balance_num
     for row_index in range(row_len):
