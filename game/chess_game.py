@@ -41,14 +41,15 @@ class ChessGame:
         初始化numba计算函数, 第一次实例化ChessGame时使用。
         """
         init_board = np.empty((5, 5, 2), dtype=float)
+        init_range = (5, 5)
 
-        calculate_no_inf(init_board)
-        optimized_not_exist_zero_index(init_board)
-        get_all_zero_index(init_board, (5,5))
-        get_random_zero_index(init_board, (5,5))
-        get_first_channel(init_board, (5,5))
-        bfs_expand_with_power_threshold(init_board, (5,5), 0, 0, 1, 1, 1)
-        simulate_to_over_by_random(init_board, (5,5), 1, 2, 5, 2.5)
+        calculate_no_inf(init_board, init_range)
+        get_first_channel(init_board, init_range)
+        get_all_zero_index(init_board, init_range)
+        get_random_zero_index(init_board, init_range)
+        optimized_not_exist_zero_index(init_board, init_range)
+        bfs_expand_with_power_threshold(init_board, init_range, 0, 0, 1, 1, 1)
+        simulate_to_over_by_random(init_board, init_range, 1, 2, 5, 2.5)
 
     def copy(self):
         """
@@ -122,7 +123,7 @@ class ChessGame:
 
     def get_score(self):
         """计算棋盘上所有非无穷大格子的总分数"""
-        total_score = calculate_no_inf(self.chessboard)
+        total_score = calculate_no_inf(self.chessboard, self.board_range)
         return total_score - self.balance_num
     
     def get_balance_num(self):
@@ -188,7 +189,7 @@ class ChessGame:
         判断游戏是否结束
         :return: 游戏是否结束
         '''
-        return optimized_not_exist_zero_index(self.chessboard)
+        return optimized_not_exist_zero_index(self.chessboard, self.board_range)
     
     def is_move_valid(self, row, col):
         '''
