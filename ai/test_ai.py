@@ -6,6 +6,7 @@ sys.path.insert(0, project_root)
 from time import time
 from tqdm import tqdm
 from ai import AIAlgorithm, MinimaxAI, MCTSAI
+from ai.deeplearning import DeepLearningAI
 from game.chess_game import ChessGame
 
 def get_model_score_by_mcts(test_model, game_state):
@@ -79,5 +80,6 @@ if __name__ == '__main__':
     # minimax_ai = MinimaxAI(5, *chess_state, complate_mode=True)
     mcts_ai_0 = MCTSAI(10000, complate_mode=True)
     mcts_ai_1 = MCTSAI(1000, complate_mode=True)
+    deeplearning_ai = DeepLearningAI('ai/models/dl_model(06-22-21-18)(136090)(32-64-128-256).pth', complate_mode=True)
 
-    ai_battle(mcts_ai_0, mcts_ai_0, test_game)
+    ai_battle(mcts_ai_0, deeplearning_ai, test_game)

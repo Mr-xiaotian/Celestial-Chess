@@ -49,7 +49,7 @@ class ChessGame:
         get_random_zero_index(init_board, init_range)
         optimized_not_exist_zero_index(init_board, init_range)
         bfs_expand_with_power_threshold(init_board, init_range, 0, 0, 1, 1, 1)
-        simulate_to_over_by_random(init_board, init_range, 1, 2, 5, 2.5)
+        go_random_simulate(init_board, init_range, 1, 2, 5, 2.5)
 
     def copy(self):
         """
@@ -224,7 +224,7 @@ class ChessGame:
         随机模拟游戏
         :return: 1 蓝方获胜，-1 红方获胜，0 平局
         '''
-        return simulate_to_over_by_random(self.chessboard, self.board_range, self.current_color, 
+        return go_random_simulate(self.chessboard, self.board_range, self.current_color, 
                                           self.power, self.threshold, self.balance_num)
         current_color = self.current_color
         while not self.is_game_over():

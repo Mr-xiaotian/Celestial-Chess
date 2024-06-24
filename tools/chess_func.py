@@ -43,11 +43,11 @@ def get_random_zero_index(chessboard, board_range):
 
 @njit(types.int32(types.float64[:, :, :], types.UniTuple(types.int32, 2)), cache=True)
 def calculate_no_inf(chessboard, board_range):
-    rows, cols = board_range
+    row_len, col_len = board_range
     total_score = 0
-    for i in range(rows):
-        for j in range(cols):
-            score = chessboard[i, j, 0]
+    for row_idx in range(row_len):
+        for col_idx in range(col_len):
+            score = chessboard[row_idx, col_idx, 0]
             if score != np.inf:
                 total_score += score
     return total_score
@@ -56,9 +56,9 @@ def calculate_no_inf(chessboard, board_range):
 def get_first_channel(chessboard, board_range):
     rows, cols = board_range
     first_channel = np.empty((rows, cols), dtype=np.float64)
-    for i in range(rows):
-        for j in range(cols):
-            first_channel[i, j] = chessboard[i, j, 0]
+    for row_idx in range(rows):
+        for col_idx in range(cols):
+            first_channel[row_idx, col_idx] = chessboard[row_idx, col_idx, 0]
     return first_channel
 
 @njit(cache=True)
@@ -132,7 +132,7 @@ def bfs_expand_with_power_threshold(chessboard, board_range, row, col, color, po
             over_threshold_max_index += 1
 
 @njit(cache=True)
-def simulate_to_over_by_random(chessboard, board_range, current_color, power, threshold, balance_num):
+def go_random_simulate(chessboard, board_range, current_color, power, threshold, balance_num):
     row_len, col_len = board_range
     board_size = row_len * col_len
     max_size = board_size * 2

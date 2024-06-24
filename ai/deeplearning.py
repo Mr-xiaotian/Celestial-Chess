@@ -7,9 +7,9 @@ from .ai_algorithm import AIAlgorithm, logger
 from game.chess_game import ChessGame
 
 
-class ChessModel(nn.Module):
+class ChessPolicyModel(nn.Module):
     def __init__(self):
-        super(ChessModel, self).__init__()
+        super(ChessPolicyModel, self).__init__()
         # 卷积层，卷积核大小为3x3，填充为1
         self.conv1 = nn.Conv2d(3, 32, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
@@ -32,13 +32,15 @@ class ChessModel(nn.Module):
         x = F.relu(self.fc1(x))
         # 通过第二个全连接层，得到输出
         x = self.fc2(x)
+        # 将分数转换为概率分布
+        x = F.softmax(x, dim=1)
         return x
     
 
 class DeepLearningAI(AIAlgorithm):
     def __init__(self, model_path, complate_mode=True):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = ChessModel().to(self.device)
+        self.model = ChessPolicyModel().to(self.device)
         self.model.load_state_dict(torch.load(model_path, map_location=self.device))
         self.model.eval()
 
@@ -46,7 +48,7 @@ class DeepLearningAI(AIAlgorithm):
 
     def process_output(self, output, board_state):
         """
-        将已经有落子的点在输出中屏蔽, 并输出最大数值所在的行列。
+        将已经有落子的点在输出中屏蔽, 并输出归一化概率分布。
         :param output: 模型输出，形状为 (batch_size, 25)
         :param board_state: 当前棋盘状态，形状为 (batch_size, 3, 5, 5)
         :return: (row, col)
@@ -59,10 +61,14 @@ class DeepLearningAI(AIAlgorithm):
         # print(occupied)
         
         # 将这些点的输出设为极小值
-        output[occupied] = -float('inf')
+        output[occupied] = 0
         print(output) if self.complate_mode else None
+
+        # 重新归一化概率分布
+        output = output.view(batch_size, -1)
+        output = output / output.sum(dim=1, keepdim=True)
         
-        return output.view(batch_size, -1)
+        return output
 
     def calculate_win_probability(self, outputs):
         """
@@ -77,7 +83,7 @@ class DeepLearningAI(AIAlgorithm):
         probabilities = F.softmax(outputs, dim=1)
         
         # 取概率的最大值作为获胜概率
-        # print(probabilities.reshape(5,5))
+        print(probabilities.reshape(5,5))
         win_prob = torch.max(probabilities).item()
         
         return win_prob
@@ -110,6 +116,6 @@ class DeepLearningAI(AIAlgorithm):
             move_index = torch.argmax(masked_outputs).item()
             move = (move_index // 5, move_index % 5)
 
-        # win_rate = self.calculate_win_probability(masked_outputs)
+        # win_rate = self.calculate_win_probability(masked_outputs) if self.complate_mode else None
         game.set_current_win_rate()
         return move

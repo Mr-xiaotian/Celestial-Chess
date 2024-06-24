@@ -45,7 +45,7 @@
             "complate_mode": false,
             "score": 30,
             "score_dict": {"10": 0.72, "20": 0.71, "30": 0.48, "40": 0.435}
-        },
+        }
     ],
     "DeepLearningAI": [
         {
@@ -102,6 +102,6 @@
             "score": 20,
             "score_dict": {"10": 0.66, "20": 0.56, "30": 0.55},
             "data_from": "10000iter mcts对弈1000轮"
-        },
+        }
     ]
 }
