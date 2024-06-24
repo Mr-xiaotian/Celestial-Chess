@@ -22,7 +22,7 @@ def get_best_index_by_puct(rates_visits_probs, parent_visit: int, c_param: float
     best_value = -np.inf
     
     for index, (win_rate, child_visit, policy_prob) in enumerate(rates_visits_probs):
-        puct_value = (1 - c_param) * win_rate + c_param * policy_prob * math.sqrt(parent_visit) / (1 + child_visit)
+        puct_value = (1 - c_param) * policy_prob * win_rate + c_param * math.sqrt(parent_visit) / (1 + child_visit)
 
         if puct_value > best_value:
             best_value = puct_value

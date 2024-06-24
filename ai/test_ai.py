@@ -83,6 +83,6 @@ if __name__ == '__main__':
     deeplearning_ai = DeepLearningAI('ai/models/dl_model(06-22-21-18)(136090)(32-64-128-256).pth', complate_mode=True)
 
     policy_model = DeepLearningAI('ai/models/dl_model(06-22-21-18)(136090)(32-64-128-256).pth', complate_mode=False)
-    mcts_ai_policy_0 = MCTSAI(1000, policy_net=policy_model, complate_mode=True)
+    mcts_ai_policy_0 = MCTSAI(1000, c_param=0.5, policy_net=policy_model, complate_mode=True)
 
-    ai_battle(mcts_ai_policy_0, mcts_ai_0, test_game)
+    ai_battle(mcts_ai_policy_0, mcts_ai_1, test_game)

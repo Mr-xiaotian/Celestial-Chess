@@ -51,6 +51,8 @@ class MCTSNode:
             move_probs = policy_net.get_move_probs(self.game_state)
             rates_visits_probs = np.array([[child.wins / child.visits, child.visits, move_probs[child.get_current_move()[0], child.get_current_move()[1]]] 
                                            for child in self.children], dtype=np.float64)
+            # test_arr = [(win_rate * policy_prob, math.sqrt(self.visits) / (1 + child_visit), policy_prob) 
+            #             for win_rate, child_visit, policy_prob in rates_visits_probs]
             best_index = get_best_index_by_puct(rates_visits_probs, self.visits, c_param)
         else:
             rates_visits = np.array([[child.wins / child.visits, child.visits] for child in self.children], dtype=np.float64)
