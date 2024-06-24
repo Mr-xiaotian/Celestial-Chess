@@ -62,31 +62,13 @@ class DeepLearningAI(AIAlgorithm):
         
         # 将这些点的输出设为极小值
         output[occupied] = 0
-        print(output) if self.complate_mode else None
 
         # 重新归一化概率分布
         output = output.view(batch_size, -1)
         output = output / output.sum(dim=1, keepdim=True)
+        print(output.view(5, 5)) if self.complate_mode else None
         
         return output
-
-    def calculate_win_probability(self, outputs):
-        """
-        计算当前局面的获胜概率
-        :param outputs: 模型输出，形状为 (batch_size, 25)
-        :return: 获胜概率，标量
-        """
-        # 将 -inf 替换为一个非常小的有限值
-        outputs[outputs == -float('inf')] = -1e10
-
-        # 使用Softmax将得分转换为概率分布
-        probabilities = F.softmax(outputs, dim=1)
-        
-        # 取概率的最大值作为获胜概率
-        print(probabilities.reshape(5,5))
-        win_prob = torch.max(probabilities).item()
-        
-        return win_prob
     
     def process_board(self, game: ChessGame):
         """
@@ -104,6 +86,17 @@ class DeepLearningAI(AIAlgorithm):
                     cell[0] = 5
         return processed_board
 
+    def get_move_probs(self, game: ChessGame):
+        chessboard = self.process_board(game)
+
+        board_state = np.array(chessboard).reshape(1, 5, 5, 3)
+        board_state = torch.tensor(board_state, dtype=torch.float32).permute(0, 3, 1, 2).to(self.device)
+        with torch.no_grad():
+            outputs = self.model(board_state)
+            masked_outputs = self.process_output(outputs, board_state)
+
+        return masked_outputs.view(5, 5)
+    
     def find_best_move(self, game: ChessGame):
         chessboard = self.process_board(game)
 
@@ -116,6 +109,5 @@ class DeepLearningAI(AIAlgorithm):
             move_index = torch.argmax(masked_outputs).item()
             move = (move_index // 5, move_index % 5)
 
-        # win_rate = self.calculate_win_probability(masked_outputs) if self.complate_mode else None
         game.set_current_win_rate()
         return move

@@ -17,8 +17,8 @@ def get_model_score_by_mcts(test_model, game_state):
         for _ in range(100):
             test_game = ChessGame(*game_state)
             test_game.init_history()
-            game = ai_battle(test_model, test_mcts, test_game, display=False)
-            winner = game.who_is_winner()
+            over_game = ai_battle(test_model, test_mcts, test_game, display=False)
+            winner = over_game.who_is_winner()
             if winner == 1:
                 win += 1
             elif winner == 0:
@@ -82,4 +82,7 @@ if __name__ == '__main__':
     mcts_ai_1 = MCTSAI(1000, complate_mode=True)
     deeplearning_ai = DeepLearningAI('ai/models/dl_model(06-22-21-18)(136090)(32-64-128-256).pth', complate_mode=True)
 
-    ai_battle(mcts_ai_0, deeplearning_ai, test_game)
+    policy_model = DeepLearningAI('ai/models/dl_model(06-22-21-18)(136090)(32-64-128-256).pth', complate_mode=False)
+    mcts_ai_policy_0 = MCTSAI(1000, policy_net=policy_model, complate_mode=True)
+
+    ai_battle(mcts_ai_policy_0, mcts_ai_0, test_game)

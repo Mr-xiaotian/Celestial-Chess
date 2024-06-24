@@ -2,6 +2,7 @@ from __future__ import annotations
 import numpy as np
 from typing import Tuple, List
 from .ai_algorithm import AIAlgorithm, logger
+from .deeplearning import DeepLearningAI
 from game.chess_game import ChessGame
 from tools.mcts_func import *
 
@@ -44,10 +45,17 @@ class MCTSNode:
             child_win_rate_board[move] = child.get_win_rate()
         return child_win_rate_board
     
-    def get_best_child(self, c_param=0.9):
+    def get_best_child(self, policy_net: DeepLearningAI=None, c_param=0.6):
         """使用UCB1策略选择最佳子节点"""
-        rates_visits = np.array([[child.wins / child.visits, child.visits] for child in self.children], dtype=np.float64)
-        best_index = get_best_index(rates_visits, self.visits, c_param)
+        if policy_net:
+            move_probs = policy_net.get_move_probs(self.game_state)
+            rates_visits_probs = np.array([[child.wins / child.visits, child.visits, move_probs[child.get_current_move()[0], child.get_current_move()[1]]] 
+                                           for child in self.children], dtype=np.float64)
+            best_index = get_best_index_by_puct(rates_visits_probs, self.visits, c_param)
+        else:
+            rates_visits = np.array([[child.wins / child.visits, child.visits] for child in self.children], dtype=np.float64)
+            # test_arr = [(win_rate, math.sqrt((math.log(self.visits) / child_visit))) for win_rate, child_visit in rates_visits]
+            best_index = get_best_index_by_ucb1(rates_visits, self.visits, c_param)
 
         return self.children[best_index]
 
@@ -79,27 +87,31 @@ class MCTSNode:
 
     def backpropagate(self, result: float):
         """将模拟结果向上传播到根节点"""
-        self.visits += 1
-        self.wins += result
-        if self.parent:
-            self.parent.backpropagate(result)
+        node = self
+        while node:
+            node.visits += 1
+            node.wins += result
+            node = node.parent
 
-def tree_policy(node: MCTSNode) -> MCTSNode:
+def tree_policy(node: MCTSNode, policy_net, c_param) -> MCTSNode:
     """根据选择策略递归选择子节点，直到达到未完全展开或未被访问的节点"""
     while not node.game_state.is_game_over():
         if not node.is_fully_expanded():
             return node.expand()
         else:
-            node = node.get_best_child()
+            node = node.get_best_child(policy_net=policy_net, c_param=c_param)
     return node
 
 class MCTSAI(AIAlgorithm):
-    def __init__(self, itermax: int = 1000, complate_mode=True) -> None:
+    def __init__(self, itermax: int = 1000, c_param = 0.9, policy_net=None, value_net=None, complate_mode=True) -> None:
         self.itermax = itermax
+        self.c_param = c_param
+        self.policy_net = policy_net
+        self.value_net = value_net
         self.complate_mode = complate_mode
 
         init_rates_visits = np.ones((2, 2), dtype=np.float64)
-        get_best_index(init_rates_visits, 1, 1)
+        get_best_index_by_ucb1(init_rates_visits, 1, 1)
 
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
         """使用 MCTS 算法选择最佳移动"""
@@ -120,7 +132,7 @@ class MCTSAI(AIAlgorithm):
     def MCTS(self, root: MCTSNode) -> MCTSNode:
         """执行迭代次数为 itermax 的 MCTS 搜索，返回最佳子节点"""
         for _ in range(self.itermax):
-            node = tree_policy(root)
+            node: MCTSNode = tree_policy(root, policy_net=self.policy_net, c_param=self.c_param)
             reward = node.simulate()
             node.backpropagate(reward)
         return root.get_best_child(c_param=0)
