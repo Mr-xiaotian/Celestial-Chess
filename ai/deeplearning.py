@@ -10,23 +10,24 @@ from game.chess_game import ChessGame
 class ChessModel(nn.Module):
     def __init__(self):
         super(ChessModel, self).__init__()
-        # 卷积层，通道数为3 - 16 - 32 - 64，卷积核大小为3x3，填充为1
-        self.conv1 = nn.Conv2d(3, 16, kernel_size=3, padding=1)
-        self.conv2 = nn.Conv2d(16, 32, kernel_size=3, padding=1)
-        self.conv3 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
+        # 卷积层，卷积核大小为3x3，填充为1
+        self.conv1 = nn.Conv2d(3, 32, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
+        self.conv3 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
+        self.conv4 = nn.Conv2d(128, 256, kernel_size=3, padding=1)
 
         # 全连接层，输入大小为64*5*5 - 128 - 25（棋盘的5x5个可能的移动位置）
-        self.fc1 = nn.Linear(64 * 5 * 5, 128)
-        self.fc2 = nn.Linear(128, 25)
+        self.fc1 = nn.Linear(256 * 5 * 5, 512)
+        self.fc2 = nn.Linear(512, 25)
 
     def forward(self, x):
-        # 通过第一个卷积层，然后进行ReLU激活
+        # 通过卷积层，然后进行ReLU激活
         x = F.relu(self.conv1(x))
-        # 通过第二个卷积层，然后进行ReLU激活
         x = F.relu(self.conv2(x))
         x = F.relu(self.conv3(x))
+        x = F.relu(self.conv4(x))
         # 将特征图展平为一维向量
-        x = x.reshape(-1, 64 * 5 * 5)
+        x = x.reshape(-1, 256 * 5 * 5)
         # 通过第一个全连接层，然后进行ReLU激活
         x = F.relu(self.fc1(x))
         # 通过第二个全连接层，得到输出
@@ -35,11 +36,13 @@ class ChessModel(nn.Module):
     
 
 class DeepLearningAI(AIAlgorithm):
-    def __init__(self, model_path):
+    def __init__(self, model_path, complate_mode=True):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = ChessModel().to(self.device)
         self.model.load_state_dict(torch.load(model_path, map_location=self.device))
         self.model.eval()
+
+        self.complate_mode = complate_mode
 
     def process_output(self, output, board_state):
         """
@@ -57,7 +60,7 @@ class DeepLearningAI(AIAlgorithm):
         
         # 将这些点的输出设为极小值
         output[occupied] = -float('inf')
-        # print(output)
+        print(output) if self.complate_mode else None
         
         return output.view(batch_size, -1)
 
@@ -80,17 +83,19 @@ class DeepLearningAI(AIAlgorithm):
         return win_prob
     
     def process_board(self, game: ChessGame):
+        """
+        将棋盘状态转换为模型输入的格式
+        :param game: 当前游戏状态
+        :return: 模型输入，形状为 (batch_size, 3, 5, 5)
+        """
         color = game.get_color()
-        
-        processed_board = []
-        for row in game.chessboard:
-            processed_row = []
+        color_channel = np.full((5, 5, 1), color)
+        processed_board = np.concatenate((game.chessboard, color_channel), axis=2)
+
+        for row in processed_board:
             for cell in row:
-                processed_cell = cell + [color]
-                if processed_cell[0] == float("inf"):
-                    processed_cell[0] = 5
-                processed_row.append(processed_cell)
-            processed_board.append(processed_row)
+                if cell[0] == float("inf"):
+                    cell[0] = 5
         return processed_board
 
     def find_best_move(self, game: ChessGame):

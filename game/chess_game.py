@@ -26,8 +26,8 @@ class ChessGame:
         初始化历史棋局状态, 只在正式运行时启用。
         """
         self.step: int = 0
+        self.max_step: int = 0
 
-        self.current_max_step: int = 0
         row_len, col_len = self.board_range
         max_steps = row_len * col_len * 2
 
@@ -41,14 +41,15 @@ class ChessGame:
         初始化numba计算函数, 第一次实例化ChessGame时使用。
         """
         init_board = np.empty((5, 5, 2), dtype=float)
+        init_range = (5, 5)
 
-        calculate_no_inf(init_board)
-        optimized_not_exist_zero_index(init_board)
-        get_all_zero_index(init_board, (5,5))
-        get_random_zero_index(init_board, (5,5))
-        get_first_channel(init_board, (5,5))
-        bfs_expand_with_power_threshold(init_board, (5,5), 0, 0, 1, 1, 1)
-        # run_random_to_over(init_board, (5,5), 1, 2, 5, 2.5)
+        calculate_no_inf(init_board, init_range)
+        get_first_channel(init_board, init_range)
+        get_all_zero_index(init_board, init_range)
+        get_random_zero_index(init_board, init_range)
+        optimized_not_exist_zero_index(init_board, init_range)
+        bfs_expand_with_power_threshold(init_board, init_range, 0, 0, 1, 1, 1)
+        simulate_to_over_by_random(init_board, init_range, 1, 2, 5, 2.5)
 
     def copy(self):
         """
@@ -76,7 +77,7 @@ class ChessGame:
         更新历史记录
         """
         self.step += 1
-        self.current_max_step += 1
+        self.max_step += 1
         self.history_board[self.step] = np.copy(self.chessboard)
         self.history_move[self.step] = (row, col)
 
@@ -88,7 +89,7 @@ class ChessGame:
 
     def redo(self):
         """重悔"""
-        if self.step + 1 <= self.current_max_step:
+        if self.step + 1 <= self.max_step:
             self.step += 1
             self.chessboard = np.copy(self.history_board[self.step])
             self.current_move = self.history_move[self.step]
@@ -122,7 +123,7 @@ class ChessGame:
 
     def get_score(self):
         """计算棋盘上所有非无穷大格子的总分数"""
-        total_score = calculate_no_inf(self.chessboard)
+        total_score = calculate_no_inf(self.chessboard, self.board_range)
         return total_score - self.balance_num
     
     def get_balance_num(self):
@@ -188,7 +189,7 @@ class ChessGame:
         判断游戏是否结束
         :return: 游戏是否结束
         '''
-        return optimized_not_exist_zero_index(self.chessboard)
+        return optimized_not_exist_zero_index(self.chessboard, self.board_range)
     
     def is_move_valid(self, row, col):
         '''
@@ -214,16 +215,17 @@ class ChessGame:
         score = self.get_score()
         balance_num = self.balance_num
         color = color if color is not None else self.get_color()
-
-        comparison = score + color * balance_num # color: 1 / -1
+        comparison = score + color * balance_num # color: 1 蓝方，-1 红方
 
         return (comparison > 0) - (comparison < 0)
-        
-    def run_random_simulation(self):
+    
+    def simulate_by_random(self):
         '''
-        模拟随机落子
+        随机模拟游戏
         :return: 1 蓝方获胜，-1 红方获胜，0 平局
         '''
+        return simulate_to_over_by_random(self.chessboard, self.board_range, self.current_color, 
+                                          self.power, self.threshold, self.balance_num)
         current_color = self.current_color
         while not self.is_game_over():
             random_move = self.get_random_move()
@@ -231,7 +233,6 @@ class ChessGame:
             current_color *= -1
         
         return self.who_is_winner(current_color)
-        # run_random_to_over(self.chessboard, self.board_range, current_color, self.power, self.threshold, self.balance_num)
 
     def show_chessboard(self):
         '''打印棋盘'''

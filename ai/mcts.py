@@ -72,10 +72,10 @@ class MCTSNode:
         """
         root_color = self.root_color
         current_simulation_state = self.game_state.copy()
-        winner = current_simulation_state.run_random_simulation()
-
+        winner = current_simulation_state.simulate_by_random()
+        
         # return {root_color: 1.0, -root_color: 0.0}.get(winner, 0.5) # about 74% speed of next line
-        return 1.0 if winner == root_color else 0.0 if winner == -root_color else 0.5
+        return 1.0 if winner == root_color else (0.0 if winner == -root_color else 0.5)
 
     def backpropagate(self, result: float):
         """将模拟结果向上传播到根节点"""

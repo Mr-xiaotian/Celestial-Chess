@@ -113,7 +113,7 @@ def handle_mcts_move():
     sendDataToBackend(game)
 
 @socketio.on("monky_move")
-def handle_mcts_move():
+def handle_monky_move():
     # MCTSAI执棋
     if game.is_game_over():
         return

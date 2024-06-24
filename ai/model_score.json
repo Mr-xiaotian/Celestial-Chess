@@ -1,0 +1,107 @@
+{
+    "MCTSAI": [
+        {
+            "itermax": 1000,
+            "complate_mode": false,
+            "score": 990
+        },
+        {
+            "itermax": 100,
+            "complate_mode": false,
+            "score": 110,
+            "score_dict": {
+                "10": 0.79, "20": 0.71, "30": 0.68, "40": 0.595, "50": 0.565, "60": 0.585,
+                "70": 0.615, "80": 0.54, "90": 0.555, "100": 0.435, "110": 0.53, "120": 0.415
+            }
+        },
+        {
+            "itermax": 50,
+            "complate_mode": false,
+            "score": 40,
+            "score_dict": {"10": 0.72, "20": 0.605, "30": 0.565, "40": 0.535, "50": 0.535}
+        }
+    ],
+    "MinimaxAI": [
+        {
+            "depth": 5,
+            "complate_mode": false,
+            "score": 0,
+            "score_dict": {"10": 0.495}
+        },
+        {
+            "depth": 5,
+            "complate_mode": true,
+            "score": 0,
+            "score_dict": {"10": 0.47}
+        },
+        {
+            "depth": 3,
+            "complate_mode": false,
+            "score": 0,
+            "score_dict": {"10": 0.44}
+        },
+        {
+            "depth": 6,
+            "complate_mode": false,
+            "score": 30,
+            "score_dict": {"10": 0.72, "20": 0.71, "30": 0.48, "40": 0.435}
+        },
+    ],
+    "DeepLearningAI": [
+        {
+            "path": "models/dl_model(06-22-16)(127)(16-32-64).pth",
+            "complate_mode": false,
+            "score": 0,
+            "score_dict": {"10": 0.36},
+            "data_from": "1000iter mcts对弈10轮"
+        },
+        {
+            "path": "models/dl_model(06-22-20)(136090)(16-32-64).pth",
+            "complate_mode": false,
+            "score": 60,
+            "score_dict":{"10": 0.74, "20": 0.575, "30": 0.675, "40": 0.615, "50": 0.545, "60": 0.56, "70": 0.46},
+            "data_from": "1000iter mcts对弈10000轮"
+        },
+        {
+            "path": "models/dl_model(06-22-20)(136090)(32-64-128).pth",
+            "complate_mode": false,
+            "score": 120,
+            "score_dict": {
+                "10": 0.77, "20": 0.8, "30": 0.715, "40": 0.615, "50": 0.625, "60": 0.655, "70": 0.505, 
+                "80": 0.575, "90": 0.53, "100": 0.575, "110": 0.53, "120": 0.46, "130": 0.44
+            },
+            "data_from": "1000iter mcts对弈10000轮"
+        },
+        {
+            "path": "models/dl_model(06-22-21-09)(136090)(32-64-64-128).pth",
+            "complate_mode": false,
+            "score": 30,
+            "score_dict": {"10": 0.69, "20": 0.63, "30": 0.55, "40": 0.5},
+            "data_from": "1000iter mcts对弈10000轮"
+        },
+        {
+            "path": "models/dl_model(06-22-21-18)(136090)(32-64-128-256).pth",
+            "complate_mode": false,
+            "score": 190,
+            "score_dict": {
+                "10": 0.78, "20": 0.69, "30": 0.73, "40": 0.775, "50": 0.675, "60": 0.635, "70": 0.505,
+                "80": 0.595, "90": 0.505, "100": 0.575, "110": 0.545, "120": 0.63, "130": 0.485, "140": 0.505, 
+                "150": 0.58, "160": 0.62, "170": 0.48, "180": 0.595, "190": 0.5, "200": 0.57},
+            "data_from": "1000iter mcts对弈10000轮"
+        },
+        {
+            "path": "models/dl_model(06-23-08-36)(12963)(32-64-128-256).pth",
+            "complate_mode": false,
+            "score": 20,
+            "score_dict": {"10": 0.69, "20": 0.63, "30": 0.55, "40": 0.5},
+            "data_from": "1000iter mcts对弈1000轮"
+        },
+        {
+            "path": "models/dl_model(06-23-08-48)(13631)(32-64-128-256).pth",
+            "complate_mode": false,
+            "score": 20,
+            "score_dict": {"10": 0.66, "20": 0.56, "30": 0.55},
+            "data_from": "10000iter mcts对弈1000轮"
+        },
+    ]
+}
