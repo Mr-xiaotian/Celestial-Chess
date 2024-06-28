@@ -15,10 +15,12 @@ class ChessPolicyModel(nn.Module):
         self.conv2 = nn.Conv2d(30, 60, kernel_size=3, padding=1)
         self.conv3 = nn.Conv2d(60, 120, kernel_size=3, padding=1)
         self.conv4 = nn.Conv2d(120, 240, kernel_size=3, padding=1)
+        self.conv5 = nn.Conv2d(240, 480, kernel_size=3, padding=1)
 
         # 全连接层，输出大小为25（棋盘的5x5个可能的移动位置）
-        self.fc1 = nn.Linear(240 * 5 * 5, 512)
-        self.fc2 = nn.Linear(512, 25)
+        self.fc1 = nn.Linear(480 * 5 * 5, 960)
+        self.dropout = nn.Dropout(dropout_rate)
+        self.fc2 = nn.Linear(960, 25)
 
     def forward(self, x):
         # 通过卷积层，然后进行ReLU激活
@@ -26,14 +28,17 @@ class ChessPolicyModel(nn.Module):
         x = F.relu(self.conv2(x))
         x = F.relu(self.conv3(x))
         x = F.relu(self.conv4(x))
+        x = F.relu(self.conv5(x))
         # 将特征图展平为一维向量
-        x = x.reshape(-1, 240 * 5 * 5)
+        x = x.reshape(-1, 480 * 5 * 5)
         # 通过第一个全连接层，然后进行ReLU激活
         x = F.relu(self.fc1(x))
+        # 加入Dropout层
+        x = self.dropout(x)
         # 通过第二个全连接层，得到输出
         x = self.fc2(x)
-        # 将分数转换为概率分布
-        x = F.softmax(x, dim=1)
+        # # 将分数转换为概率分布
+        # x = F.softmax(x, dim=1)
         return x
     
 
@@ -62,14 +67,9 @@ class DeepLearningAI(AIAlgorithm):
         # print(occupied)
         
         # 将这些点的输出设为极小值
-        output[occupied] = 0
-
-        # 重新归一化概率分布
-        output = output.view(batch_size, -1)
-        output = output / output.sum(dim=1, keepdim=True)
-        print(output.view(5, 5)) if self.complate_mode else None
+        output[occupied] = -float('inf')
         
-        return output
+        return output.view(batch_size, -1)
     
     def process_board(self, game: ChessGame):
         """
@@ -86,6 +86,21 @@ class DeepLearningAI(AIAlgorithm):
                 if cell[0] == float("inf"):
                     cell[0] = 5
         return processed_board
+    
+    def trans_softmax(self, outputs):
+        """
+        将输出转换为概率分布
+        :param outputs: 模型输出，形状为 (batch_size, 25)
+        :return: 归一化概率分布，形状为 (batch_size, 25)
+        """
+        # 将 -inf 替换为一个非常小的有限值
+        outputs[outputs == -float('inf')] = 0
+
+        # 使用Softmax将得分转换为概率分布
+        probabilities = F.softmax(outputs, dim=1)
+        print(probabilities.reshape(5,5))
+
+        return probabilities.reshape(5,5)
 
     def get_move_probs(self, game: ChessGame):
         chessboard = self.process_board(game)
@@ -110,5 +125,7 @@ class DeepLearningAI(AIAlgorithm):
             move_index = torch.argmax(masked_outputs).item()
             move = (move_index // 5, move_index % 5)
 
-        game.set_current_win_rate()
+        if self.complate_mode:
+            self.trans_softmax(masked_outputs)
+            game.set_current_win_rate()
         return move
