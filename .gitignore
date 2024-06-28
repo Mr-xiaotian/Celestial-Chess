@@ -8,5 +8,5 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-transposition_table/
+
 *.pickle

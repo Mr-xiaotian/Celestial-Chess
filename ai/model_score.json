@@ -1,130 +1,250 @@
 {
-    "MCTSAI": [
-        {
-            "itermax": 1000,
-            "complate_mode": false,
-            "score": 990
-        },
-        {
-            "itermax": 100,
-            "complate_mode": false,
-            "score": 110,
-            "score_dict": {
-                "10": 0.79, "20": 0.71, "30": 0.68, "40": 0.595, "50": 0.565, "60": 0.585,
-                "70": 0.615, "80": 0.54, "90": 0.555, "100": 0.435, "110": 0.53, "120": 0.415
-            }
-        },
-        {
-            "itermax": 50,
-            "complate_mode": false,
-            "score": 40,
-            "score_dict": {"10": 0.72, "20": 0.605, "30": 0.565, "40": 0.535, "50": 0.535}
-        }
-    ],
-    "MinimaxAI": [
-        {
-            "depth": 5,
-            "complate_mode": false,
-            "score": 0,
-            "score_dict": {"10": 0.495}
-        },
-        {
-            "depth": 5,
-            "complate_mode": true,
-            "score": 0,
-            "score_dict": {"10": 0.47}
-        },
-        {
-            "depth": 3,
-            "complate_mode": false,
-            "score": 0,
-            "score_dict": {"10": 0.44}
-        },
-        {
-            "depth": 6,
-            "complate_mode": false,
-            "score": 30,
-            "score_dict": {"10": 0.72, "20": 0.71, "30": 0.48, "40": 0.435}
-        }
-    ],
-    "DeepLearningAI": [
-        {
-            "path": "models/dl_model(06-22-16)(127)(16-32-64).pth",
-            "Conv Layer": "16-32-64",
-            "FC Layer": "128-25",
-            "complate_mode": false,
-            "score": 0,
-            "score_dict": {"10": 0.36},
-            "data_from": "1000iter mcts对弈10轮"
-        },
-        {
-            "path": "models/dl_model(06-22-20)(136090)(16-32-64).pth",
-            "Conv Layer": "16-32-64",
-            "FC Layer": "128-25",
-            "complate_mode": false,
-            "score": 60,
-            "score_dict":{"10": 0.74, "20": 0.575, "30": 0.675, "40": 0.615, "50": 0.545, "60": 0.56, "70": 0.46},
-            "data_from": "1000iter mcts对弈10000轮"
-        },
-        {
-            "path": "models/dl_model(06-22-20)(136090)(32-64-128).pth",
-            "Conv Layer": "32-64-128",
-            "FC Layer": "256-25",
-            "complate_mode": false,
-            "score": 120,
-            "score_dict": {
-                "10": 0.77, "20": 0.8, "30": 0.715, "40": 0.615, "50": 0.625, "60": 0.655, "70": 0.505, 
-                "80": 0.575, "90": 0.53, "100": 0.575, "110": 0.53, "120": 0.46, "130": 0.44
-            },
-            "data_from": "1000iter mcts对弈10000轮"
-        },
-        {
-            "path": "models/dl_model(06-22-21-09)(136090)(32-64-64-128).pth",
-            "Conv Layer": "32-64-128",
-            "FC Layer": "256-25",
-            "complate_mode": false,
-            "score": 30,
-            "score_dict": {"10": 0.69, "20": 0.63, "30": 0.55, "40": 0.5},
-            "data_from": "1000iter mcts对弈10000轮"
-        },
-        {
-            "path": "models/dl_model(06-22-21-18)(136090)(32-64-128-256).pth",
-            "Conv Layer": "32-64-128-256",
-            "FC Layer": "512-25",
-            "complate_mode": false,
-            "score": 190,
-            "score_dict": {
-                "10": 0.78, "20": 0.69, "30": 0.73, "40": 0.775, "50": 0.675, "60": 0.635, "70": 0.505,
-                "80": 0.595, "90": 0.505, "100": 0.575, "110": 0.545, "120": 0.63, "130": 0.485, "140": 0.505, 
-                "150": 0.58, "160": 0.62, "170": 0.48, "180": 0.595, "190": 0.5, "200": 0.57},
-            "data_from": "1000iter mcts对弈10000轮"
-        },
-        {
-            "path": "models/dl_model(06-23-08-36)(12963)(32-64-128-256).pth",
-            "Conv Layer": "32-64-128-256",
-            "FC Layer": "512-25",
-            "complate_mode": false,
-            "score": 20,
-            "score_dict": {"10": 0.69, "20": 0.63, "30": 0.55, "40": 0.5},
-            "data_from": "1000iter mcts对弈1000轮"
-        },
-        {
-            "path": "models/dl_model(06-23-08-48)(13631)(32-64-128-256).pth",
-            "Conv Layer": "32-64-128-256",
-            "FC Layer": "512-25",
-            "complate_mode": false,
-            "score": 20,
-            "score_dict": {"10": 0.66, "20": 0.56, "30": 0.55},
-            "data_from": "10000iter mcts对弈1000轮"
-        },
-        {
-            "path": "models/dl_model(06-25-18-19)(136090)(32-64-128-256-512).pth",
-            "Conv Layer": "32-64-128-256-512",
-            "FC Layer": "1024-25",
-            "complate_mode": false,
-            "score": 0,
-            "score_dict": {"10": 0.0},
-            "data_from": "1000iter mcts对弈10000轮"
-        }
-    ]
+  "MCTSAI": [
+    {
+      "itermax": 1000,
+      "complate_mode": false,
+      "score": 990
+    },
+    {
+      "itermax": 100,
+      "complate_mode": false,
+      "score": 110,
+      "score_dict": {
+        "10": 0.79,
+        "20": 0.71,
+        "30": 0.68,
+        "40": 0.595,
+        "50": 0.565,
+        "60": 0.585,
+        "70": 0.615,
+        "80": 0.54,
+        "90": 0.555,
+        "100": 0.435,
+        "110": 0.53,
+        "120": 0.415
+      }
+    },
+    {
+      "itermax": 50,
+      "complate_mode": false,
+      "score": 40,
+      "score_dict": {
+        "10": 0.72,
+        "20": 0.605,
+        "30": 0.565,
+        "40": 0.535,
+        "50": 0.535
+      }
+    }
+  ],
+  "MinimaxAI": [
+    {
+      "depth": 5,
+      "complate_mode": false,
+      "score": 0,
+      "score_dict": {
+        "10": 0.495
+      }
+    },
+    {
+      "depth": 5,
+      "complate_mode": true,
+      "score": 0,
+      "score_dict": {
+        "10": 0.47
+      }
+    },
+    {
+      "depth": 3,
+      "complate_mode": false,
+      "score": 0,
+      "score_dict": {
+        "10": 0.44
+      }
+    },
+    {
+      "depth": 6,
+      "complate_mode": false,
+      "score": 30,
+      "score_dict": {
+        "10": 0.72,
+        "20": 0.71,
+        "30": 0.48,
+        "40": 0.435
+      }
+    }
+  ],
+  "DeepLearningAI": [
+    {
+      "path": "models/dl_model(06-22-16)(127)(16-32-64).pth",
+      "Conv Layer": "16-32-64",
+      "FC Layer": "128-25",
+      "complate_mode": false,
+      "score": 0,
+      "score_dict": {
+        "10": 0.36
+      },
+      "data_from": "1000iter mcts\u5bf9\u5f0810\u8f6e"
+    },
+    {
+      "path": "models/dl_model(06-22-20)(136090)(16-32-64).pth",
+      "Conv Layer": "16-32-64",
+      "FC Layer": "128-25",
+      "complate_mode": false,
+      "score": 60,
+      "score_dict": {
+        "10": 0.74,
+        "20": 0.575,
+        "30": 0.675,
+        "40": 0.615,
+        "50": 0.545,
+        "60": 0.56,
+        "70": 0.46
+      },
+      "data_from": "1000iter mcts\u5bf9\u5f0810000\u8f6e"
+    },
+    {
+      "path": "models/dl_model(06-22-20)(136090)(32-64-128).pth",
+      "Conv Layer": "32-64-128",
+      "FC Layer": "256-25",
+      "complate_mode": false,
+      "score": 120,
+      "score_dict": {
+        "10": 0.77,
+        "20": 0.8,
+        "30": 0.715,
+        "40": 0.615,
+        "50": 0.625,
+        "60": 0.655,
+        "70": 0.505,
+        "80": 0.575,
+        "90": 0.53,
+        "100": 0.575,
+        "110": 0.53,
+        "120": 0.46,
+        "130": 0.44
+      },
+      "data_from": "1000iter mcts\u5bf9\u5f0810000\u8f6e"
+    },
+    {
+      "path": "models/dl_model(06-22-21-09)(136090)(32-64-64-128).pth",
+      "Conv Layer": "32-64-128",
+      "FC Layer": "256-25",
+      "complate_mode": false,
+      "score": 30,
+      "score_dict": {
+        "10": 0.69,
+        "20": 0.63,
+        "30": 0.55,
+        "40": 0.5
+      },
+      "data_from": "1000iter mcts\u5bf9\u5f0810000\u8f6e"
+    },
+    {
+      "path": "models/dl_model(06-22-21-18)(136090)(32-64-128-256).pth",
+      "Conv Layer": "32-64-128-256",
+      "FC Layer": "512-25",
+      "complate_mode": false,
+      "score": 190,
+      "score_dict": {
+        "10": 0.78,
+        "20": 0.69,
+        "30": 0.73,
+        "40": 0.775,
+        "50": 0.675,
+        "60": 0.635,
+        "70": 0.505,
+        "80": 0.595,
+        "90": 0.505,
+        "100": 0.575,
+        "110": 0.545,
+        "120": 0.63,
+        "130": 0.485,
+        "140": 0.505,
+        "150": 0.58,
+        "160": 0.62,
+        "170": 0.48,
+        "180": 0.595,
+        "190": 0.5,
+        "200": 0.57
+      },
+      "data_from": "1000iter mcts\u5bf9\u5f0810000\u8f6e"
+    },
+    {
+      "path": "models/dl_model(06-23-08-36)(12963)(32-64-128-256).pth",
+      "Conv Layer": "32-64-128-256",
+      "FC Layer": "512-25",
+      "complate_mode": false,
+      "score": 20,
+      "score_dict": {
+        "10": 0.69,
+        "20": 0.63,
+        "30": 0.55,
+        "40": 0.5
+      },
+      "data_from": "1000iter mcts\u5bf9\u5f081000\u8f6e"
+    },
+    {
+      "path": "models/dl_model(06-23-08-48)(13631)(32-64-128-256).pth",
+      "Conv Layer": "32-64-128-256",
+      "FC Layer": "512-25",
+      "complate_mode": false,
+      "score": 20,
+      "score_dict": {
+        "10": 0.66,
+        "20": 0.56,
+        "30": 0.55
+      },
+      "data_from": "10000iter mcts\u5bf9\u5f081000\u8f6e"
+    },
+    {
+      "path": "models/dl_model(06-25-18-19)(136090)(32-64-128-256-512).pth",
+      "Conv Layer": "32-64-128-256-512",
+      "FC Layer": "1024-25",
+      "complate_mode": false,
+      "score": 0,
+      "score_dict": {
+        "10": 0.0
+      },
+      "data_from": "1000iter mcts\u5bf9\u5f0810000\u8f6e"
+    },
+    {
+      "path": "models/dl_model(06-28-11-41)(136090).pth",
+      "train_data_path": "train_data\train_data(06-22-17)(136090).pkl",
+      "layers": {
+        "conv1": "Conv2d(3, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "conv2": "Conv2d(32, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "conv3": "Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "conv4": "Conv2d(128, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "fc1": "Linear(in_features=6400, out_features=512, bias=True)",
+        "dropout": "Dropout(p=0.5, inplace=False)",
+        "fc2": "Linear(in_features=512, out_features=25, bias=True)"
+      },
+      "complate_mode": false,
+      "score": 0,
+      "score_dict": {
+        "10": 0.0
+      },
+      "data_from": "1000iter mcts\u5bf9\u5f0810000\u8f6e"
+    },
+    {
+      "path": "models/dl_model(06-28-14-20)(136090).pth",
+      "train_data_path": "train_data\\train_data(06-22-17)(136090).pkl",
+      "layers": {
+        "conv1": "Conv2d(3, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "bn1": "BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)",
+        "conv2": "Conv2d(32, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "bn2": "BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)",
+        "conv3": "Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "bn3": "BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)",
+        "conv4": "Conv2d(128, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "bn4": "BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)",
+        "fc1": "Linear(in_features=6400, out_features=512, bias=True)",
+        "fc2": "Linear(in_features=512, out_features=25, bias=True)"
+      },
+      "complate_mode": false,
+      "score": 10,
+      "score_dict": {"10": 0.63, "20": 0.54}
+    }
+  ]
 }
