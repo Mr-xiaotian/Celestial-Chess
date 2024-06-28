@@ -8,7 +8,7 @@ from game.chess_game import ChessGame
 
 
 class ChessPolicyModel(nn.Module):
-    def __init__(self):
+    def __init__(self, dropout_rate=0.5):
         super(ChessPolicyModel, self).__init__()
         # 卷积层，卷积核大小为3x3，填充为1
         self.conv1 = nn.Conv2d(3, 32, kernel_size=3, padding=1)
@@ -18,6 +18,7 @@ class ChessPolicyModel(nn.Module):
 
         # 全连接层，输入大小为64*5*5 - 128 - 25（棋盘的5x5个可能的移动位置）
         self.fc1 = nn.Linear(256 * 5 * 5, 512)
+        self.dropout = nn.Dropout(p=dropout_rate) # 添加Dropout层
         self.fc2 = nn.Linear(512, 25)
 
     def forward(self, x):
@@ -30,6 +31,8 @@ class ChessPolicyModel(nn.Module):
         x = x.reshape(-1, 256 * 5 * 5)
         # 通过第一个全连接层，然后进行ReLU激活
         x = F.relu(self.fc1(x))
+        # 在全连接层后应用Dropout
+        x = self.dropout(x) 
         # 通过第二个全连接层，得到输出
         x = self.fc2(x)
         # 将分数转换为概率分布
@@ -53,6 +56,7 @@ class DeepLearningAI(AIAlgorithm):
         :param board_state: 当前棋盘状态，形状为 (batch_size, 3, 5, 5)
         :return: (row, col)
         """
+        # print(output.view(5, 5))
         batch_size = output.size(0)
         output = output.view(batch_size, 5, 5)
         

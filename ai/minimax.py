@@ -16,10 +16,6 @@ class MinimaxAI(AIAlgorithm):
             self.transposition_file = f"./transposition_table/transposition_table({power}&{row_len}_{col_len})(sha256).pickle"
             self.load_transposition_table()
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.complate_mode:
-            self.save_transposition_table()
-
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
         best_move = None
         self.iterate_time = 0
@@ -48,6 +44,7 @@ class MinimaxAI(AIAlgorithm):
                     best_move = move
 
         game.set_current_win_rate() if self.complate_mode else None
+        self.save_transposition_table() if self.complate_mode else None
         return best_move
 
     def minimax(self, game: ChessGame, depth: int, color: int, alpha: float, beta: float) -> float:
