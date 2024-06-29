@@ -14,7 +14,7 @@ game = ChessGame(*chess_state)
 game.init_cfunc()
 game.init_history()
 
-minimax_ai = MinimaxAI(5, *chess_state)
+minimax_ai = MinimaxAI(5, *chess_state, complate_mode=False)
 mcts_ai = MCTSAI(1000)
 monky_ai = MonkyAI()
 
