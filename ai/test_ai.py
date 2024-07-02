@@ -24,7 +24,7 @@ def get_model_score_by_mcts(test_model, game_state):
             elif winner == 0:
                 win += 0.5
 
-        score_dict[str(mcts_iter)] = win / 100
+        score_dict[f'"{mcts_iter}"'] = win / 100
         if (10 * sum(score_dict.values()))/mcts_iter < 0.6:
             return mcts_iter - 10, score_dict
         

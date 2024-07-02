@@ -15,10 +15,10 @@ class ChessPolicyModel(nn.Module):
         self.conv2 = nn.Conv2d(30, 60, kernel_size=3, padding=1)
         self.conv3 = nn.Conv2d(60, 120, kernel_size=3, padding=1)
         self.conv4 = nn.Conv2d(120, 240, kernel_size=3, padding=1)
-        self.conv5 = nn.Conv2d(240, 480, kernel_size=3, padding=1)
+        self.conv5 = nn.Conv2d(240, 490, kernel_size=3, padding=1)
 
         # 全连接层，输出大小为25（棋盘的5x5个可能的移动位置）
-        self.fc1 = nn.Linear(480 * 5 * 5, 960)
+        self.fc1 = nn.Linear(490 * 5 * 5, 960)
         self.dropout = nn.Dropout(dropout_rate)
         self.fc2 = nn.Linear(960, 25)
 
@@ -30,7 +30,7 @@ class ChessPolicyModel(nn.Module):
         x = F.relu(self.conv4(x))
         x = F.relu(self.conv5(x))
         # 将特征图展平为一维向量
-        x = x.reshape(-1, 480 * 5 * 5)
+        x = x.reshape(-1, 490 * 5 * 5)
         # 通过第一个全连接层，然后进行ReLU激活
         x = F.relu(self.fc1(x))
         # 加入Dropout层

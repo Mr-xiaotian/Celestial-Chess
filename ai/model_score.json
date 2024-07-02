@@ -304,7 +304,47 @@
         "fc1": "Linear(in_features=12000, out_features=960, bias=True)",
         "dropout": "Dropout(p=0.5, inplace=False)",
         "fc2": "Linear(in_features=960, out_features=25, bias=True)"
+      },
+      "complate_mode": false,
+      "score": 180,
+      "score_dict": {
+        "10": 0.8,
+        "20": 0.73,
+        "30": 0.75,
+        "40": 0.645,
+        "50": 0.655,
+        "60": 0.665,
+        "70": 0.685,
+        "80": 0.615,
+        "90": 0.565,
+        "100": 0.595,
+        "110": 0.525,
+        "120": 0.51,
+        "130": 0.53,
+        "140": 0.56,
+        "150": 0.505,
+        "160": 0.545,
+        "170": 0.525,
+        "180": 0.49,
+        "190": 0.475
       }
+    },
+    {
+      "path": "models/dl_model(07-01-15-11)(136090).pth",
+      "train_data_path": "train_data\\train_data(06-22-17)(136090).pkl",
+      "layers": {
+        "conv1": "Conv2d(3, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "conv2": "Conv2d(30, 60, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "conv3": "Conv2d(60, 120, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "conv4": "Conv2d(120, 240, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "conv5": "Conv2d(240, 490, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "fc1": "Linear(in_features=12250, out_features=980, bias=True)",
+        "dropout": "Dropout(p=0.5, inplace=False)",
+        "fc2": "Linear(in_features=980, out_features=25, bias=True)"
+      },
+      "complate_mode": false,
+      "score": 90,
+      "score_dict": {"10": 0.745, "20": 0.695, "30": 0.57, "40": 0.635, "50": 0.55, "60": 0.56, "70": 0.605, "80": 0.51, "90": 0.55, "100": 0.48}
     }
   ]
 }
