@@ -139,3 +139,6 @@ class MCTSAI(AIAlgorithm):
             node.backpropagate(reward)
         return root.get_best_child(c_param=0)
     
+    def end_battle(self):
+        pass
+    

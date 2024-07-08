@@ -44,7 +44,6 @@ class MinimaxAI(AIAlgorithm):
                     best_move = move
 
         game.set_current_win_rate() if self.complate_mode else None
-        self.save_transposition_table() if self.complate_mode else None
         return best_move
 
     def minimax(self, game: ChessGame, depth: int, color: int, alpha: float, beta: float) -> float:
@@ -86,6 +85,9 @@ class MinimaxAI(AIAlgorithm):
                     break
             self.update_transposition_table(board_key, {'score': min_eval, 'depth': depth}, game.get_format_board_value()) if self.complate_mode else None
             return min_eval
+        
+    def end_battle(self):
+        self.save_transposition_table() if self.complate_mode else None
         
     def load_transposition_table(self) -> None:
         """

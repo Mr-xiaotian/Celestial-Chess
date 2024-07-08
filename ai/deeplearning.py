@@ -131,3 +131,6 @@ class DeepLearningAI(AIAlgorithm):
             self.trans_softmax(masked_outputs)
             game.set_current_win_rate()
         return move
+    
+    def end_battle(self):
+        pass
