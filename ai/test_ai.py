@@ -57,8 +57,9 @@ def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = 
         color *= -1
 
         if test_game.is_game_over():
-            ai_blue_name.end_battle()
-            ai_red_name.end_battle()
+            ai_blue.end_battle()
+            ai_red.end_battle()
+            
             if not display:
                 break
             winner = test_game.who_is_winner()
