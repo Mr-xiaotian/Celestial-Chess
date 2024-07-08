@@ -86,7 +86,7 @@ class MinimaxAI(AIAlgorithm):
             self.update_transposition_table(board_key, {'score': min_eval, 'depth': depth}, game.get_format_board_value()) if self.complate_mode else None
             return min_eval
         
-    def end_battle(self):
+    def end_game(self):
         self.save_transposition_table() if self.complate_mode else None
         
     def load_transposition_table(self) -> None:

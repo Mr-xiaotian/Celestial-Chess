@@ -50,11 +50,11 @@ class MCTSNode:
         """使用UCB1策略选择最佳子节点"""
         if policy_net:
             move_probs = policy_net.get_move_probs(self.game_state)
-            rates_visits_probs = np.array([[child.wins / child.visits, child.visits, move_probs[child.get_current_move()[0], child.get_current_move()[1]]] 
+            wins_visits_probs = np.array([[child.wins, child.visits, move_probs[child.get_current_move()[0], child.get_current_move()[1]]] 
                                            for child in self.childrens], dtype=np.float64)
             # test_arr = [(win_rate * policy_prob, math.sqrt(self.visits) / (1 + child_visit), policy_prob) 
             #             for win_rate, child_visit, policy_prob in rates_visits_probs]
-            best_index = get_best_index_by_puct(rates_visits_probs, self.visits, c_param)
+            best_index = get_best_index_by_puct(wins_visits_probs, self.visits, c_param)
         else:
             wins_visits = np.array([(child.wins, child.visits) for child in self.childrens], dtype=np.float64)
             # test_arr = [(win_rate, math.sqrt((math.log(self.visits) / child_visit))) for win_rate, child_visit in rates_visits]
@@ -153,6 +153,6 @@ class MCTSAI(AIAlgorithm):
             node.backpropagate(reward)
         return root.get_best_child(c_param=0)
     
-    def end_battle(self):
+    def end_game(self):
         self.cache = {}
     

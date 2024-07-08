@@ -9,7 +9,7 @@ from ai import AIAlgorithm, MinimaxAI, MCTSAI
 from ai.deeplearning import DeepLearningAI
 from game.chess_game import ChessGame
 
-def get_model_score_by_mcts(test_model, game_state):
+def get_model_score_by_mcts(test_model: AIAlgorithm, game_state):
     score_dict = dict()
     for mcts_iter in tqdm(range(10, 10000, 10)):
         win = 0
@@ -23,6 +23,8 @@ def get_model_score_by_mcts(test_model, game_state):
                 win += 1
             elif winner == 0:
                 win += 0.5
+            # test_model.end_battle()
+            # test_mcts.end_battle()
 
         score_dict[f"{mcts_iter}"] = win / 100
         if (10 * sum(score_dict.values()))/mcts_iter < 0.6:
@@ -46,6 +48,7 @@ def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = 
 
         test_game.update_chessboard(*move, color)
         test_game.update_history(*move)
+        color *= -1
 
         if display:
             test_game.show_chessboard()
@@ -54,12 +57,10 @@ def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = 
             print(f'分数: {test_game.get_score()}')
             print(f'用时: {time()-last_time:.2f}s\n')
 
-        color *= -1
-
         if test_game.is_game_over():
-            ai_blue.end_battle()
-            ai_red.end_battle()
-            
+            ai_blue.end_game()
+            ai_red.end_game()
+
             if not display:
                 break
             winner = test_game.who_is_winner()
