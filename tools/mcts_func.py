@@ -7,8 +7,8 @@ def get_best_index_by_ucb1(rates_visits, parent_visit: int, c_param: float):
     best_index = -1
     best_value = -np.inf
     
-    for index, (win_rate, child_visit) in enumerate(rates_visits):
-        ucb_value = (1 - c_param) * win_rate + c_param * math.sqrt((2 * math.log(parent_visit) / child_visit))
+    for index, (child_win, child_visit) in enumerate(rates_visits):
+        ucb_value = (1 - c_param) * child_win / child_visit + c_param * math.sqrt((2 * math.log(parent_visit) / child_visit))
         if ucb_value > best_value:
             best_value = ucb_value
             best_index = index
