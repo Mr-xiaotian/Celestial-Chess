@@ -20,17 +20,19 @@ filename
 '''
 def profile_mcts():
     mcts_ai.find_best_move(game)
+    mcts_ai.end_game()
 
 def profile_minimax():
     minimax_ai.find_best_move(game)
+    minimax_ai.end_game()
 
 chess_state = ((5, 5), 2)
 game = ChessGame(*chess_state)
 game.init_cfunc()
 mcts_ai = MCTSAI(50000, complate_mode=False)
-minimax_ai = MinimaxAI(5, *chess_state, complate_mode=False)
+minimax_ai = MinimaxAI(7, *chess_state, complate_mode=True)
 
-target_func = 'profile_mcts'
+target_func = 'profile_minimax'
 now_time = strftime("%m-%d-%H-%M", localtime())
 output_file = f'profile/{target_func}({now_time}).prof'
 cProfile.run(target_func + '()', output_file)
