@@ -106,7 +106,7 @@ def tree_policy(node: MCTSNode, policy_net, c_param) -> MCTSNode:
     return node
 
 class MCTSAI(AIAlgorithm):
-    def __init__(self, itermax: int = 1000, c_param = 0.9, policy_net=None, value_net=None, complate_mode=True) -> None:
+    def __init__(self, itermax: int = 1000, c_param = 0.8, policy_net=None, value_net=None, complate_mode=True) -> None:
         self.itermax = itermax
         self.c_param = c_param
         self.policy_net = policy_net

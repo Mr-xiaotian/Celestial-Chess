@@ -132,5 +132,5 @@ class DeepLearningAI(AIAlgorithm):
             game.set_current_win_rate()
         return move
     
-    def end_battle(self):
+    def end_game(self):
         pass
