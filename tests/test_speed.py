@@ -26,11 +26,11 @@ def profile_minimax():
     minimax_ai.find_best_move(game)
     minimax_ai.end_game()
 
-chess_state = ((5, 5), 2)
-game = ChessGame(*chess_state)
+game_state = ((5, 5), 2)
+game = ChessGame(*game_state)
 game.init_cfunc()
 mcts_ai = MCTSAI(50000, complate_mode=False)
-minimax_ai = MinimaxAI(7, *chess_state, complate_mode=True)
+minimax_ai = MinimaxAI(10, *game_state, complate_mode=True)
 
 target_func = 'profile_minimax'
 now_time = strftime("%m-%d-%H-%M", localtime())

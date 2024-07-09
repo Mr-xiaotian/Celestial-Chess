@@ -16,7 +16,7 @@ class MinimaxAI(AIAlgorithm):
             row_len, col_len = board_range
 
             self.transposition_table_change = False
-            self.transposition_file = f"./transposition_table/transposition_table({power}&{row_len}_{col_len})(sha256).pickle"
+            self.transposition_file = f"../transposition_table/transposition_table({power}&{row_len}_{col_len})(sha256).pickle"
             self.load_transposition_table()
 
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
@@ -93,7 +93,9 @@ class MinimaxAI(AIAlgorithm):
             return min_eval
         
     def end_game(self):
-        self.save_transposition_table() if self.complate_mode else None
+        if self.complate_mode:
+            self.save_transposition_table()
+        logger.info(f"Game Over!") if self.debug_mode else None
         
     def load_transposition_table(self) -> None:
         """

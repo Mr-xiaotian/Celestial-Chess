@@ -95,6 +95,14 @@
         "30": 0.48,
         "40": 0.435
       }
+    },
+    {
+      "depth": 10,
+      "complate_mode": true,
+      "score": 0,
+      "score_dict": {
+        "10": 0.495
+      }
     }
   ],
   "DeepLearningAI": [
