@@ -87,21 +87,43 @@
     },
     {
       "depth": 6,
-      "complate_mode": false,
-      "score": 30,
-      "score_dict": {
-        "10": 0.72,
-        "20": 0.71,
-        "30": 0.48,
-        "40": 0.435
+      "test": {
+        "unlnow": {
+          "complate_mode": false,
+          "score": 30,
+          "score_dict": {
+            "10": 0.72,
+            "20": 0.71,
+            "30": 0.48,
+            "40": 0.435
+          }
+        },
+        "7-10-2024": {
+          "complate_mode": false,
+          "score": 20,
+          "score_dict": {
+            "10": 0.71,
+            "20": 0.56,
+            "30": 0.4
+          }
+        }
       }
     },
     {
       "depth": 10,
-      "complate_mode": true,
-      "score": 0,
-      "score_dict": {
-        "10": 0.495
+      "test": {
+        "7-10-2024": {
+          "complate_mode": true,
+          "score": 50,
+          "score_dict": {
+            "10": 0.725,
+            "20": 0.695,
+            "30": 0.665,
+            "40": 0.55,
+            "50": 0.48,
+            "60": 0.4
+          }
+        }
       }
     }
   ],

@@ -5,32 +5,36 @@ sys.path.insert(0, project_root)
 
 from time import time
 from tqdm import tqdm
+from typing import Tuple, Dict
 from ai import AIAlgorithm, MinimaxAI, MCTSAI
 from ai.deeplearning import DeepLearningAI
 from game.chess_game import ChessGame
 
-def get_model_score_by_mcts(test_model: AIAlgorithm, game_state):
+def get_model_score_by_mcts(test_model: AIAlgorithm, game_state: Tuple[Tuple[int, int], int]) -> Tuple[int, Dict[str, float]]:
     score_dict = dict()
     for mcts_iter in range(10, 10000, 10):
         win = 0
         test_mcts = MCTSAI(mcts_iter, complate_mode=False)
-        for _ in tqdm(range(100), desc=f"Mcts Iter({mcts_iter})"):
+        for _ in tqdm(range(100), desc=f"Mcts Iter {mcts_iter}"):
             test_game = ChessGame(*game_state)
             test_game.init_history()
+            test_model.init_cache()
+            test_mcts.init_cache()
+            
             over_game = ai_battle(test_model, test_mcts, test_game, display=False)
             winner = over_game.who_is_winner()
             if winner == 1:
                 win += 1
             elif winner == 0:
                 win += 0.5
-            test_model.end_game()
-            test_mcts.end_game()
+        test_mcts.end_model()
 
         score_dict[f"{mcts_iter}"] = win / 100
         if (10 * sum(score_dict.values()))/mcts_iter < 0.6:
-            return mcts_iter - 10, score_dict
+            break
         
-    return score_dict
+    test_model.end_model()
+    return mcts_iter - 10, score_dict
 
 def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = ChessGame(), display=True):
     print(f'游戏开始！\n蓝方AI: {ai_blue.__class__.__name__}\n红方AI: {ai_red.__class__.__name__}\n') if display else None
@@ -63,6 +67,9 @@ def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = 
 
             if not display:
                 break
+            ai_blue.end_model()
+            ai_red.end_model()
+
             winner = test_game.who_is_winner()
             if winner==1:
                 print(f'{ai_blue_name} 获胜！')

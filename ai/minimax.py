@@ -14,17 +14,20 @@ class MinimaxAI(AIAlgorithm):
 
         if complate_mode:
             row_len, col_len = board_range
-
             self.transposition_table_change = False
-            self.transposition_file = f"../transposition_table/transposition_table({power}&{row_len}_{col_len})(sha256).pickle"
+            self.transposition_file = f"../transposition_table/transposition_table({row_len}_{col_len}&{power})(sha256).pickle"
             self.load_transposition_table()
+
+    def init_cache(self):
+        pass
 
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
         best_move = None
         self.iterate_time = 0
         depth = self.depth
         color = game.get_color()
-        logger.debug(f"MinimaxAI is thinking in depth {depth}...\n{game.format_matrix(game.chessboard)}") if self.debug_mode else None
+        if self.debug_mode:
+            logger.debug(f"MinimaxAI is thinking in depth {depth}...\n{game.format_matrix(game.chessboard)}")
         
         best_score = float("-inf") if color == 1 else float("inf")
         for move in game.get_all_moves():
@@ -34,14 +37,18 @@ class MinimaxAI(AIAlgorithm):
             if (color == 1 and score > best_score) or (color == -1 and score < best_score):
                 best_score = score
                 best_move = move
+
         if self.complate_mode:
             game.set_current_win_rate()
+
         return best_move
 
     # @lru_cache(maxsize=None)
     def minimax(self, game: ChessGame, depth: int, color: int, alpha: float, beta: float) -> float:
         self.iterate_time += 1
-        logger.debug(f"Iteration {self.iterate_time} in depth {depth}") if self.debug_mode else None
+
+        if self.debug_mode:
+            logger.debug(f"Iteration {self.iterate_time} in depth {depth}")
 
         if self.complate_mode:
             board_key = game.get_board_key()
@@ -51,10 +58,10 @@ class MinimaxAI(AIAlgorithm):
         
         if depth == 0 or game.is_game_over():
             score = game.get_score()
-            if self.complate_mode and self.debug_mode:
-                self.update_transposition_table(board_key, {'score': score, 'depth': depth}, game.get_format_board_value())
-            elif self.complate_mode:
-                self.update_transposition_table(board_key, {'score': score, 'depth': depth})
+            if self.complate_mode:
+                self.update_transposition_table(
+                    board_key, {'score': score, 'depth': depth}, 
+                    game.get_format_board_value() if self.debug_mode else None)
             return score
 
         if color == 1:
@@ -68,10 +75,10 @@ class MinimaxAI(AIAlgorithm):
                 if beta <= alpha:
                     break
 
-            if self.complate_mode and self.debug_mode:
-                self.update_transposition_table(board_key, {'score': max_eval, 'depth': depth}, game.get_format_board_value())
-            elif self.complate_mode:
-                self.update_transposition_table(board_key, {'score': max_eval, 'depth': depth})
+            if self.complate_mode:
+                self.update_transposition_table(
+                    board_key, {'score': max_eval, 'depth': depth}, 
+                    game.get_format_board_value() if self.debug_mode else None)
 
             return max_eval
         elif color == -1:
@@ -85,17 +92,22 @@ class MinimaxAI(AIAlgorithm):
                 if beta <= alpha:
                     break
             
-            if self.complate_mode and self.debug_mode:
-                self.update_transposition_table(board_key, {'score': min_eval, 'depth': depth}, game.get_format_board_value())
-            elif self.complate_mode:
-                self.update_transposition_table(board_key, {'score': min_eval, 'depth': depth})
+            if self.complate_mode:
+                self.update_transposition_table(
+                    board_key, {'score': min_eval, 'depth': depth}, 
+                    game.get_format_board_value() if self.debug_mode else None)
 
             return min_eval
         
     def end_game(self):
+        pass
+        
+    def end_model(self):
+        if self.debug_mode:
+            logger.info("Bye!")
+
         if self.complate_mode:
             self.save_transposition_table()
-        logger.info(f"Game Over!") if self.debug_mode else None
         
     def load_transposition_table(self) -> None:
         """
