@@ -18,8 +18,6 @@ def get_model_score_by_mcts(test_model: AIAlgorithm, game_state: Tuple[Tuple[int
         for _ in tqdm(range(100), desc=f"Mcts Iter {mcts_iter}"):
             test_game = ChessGame(*game_state)
             test_game.init_history()
-            test_model.init_cache()
-            test_mcts.init_cache()
             
             over_game = ai_battle(test_model, test_mcts, test_game, display=False)
             winner = over_game.who_is_winner()

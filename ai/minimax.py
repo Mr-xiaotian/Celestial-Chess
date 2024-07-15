@@ -18,9 +18,6 @@ class MinimaxAI(AIAlgorithm):
             self.transposition_file = f"../transposition_table/transposition_table({row_len}_{col_len}&{power})(sha256).pickle"
             self.load_transposition_table()
 
-    def init_cache(self):
-        pass
-
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
         best_move = None
         self.iterate_time = 0

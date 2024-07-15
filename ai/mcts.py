@@ -113,13 +113,10 @@ class MCTSAI(AIAlgorithm):
         self.value_net = value_net
         self.complate_mode = complate_mode
 
-        self.init_cache()
+        self.cache = {}
 
         init_rates_visits = np.ones((2, 2), dtype=np.float64)
         get_best_index_by_ucb1(init_rates_visits, 1, 1)
-
-    def init_cache(self):
-        self.cache = {}
 
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
         """使用 MCTS 算法选择最佳移动"""

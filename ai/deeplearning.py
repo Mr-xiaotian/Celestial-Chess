@@ -12,25 +12,25 @@ class ChessPolicyModel(nn.Module):
         super(ChessPolicyModel, self).__init__()
         # 卷积层，卷积核大小为3x3，填充为1
         self.conv1 = nn.Conv2d(3, 30, kernel_size=3, padding=1)
-        self.bn1 = nn.BatchNorm2d(30)
+        # self.bn1 = nn.BatchNorm2d(30)
         self.conv2 = nn.Conv2d(30, 60, kernel_size=3, padding=1)
-        self.bn2 = nn.BatchNorm2d(60)
+        # self.bn2 = nn.BatchNorm2d(60)
         self.conv3 = nn.Conv2d(60, 120, kernel_size=3, padding=1)
-        self.bn3 = nn.BatchNorm2d(120)
+        # self.bn3 = nn.BatchNorm2d(120)
         self.conv4 = nn.Conv2d(120, 240, kernel_size=3, padding=1)
-        self.bn4 = nn.BatchNorm2d(240)
+        # self.bn4 = nn.BatchNorm2d(240)
 
         # 全连接层，输出大小为25（棋盘的5x5个可能的移动位置）
-        self.fc1 = nn.Linear(240 * 5 * 5, 960)
+        self.fc1 = nn.Linear(240 * 5 * 5, 512)
         # self.dropout = nn.Dropout(dropout_rate)
-        self.fc2 = nn.Linear(960, 25)
+        self.fc2 = nn.Linear(512, 25)
 
     def forward(self, x):
         # 通过卷积层，然后进行ReLU激活
-        x = F.relu(self.bn1(self.conv1(x)))
-        x = F.relu(self.bn2(self.conv2(x)))
-        x = F.relu(self.bn3(self.conv3(x)))
-        x = F.relu(self.bn4(self.conv4(x)))
+        x = F.relu(self.conv1(x))
+        x = F.relu(self.conv2(x))
+        x = F.relu(self.conv3(x))
+        x = F.relu(self.conv4(x))
         # 将特征图展平为一维向量
         x = x.reshape(-1, 240 * 5 * 5)
         # 通过第一个全连接层，然后进行ReLU激活
@@ -55,7 +55,7 @@ class DeepLearningAI(AIAlgorithm):
 
     def process_output(self, output, board_state):
         """
-        将已经有落子的点在输出中屏蔽, 并输出归一化概率分布。
+        将已经有落子的点在输出中屏蔽
         :param output: 模型输出，形状为 (batch_size, 25)
         :param board_state: 当前棋盘状态，形状为 (batch_size, 3, 5, 5)
         :return: (row, col)
@@ -133,4 +133,7 @@ class DeepLearningAI(AIAlgorithm):
         return move
     
     def end_game(self):
+        pass
+
+    def end_model(self):
         pass
