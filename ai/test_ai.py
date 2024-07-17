@@ -54,7 +54,7 @@ def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = 
 
         if display:
             test_game.show_chessboard()
-            print(f'第{test_game.step}步: {ai_blue_name if color==1 else ai_red_name} 落子在 {test_game.get_current_move()}')
+            print(f'第{test_game.step}步: {ai_red_name if color==1 else ai_blue_name} 落子在 {test_game.get_current_move()}')
             print(f'获胜概率: {test_game.get_current_win_rate():.2%}')
             print(f'分数: {test_game.get_score()}')
             print(f'用时: {time()-last_time:.2f}s\n')
@@ -88,10 +88,10 @@ if __name__ == '__main__':
 
     # minimax_ai = MinimaxAI(5, *chess_state, complate_mode=True)
     mcts_ai_0 = MCTSAI(10000, complate_mode=True)
-    mcts_ai_1 = MCTSAI(1000, complate_mode=True)
-    # deeplearning_ai = DeepLearningAI('ai/models/dl_model(06-22-21-18)(136090)(32-64-128-256).pth', complate_mode=True)
+    mcts_ai_1 = MCTSAI(100000, complate_mode=True)
+    deeplearning_ai = DeepLearningAI('ai/models/dl_model(06-28-15-00)(136090).pth', complate_mode=True)
 
     # policy_model = DeepLearningAI('ai/models/dl_model(06-22-21-18)(136090)(32-64-128-256).pth', complate_mode=False)
     # mcts_ai_policy_0 = MCTSAI(1000, c_param=0.5, policy_net=policy_model, complate_mode=True)
 
-    ai_battle(mcts_ai_0, mcts_ai_0, test_game)
+    ai_battle(mcts_ai_0, deeplearning_ai, test_game)
