@@ -223,9 +223,8 @@ class ChessGame:
         '''
         随机模拟游戏
         :return: 1 蓝方获胜，-1 红方获胜，0 平局
-        '''
-        return go_random_simulate(self.chessboard, self.board_range, self.current_color, 
-                                          self.power, self.threshold, self.balance_num)
+
+        other:
         current_color = self.current_color
         while not self.is_game_over():
             random_move = self.get_random_move()
@@ -233,7 +232,10 @@ class ChessGame:
             current_color *= -1
         
         return self.who_is_winner(current_color)
-
+        '''
+        return go_random_simulate(self.chessboard, self.board_range, self.current_color,
+                                  self.power, self.threshold, self.balance_num)
+        
     def show_chessboard(self):
         '''打印棋盘'''
         print(self.get_format_board())
@@ -242,7 +244,7 @@ class ChessGame:
         '''打印棋盘数值部分'''
         print(self.get_format_board_value())
 
-    def format_matrix(self, matrix, decimal_places=0):
+    def format_matrix(self, matrix, decimal_places=(0, 0)):
         '''
         格式化矩阵
         :param matrix: 矩阵
@@ -250,13 +252,16 @@ class ChessGame:
         :return: 格式化后的字符串
         '''
         # 确定每个元素的最大宽度
-        max_width = max(len(f"{item:.{decimal_places}f}") for row in matrix for sublist in row for item in sublist)
+        max_width = max(len(f"{item:.{decimal_places[item_idx]}f}")
+                    for row in matrix
+                    for sublist in row
+                    for item_idx, item in enumerate(sublist))
         
         formatted_rows = []
         for row in matrix:
             formatted_row = "  ["
             for sublist in row:
-                formatted_row += "[" + ", ".join(f"{item:>{max_width}.{decimal_places}f}" for item in sublist) + "], "
+                formatted_row += "[" + ", ".join(f"{item:>{max_width}.{decimal_places[item_idx]}f}" for item_idx, item in enumerate(sublist)) + "], "
             formatted_row = formatted_row.rstrip(", ") + "]"
             formatted_rows.append(formatted_row)
         

@@ -141,7 +141,7 @@ class MCTSAI(AIAlgorithm):
 
             game.set_current_win_rate(best_win_rate)
             game.set_MCTSscore_board(next_win_rate_board)
-            print(game.format_matrix(current_win_rate_board, 2))
+            print(game.format_matrix(current_win_rate_board, (3, 0)))
 
         return best_move
 
