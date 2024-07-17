@@ -95,14 +95,19 @@ class DeepLearningAI(AIAlgorithm):
         :param outputs: 模型输出，形状为 (batch_size, 25)
         :return: 归一化概率分布，形状为 (batch_size, 25)
         """
-        # 将 -inf 替换为一个非常小的有限值
-        outputs[outputs == -float('inf')] = 0
+        # 将负无穷大部分屏蔽掉
+        mask = outputs != float('-inf')
+        
+        # 对屏蔽后的部分进行softmax计算
+        masked_tensor = outputs.clone()
+        masked_tensor[~mask] = float('-inf')  # 使用负无穷大来忽略这些值
+        softmax_tensor = F.softmax(masked_tensor, dim=-1)
+        
+        # 保持负无穷大部分不变
+        softmax_tensor[~mask] = float('-inf')
+        print(softmax_tensor.reshape(5,5))
 
-        # 使用Softmax将得分转换为概率分布
-        probabilities = F.softmax(outputs, dim=1)
-        print(probabilities.reshape(5,5))
-
-        return probabilities.reshape(5,5)
+        return softmax_tensor
 
     def get_move_probs(self, game: ChessGame):
         chessboard = self.process_board(game)

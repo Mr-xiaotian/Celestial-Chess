@@ -252,10 +252,12 @@ class ChessGame:
         :return: 格式化后的字符串
         '''
         # 确定每个元素的最大宽度
-        max_width = max(len(f"{item:.{decimal_places[item_idx]}f}")
+        max_width = max(
+                    len(f"{item:.{decimal_places[item_idx]}f}")
                     for row in matrix
                     for sublist in row
-                    for item_idx, item in enumerate(sublist))
+                    for item_idx, item in enumerate(sublist)
+                    )
         
         formatted_rows = []
         for row in matrix:
