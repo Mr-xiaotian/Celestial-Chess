@@ -10,12 +10,18 @@ from ai import AIAlgorithm, MinimaxAI, MCTSAI
 from ai.deeplearning import DeepLearningAI
 from game.chess_game import ChessGame
 
-def get_model_score_by_mcts(test_model: AIAlgorithm, game_state: Tuple[Tuple[int, int], int]) -> Tuple[int, Dict[str, float]]:
+def get_model_score_by_mcts(
+        test_model: AIAlgorithm, game_state: Tuple[Tuple[int, int], int],
+        start_mcts_iter: float = 1e1, end_mcts_iter: float = 1e4, mcts_step: int=10, simulate_num: int = 100
+        ) -> Tuple[int, Dict[str, float]]:
+    
+    mcts_iter = 10
     score_dict = dict()
-    for mcts_iter in range(10, 10000, 10):
+
+    for mcts_iter in range(int(start_mcts_iter), int(end_mcts_iter), mcts_step):
         win = 0
         test_mcts = MCTSAI(mcts_iter, complate_mode=False)
-        for _ in tqdm(range(100), desc=f"Mcts Iter {mcts_iter}"):
+        for _ in tqdm(range(simulate_num), desc=f"Mcts Iter {mcts_iter}"):
             test_game = ChessGame(*game_state)
             test_game.init_history()
             
@@ -27,17 +33,18 @@ def get_model_score_by_mcts(test_model: AIAlgorithm, game_state: Tuple[Tuple[int
                 win += 0.5
         test_mcts.end_model()
 
-        score_dict[f"{mcts_iter}"] = win / 100
-        if (10 * sum(score_dict.values()))/mcts_iter < 0.6:
+        score_dict[f"{mcts_iter}"] = win / simulate_num
+        if sum(score_dict.values())/len(score_dict) < 0.6:
             break
         
     test_model.end_model()
     return mcts_iter - 10, score_dict
 
 def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = ChessGame(), display=True):
-    print(f'游戏开始！\n蓝方AI: {ai_blue.__class__.__name__}\n红方AI: {ai_red.__class__.__name__}\n') if display else None
-    ai_blue_name = "蓝方" + ai_blue.__class__.__name__
-    ai_red_name = "红方" + ai_red.__class__.__name__
+    if display:
+        print(f'游戏开始！\n蓝方AI: {ai_blue.__class__.__name__}\n红方AI: {ai_red.__class__.__name__}\n')
+        ai_blue_name = "蓝方" + ai_blue.__class__.__name__
+        ai_red_name = "红方" + ai_red.__class__.__name__
     color = 1
 
     first_time = time()
