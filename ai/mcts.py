@@ -8,8 +8,8 @@ from tools.mcts_func import *
 
 
 class MCTSNode:
-    def __init__(self, game_state: ChessGame, parent: Optional[MCTSNode]=None, root_color: Optional[int]=None):
-        self.game_state = game_state  # 当前节点的游戏状态
+    def __init__(self, chess_game: ChessGame, parent: Optional[MCTSNode]=None, root_color: Optional[int]=None):
+        self.chess_game = chess_game  # 当前节点的游戏状态
         self.parent: MCTSNode = parent  # 父节点
         self.root_color = root_color # 目标颜色
 
@@ -17,9 +17,9 @@ class MCTSNode:
         self.visits = 0  # 访问次数
         self.wins = 0  # 胜利次数
 
-        self.current_color = self.game_state.get_color()  # 当前颜色
+        self.current_color = self.chess_game.get_color()  # 当前颜色
 
-        untried_moves = game_state.get_all_moves()  # 未尝试的走法列表
+        untried_moves = chess_game.get_all_moves()  # 未尝试的走法列表
         self.untried_moves = untried_moves
         self.max_untried_index = len(untried_moves)  # 未尝试的走法最大索引
         self.untried_index = 0  # 未尝试的走法索引
@@ -34,11 +34,11 @@ class MCTSNode:
     
     def get_current_move(self) -> Tuple[int, int]:
         """获取当前节点的移动"""
-        return self.game_state.get_current_move()
+        return self.chess_game.get_current_move()
     
     def get_child_win_rate_board(self):
         """获取子节点的胜率"""
-        row_len, col_len = self.game_state.board_range
+        row_len, col_len = self.chess_game.board_range
         child_win_rate_board = np.zeros((row_len, col_len, 2), dtype=np.float64)
         for child in self.children:
             row, col = child.get_current_move()
@@ -49,7 +49,7 @@ class MCTSNode:
     def get_best_child(self, policy_net: Optional[DeepLearningAI]=None, c_param=0.6):
         """使用UCB1策略选择最佳子节点"""
         if policy_net:
-            move_probs = policy_net.get_move_probs(self.game_state)
+            move_probs = policy_net.get_move_probs(self.chess_game)
             wins_visits_probs = np.array([[child.wins, child.visits, move_probs[child.get_current_move()[0], child.get_current_move()[1]]] 
                                            for child in self.children], dtype=np.float64)
             # test_arr = [(win_rate * policy_prob, math.sqrt(self.visits) / (1 + child_visit), policy_prob) 
@@ -70,9 +70,9 @@ class MCTSNode:
         move = self.untried_moves[self.untried_index]
         self.untried_index += 1
 
-        new_game_state = self.game_state.copy()
-        new_game_state.update_chessboard(*move, self.current_color)
-        child_node = MCTSNode(new_game_state, parent=self, 
+        new_chess_game = self.chess_game.copy()
+        new_chess_game.update_chessboard(*move, self.current_color)
+        child_node = MCTSNode(new_chess_game, parent=self, 
                               root_color=self.root_color)
         self.children.append(child_node)
         return child_node
@@ -82,7 +82,7 @@ class MCTSNode:
         从当前节点进行一次完整的随机模拟
         """
         root_color = self.root_color
-        current_simulation_state = self.game_state.copy()
+        current_simulation_state = self.chess_game.copy()
         winner = current_simulation_state.simulate_by_random()
         
         # return {root_color: 1.0, -root_color: 0.0}.get(winner, 0.5) # about 74% speed of next line
@@ -98,7 +98,7 @@ class MCTSNode:
 
 def tree_policy(node: MCTSNode, policy_net: Optional[DeepLearningAI], c_param) -> MCTSNode:
     """根据选择策略递归选择子节点，直到达到未完全展开或未被访问的节点"""
-    while not node.game_state.is_game_over():
+    while not node.chess_game.is_game_over():
         if not node.is_fully_expanded():
             return node.expand()
         else:
@@ -107,7 +107,8 @@ def tree_policy(node: MCTSNode, policy_net: Optional[DeepLearningAI], c_param) -
 
 class MCTSAI(AIAlgorithm):
     def __init__(self, itermax: int = 1000, c_param = 0.8, 
-                 policy_net: Optional[DeepLearningAI]=None, value_net: Optional[DeepLearningAI]=None, 
+                 policy_net: Optional[DeepLearningAI]=None, 
+                 value_net: Optional[DeepLearningAI]=None, 
                  complate_mode=True) -> None:
         self.itermax = itermax
         self.c_param = c_param
