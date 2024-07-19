@@ -28,6 +28,12 @@ class MCTSNode:
         """检查节点是否已完全展开"""
         return self.untried_index == self.max_untried_index
     
+    def change_root_color(self):
+        self.root_color *= -1
+        self.wins = self.visits - self.wins
+        for child in self.children:
+            child.change_root_color()
+    
     def get_win_rate(self) -> float:
         """计算节点的胜率"""
         return self.wins / self.visits
@@ -125,7 +131,8 @@ class MCTSAI(AIAlgorithm):
         """使用 MCTS 算法选择最佳移动"""
         current_move = game.get_current_move()
         if current_move in self.cache:
-            root = self.cache[current_move]
+            root: MCTSNode = self.cache[current_move]
+            root.change_root_color() if game.get_color() != root.root_color else None
         else:
             root = MCTSNode(game.copy(), root_color=game.get_color()) # 创建一个MCTSNode对象，表示根节点
 
