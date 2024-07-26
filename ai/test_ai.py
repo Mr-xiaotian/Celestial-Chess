@@ -88,7 +88,7 @@ def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = 
     return test_game
 
 if __name__ == '__main__':
-    chess_state = ((5, 5), 2)
+    chess_state = ((19, 19), 4)
     test_game = ChessGame(*chess_state)
     test_game.init_cfunc()
     test_game.init_history()
@@ -102,3 +102,4 @@ if __name__ == '__main__':
     # mcts_ai_policy_0 = MCTSAI(1000, c_param=0.5, policy_net=policy_model, complate_mode=True)
 
     ai_battle(mcts_ai_0, mcts_ai_1, test_game)
+    #Microsoft_767292

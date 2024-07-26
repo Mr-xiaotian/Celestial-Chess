@@ -248,22 +248,21 @@ class ChessGame:
         '''
         格式化矩阵
         :param matrix: 矩阵
-        :param decimal_places: 保留的小数点位数
+        :param decimal_places: 保留的小数点位数 (第一个数的位数, 第二个数的位数)
         :return: 格式化后的字符串
         '''
         # 确定每个元素的最大宽度
-        max_width = max(
-                    len(f"{item:.{decimal_places[item_idx]}f}")
-                    for row in matrix
-                    for sublist in row
-                    for item_idx, item in enumerate(sublist)
-                    )
+        max_widths = [max(
+                        len(f"{sublist[idx]:.{decimal_place}f}")
+                        for row in matrix
+                        for sublist in row
+                    ) for idx, decimal_place in enumerate(decimal_places)]
         
         formatted_rows = []
         for row in matrix:
             formatted_row = "  ["
             for sublist in row:
-                formatted_row += "[" + ", ".join(f"{item:>{max_width}.{decimal_places[item_idx]}f}" for item_idx, item in enumerate(sublist)) + "], "
+                formatted_row += "[" + ", ".join(f"{item:>{max_widths[item_idx]}.{decimal_places[item_idx]}f}" for item_idx, item in enumerate(sublist)) + "], "
             formatted_row = formatted_row.rstrip(", ") + "]"
             formatted_rows.append(formatted_row)
         
