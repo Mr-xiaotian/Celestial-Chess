@@ -7,7 +7,7 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "your_secret_key"
 socketio = SocketIO(app)
 
-chess_state = ((11, 11), 3)
+chess_state = ((19, 19), 4)
 (row_len, col_len), power = chess_state # 棋盘大小，power
 
 game = ChessGame(*chess_state)
@@ -15,7 +15,7 @@ game.init_cfunc()
 game.init_history()
 
 minimax_ai = MinimaxAI(5, *chess_state)
-mcts_ai = MCTSAI(1000)
+mcts_ai = MCTSAI(10000)
 monky_ai = MonkyAI()
 
 def convert_inf_to_string(value):
@@ -126,4 +126,4 @@ def handle_monky_move():
 
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True)
+    socketio.run(app, debug=True, port=5005)

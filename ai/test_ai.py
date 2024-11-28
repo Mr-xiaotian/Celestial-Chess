@@ -14,8 +14,17 @@ def get_model_score_by_mcts(
         test_model: AIAlgorithm, game_state: Tuple[Tuple[int, int], int],
         start_mcts_iter: float = 1e1, end_mcts_iter: float = 1e4, mcts_step: int=10, simulate_num: int = 100
         ) -> Tuple[int, Dict[str, float]]:
-    
-    mcts_iter = 10
+    """
+    使用MCTS测试AI模型的得分
+
+    :param test_model: 待测试的AI模型
+    :param game_state: 游戏状态
+    :param start_mcts_iter: MCTS的迭代次数的起始值
+    :param end_mcts_iter: MCTS的迭代次数的终止值
+    :param mcts_step: MCTS的迭代次数的步长
+    :param simulate_num: 模拟的次数
+    :return: 返回MCTS的迭代次数和得分字典
+    """
     score_dict = dict()
 
     for mcts_iter in range(int(start_mcts_iter), int(end_mcts_iter), mcts_step):
@@ -41,6 +50,15 @@ def get_model_score_by_mcts(
     return mcts_iter - 10, score_dict
 
 def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = ChessGame(), display=True):
+    """
+    对两个AI进行对战
+
+    :param ai_blue: 蓝方AI
+    :param ai_red: 红方AI
+    :param test_game: 游戏对象
+    :param display: 是否显示游戏过程
+    :return: 游戏对象
+    """
     if display:
         print(f'游戏开始！\n蓝方AI: {ai_blue.__class__.__name__}\n红方AI: {ai_red.__class__.__name__}\n')
         ai_blue_name = "蓝方" + ai_blue.__class__.__name__
@@ -88,7 +106,7 @@ def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = 
     return test_game
 
 if __name__ == '__main__':
-    chess_state = ((19, 19), 4)
+    chess_state = ((9, 9), 3)
     test_game = ChessGame(*chess_state)
     test_game.init_cfunc()
     test_game.init_history()
