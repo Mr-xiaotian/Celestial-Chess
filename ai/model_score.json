@@ -2,12 +2,12 @@
   "MCTSAI": [
     {
       "itermax": 1000,
-      "complate_mode": false,
+      "complete_mode": false,
       "score": 990
     },
     {
       "itermax": 100,
-      "complate_mode": false,
+      "complete_mode": false,
       "test": {
         "unknow": {
           "score": 110,
@@ -68,7 +68,7 @@
     },
     {
       "itermax": 50,
-      "complate_mode": false,
+      "complete_mode": false,
       "score": 40,
       "score_dict": {
         "10": 0.72,
@@ -82,7 +82,7 @@
   "MinimaxAI": [
     {
       "depth": 5,
-      "complate_mode": false,
+      "complete_mode": false,
       "score": 0,
       "score_dict": {
         "10": 0.495
@@ -90,7 +90,7 @@
     },
     {
       "depth": 5,
-      "complate_mode": true,
+      "complete_mode": true,
       "score": 0,
       "score_dict": {
         "10": 0.47
@@ -98,7 +98,7 @@
     },
     {
       "depth": 3,
-      "complate_mode": false,
+      "complete_mode": false,
       "score": 0,
       "score_dict": {
         "10": 0.44
@@ -108,7 +108,7 @@
       "depth": 6,
       "test": {
         "unlnow": {
-          "complate_mode": false,
+          "complete_mode": false,
           "score": 30,
           "score_dict": {
             "10": 0.72,
@@ -118,7 +118,7 @@
           }
         },
         "7-10-2024": {
-          "complate_mode": false,
+          "complete_mode": false,
           "score": 20,
           "score_dict": {
             "10": 0.71,
@@ -132,7 +132,7 @@
       "depth": 10,
       "test": {
         "7-10-2024": {
-          "complate_mode": true,
+          "complete_mode": true,
           "score": 50,
           "score_dict": {
             "10": 0.725,
@@ -151,7 +151,7 @@
       "path": "models/dl_model(06-22-16)(127)(16-32-64).pth",
       "Conv Layer": "16-32-64",
       "FC Layer": "128-25",
-      "complate_mode": false,
+      "complete_mode": false,
       "score": 0,
       "score_dict": {
         "10": 0.36
@@ -162,7 +162,7 @@
       "path": "models/dl_model(06-22-20)(136090)(16-32-64).pth",
       "Conv Layer": "16-32-64",
       "FC Layer": "128-25",
-      "complate_mode": false,
+      "complete_mode": false,
       "score": 60,
       "score_dict": {
         "10": 0.74,
@@ -179,7 +179,7 @@
       "path": "models/dl_model(06-22-20)(136090)(32-64-128).pth",
       "Conv Layer": "32-64-128",
       "FC Layer": "256-25",
-      "complate_mode": false,
+      "complete_mode": false,
       "score": 120,
       "score_dict": {
         "10": 0.77,
@@ -202,7 +202,7 @@
       "path": "models/dl_model(06-22-21-09)(136090)(32-64-64-128).pth",
       "Conv Layer": "32-64-64-128",
       "FC Layer": "256-25",
-      "complate_mode": false,
+      "complete_mode": false,
       "score": 30,
       "score_dict": {
         "10": 0.69,
@@ -216,7 +216,7 @@
       "path": "models/dl_model(06-22-21-18)(136090)(32-64-128-256).pth",
       "Conv Layer": "32-64-128-256",
       "FC Layer": "512-25",
-      "complate_mode": false,
+      "complete_mode": false,
       "score": 190,
       "score_dict": {
         "10": 0.78,
@@ -246,7 +246,7 @@
       "path": "models/dl_model(06-23-08-36)(12963)(32-64-128-256).pth",
       "Conv Layer": "32-64-128-256",
       "FC Layer": "512-25",
-      "complate_mode": false,
+      "complete_mode": false,
       "score": 30,
       "score_dict": {
         "10": 0.69,
@@ -260,7 +260,7 @@
       "path": "models/dl_model(06-23-08-48)(13631)(32-64-128-256).pth",
       "Conv Layer": "32-64-128-256",
       "FC Layer": "512-25",
-      "complate_mode": false,
+      "complete_mode": false,
       "score": 20,
       "score_dict": {
         "10": 0.66,
@@ -282,7 +282,7 @@
       },
       "test": {
         "unknow": {
-          "complate_mode": false,
+          "complete_mode": false,
           "score": 280,
           "score_dict": {
             "10": 0.815,
@@ -316,7 +316,7 @@
             "290": 0.465
           },
           "7-10-2024": {
-            "complate_mode": false,
+            "complete_mode": false,
             "score": 320,
             "score_dict": {
               "10": 0.815,
@@ -355,7 +355,7 @@
             }
           },
           "2025-01-22":{
-            "complate_mode": false,
+            "complete_mode": false,
             "score": 290,
             "score_dict": {
               "10": 0.815,
@@ -407,7 +407,7 @@
       },
       "tests": {
         "unknow": {
-          "complate_mode": false,
+          "complete_mode": false,
           "score": 100,
           "score_dict": {
             "10": 0.73,
@@ -440,7 +440,7 @@
       },
       "tests": {
         "unknow": {
-          "complate_mode": false,
+          "complete_mode": false,
           "score": 120,
           "score_dict": {
             "10": 0.79,
@@ -477,7 +477,7 @@
       },
       "test": {
         "unknow": {
-          "complate_mode": false,
+          "complete_mode": false,
           "score": 120,
           "score_dict": {
             "10": 0.745,
@@ -497,7 +497,7 @@
           }
         },
         "7-9-2024": {
-          "complate_mode": false,
+          "complete_mode": false,
           "score": 130,
           "score_dict": {
             "10": 0.725,
@@ -531,7 +531,7 @@
       },
       "tests": {
         "2025-1-22": {
-          "complate_mode": false,
+          "complete_mode": false,
           "score": 180,
           "score_dict": {
             "10": 0.74,

@@ -29,7 +29,7 @@ def get_model_score_by_mcts(
 
     for mcts_iter in range(int(start_mcts_iter), int(end_mcts_iter), mcts_step):
         win = 0
-        test_mcts = MCTSAI(mcts_iter, complate_mode=False)
+        test_mcts = MCTSAI(mcts_iter, complete_mode=False)
         for _ in tqdm(range(simulate_num), desc=f"Mcts Iter {mcts_iter}"):
             test_game = ChessGame(*game_state)
             test_game.init_history()
@@ -49,14 +49,14 @@ def get_model_score_by_mcts(
     test_model.end_model()
     return mcts_iter - 10, score_dict
 
-def get_best_c_param(game_state, policy_net=None, start_c_param=0.0, test_game_num=1000):
+def get_best_c_param(game_state, start_c_param=0.0, test_game_num=1000):
     best_c_param = start_c_param
     c_param_dict = {}
-    best_mcts = MCTSAI(100, c_param=best_c_param, policy_net=policy_net, complate_mode=False)
+    best_mcts = MCTSAI(100, c_param=best_c_param, complete_mode=False)
 
     for param in range(0, 11, 1):
         win = 0
-        test_mcts = MCTSAI(100, c_param=param/10, policy_net=policy_net, complate_mode=False)
+        test_mcts = MCTSAI(100, c_param=param/10, complete_mode=False)
 
         for _ in tqdm(range(test_game_num), desc=f"C param {param/10}"):
             test_game = ChessGame(*game_state)
@@ -71,7 +71,7 @@ def get_best_c_param(game_state, policy_net=None, start_c_param=0.0, test_game_n
         c_param_dict[f"{best_c_param} : {param/10}"] = win
         if win < test_game_num / 2:
             best_c_param = param/10
-            best_mcts = MCTSAI(100, c_param=best_c_param, complate_mode=False)
+            best_mcts = MCTSAI(100, c_param=best_c_param, complete_mode=False)
         
     return best_c_param, c_param_dict
 
@@ -132,18 +132,18 @@ def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = 
     return test_game
 
 if __name__ == '__main__':
-    chess_state = ((9, 9), 3)
+    chess_state = ((5, 5), 2)
     test_game = ChessGame(*chess_state)
     test_game.init_cfunc()
     test_game.init_history()
 
-    # minimax_ai = MinimaxAI(5, *chess_state, complate_mode=True)
-    mcts_ai_0 = MCTSAI(10000, complate_mode=True)
-    mcts_ai_1 = MCTSAI(10000, complate_mode=True)
-    deeplearning_ai = DeepLearningAI('ai/models/dl_model(06-28-15-00)(136090).pth', complate_mode=True)
+    minimax_ai = MinimaxAI(5, chess_state, debug_mode=False, transposition_mode=True)
+    mcts_ai_0 = MCTSAI(10000, complete_mode=True)
+    mcts_ai_1 = MCTSAI(50000, complete_mode=True)
+    deeplearning_ai = DeepLearningAI(r'ai\models\2024-06-28\dl_model(06-28-15-00)(136090).pth', complete_mode=True)
 
-    # policy_model = DeepLearningAI('ai/models/dl_model(06-22-21-18)(136090)(32-64-128-256).pth', complate_mode=False)
-    # mcts_ai_policy_0 = MCTSAI(1000, c_param=0.5, policy_net=policy_model, complate_mode=True)
+    # policy_model = DeepLearningAI('ai/models/dl_model(06-22-21-18)(136090)(32-64-128-256).pth', complete_mode=False)
+    # mcts_ai_policy_0 = MCTSAI(1000, c_param=0.5, policy_net=policy_model, complete_mode=True)
 
-    ai_battle(mcts_ai_0, mcts_ai_1, test_game)
+    ai_battle(mcts_ai_0, minimax_ai, test_game)
     #Microsoft_767292

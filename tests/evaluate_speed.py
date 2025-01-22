@@ -41,8 +41,8 @@ def profile_minimax():
 game_state = ((5, 5), 2)
 game = ChessGame(*game_state)
 game.init_cfunc()
-mcts_ai = MCTSAI(50000, complate_mode=False)
-minimax_ai = MinimaxAI(10, *game_state, complate_mode=True)
+mcts_ai = MCTSAI(50000, complete_mode=False)
+minimax_ai = MinimaxAI(10, game_state, complete_mode=True)
 
 target_func = 'profile_mcts'
 output_file = get_output_file_name(target_func)

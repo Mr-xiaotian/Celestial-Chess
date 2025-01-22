@@ -75,7 +75,7 @@ def start_train_data(train_num: int, mcts_iter: int=1000, execution_mode: str='s
             show_progress=True
             )
     
-    mcts_ai = MCTSAI(mcts_iter, complate_mode=False)
+    mcts_ai = MCTSAI(mcts_iter, complete_mode=False)
     train_data_threader.set_ai(mcts_ai, mcts_ai)
 
     train_data_threader.start(range(train_num))

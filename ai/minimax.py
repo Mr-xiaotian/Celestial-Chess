@@ -6,17 +6,13 @@ from game.chess_game import ChessGame
 
 
 class MinimaxAI(AIAlgorithm):
-    def __init__(self, depth: int, board_range: Tuple[int, int] = (5, 5), power: int = 2, 
-                 debug_mode: bool = False, complate_mode: bool = True) -> None:
+    def __init__(self, depth: int, board_state: Tuple[Tuple[int, int], int] = ((5, 5), 2), 
+                 debug_mode: bool = False, transposition_mode: bool = True) -> None:
         self.depth = depth
         self.debug_mode = debug_mode
-        self.complate_mode = complate_mode
+        self.transposition_mode = transposition_mode
 
-        if complate_mode:
-            row_len, col_len = board_range
-            self.transposition_table_change = False
-            self.transposition_file = f"./transposition_table/transposition_table({row_len}_{col_len}&{power})(sha256).pickle"
-            self.load_transposition_table()
+        self.load_transposition_table(board_state) if self.transposition_mode else None
 
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
         best_move = None
@@ -35,9 +31,7 @@ class MinimaxAI(AIAlgorithm):
                 best_score = score
                 best_move = move
 
-        if self.complate_mode:
-            game.set_current_win_rate()
-
+        game.set_current_win_rate()
         return best_move
 
     # @lru_cache(maxsize=None)
@@ -47,7 +41,7 @@ class MinimaxAI(AIAlgorithm):
         if self.debug_mode:
             logger.debug(f"Iteration {self.iterate_time} in depth {depth}")
 
-        if self.complate_mode:
+        if self.transposition_mode:
             board_key = game.get_board_key()
             if board_key in self.transposition_table and \
                 self.transposition_table[board_key]['depth'] >= depth:
@@ -55,7 +49,7 @@ class MinimaxAI(AIAlgorithm):
         
         if depth == 0 or game.is_game_over():
             score = game.get_score()
-            if self.complate_mode:
+            if self.transposition_mode:
                 self.update_transposition_table(
                     board_key, {'score': score, 'depth': depth}, 
                     game.get_format_board_value() if self.debug_mode else None)
@@ -72,7 +66,7 @@ class MinimaxAI(AIAlgorithm):
                 if beta <= alpha:
                     break
 
-            if self.complate_mode:
+            if self.transposition_mode:
                 self.update_transposition_table(
                     board_key, {'score': max_eval, 'depth': depth}, 
                     game.get_format_board_value() if self.debug_mode else None)
@@ -89,45 +83,36 @@ class MinimaxAI(AIAlgorithm):
                 if beta <= alpha:
                     break
             
-            if self.complate_mode:
+            if self.transposition_mode:
                 self.update_transposition_table(
                     board_key, {'score': min_eval, 'depth': depth}, 
                     game.get_format_board_value() if self.debug_mode else None)
 
             return min_eval
         
-    def end_game(self):
-        pass
-        
-    def end_model(self):
-        if self.debug_mode:
-            logger.info("Bye!")
-
-        if self.complate_mode:
-            self.save_transposition_table()
-        
-    def load_transposition_table(self) -> None:
+    def load_transposition_table(self, board_state: Tuple[Tuple[int, int], int]) -> None:
         """
         加载transposition table
         """
+        (row_len, col_len), power = board_state
+        self.transposition_file = f"./transposition_table/transposition_table({row_len}_{col_len}&{power})(sha256).pickle"
+        
         self.transposition_table = {}
-        transposition_file = self.transposition_file
+        self.transposition_table_change = False
         try:
-            with open(transposition_file, "rb") as file:
+            with open(self.transposition_file, "rb") as file:
                 self.transposition_table = pickle.load(file)
-                logger.info(f"load transposition table from {transposition_file}") if self.debug_mode else None
+                logger.info(f"load transposition table from {self.transposition_file}") if self.debug_mode else None
         except (FileNotFoundError, EOFError):
-            with open(transposition_file, "wb") as file:
+            with open(self.transposition_file, "wb") as file:
                 pickle.dump(self.transposition_table, file)
 
     def update_transposition_table(self, key: str, value: int, format_board_value: str = None) -> None:
         """
         更新transposition table
         """
-        if (
-            key not in self.transposition_table
-            or self.transposition_table[key]["depth"] < value["depth"]
-        ):
+        old_value = self.transposition_table.get(key)
+        if old_value is None or old_value["depth"] < value["depth"]:
             old_value = self.transposition_table.get(key, None)
             self.transposition_table[key] = value
             self.transposition_table_change = True
@@ -137,13 +122,17 @@ class MinimaxAI(AIAlgorithm):
         """
         保存transposition table到文件
         """
-        transposition_file = self.transposition_file
         if not self.transposition_table_change:
             self.transposition_table = {}
             self.transposition_table_change = False
             return
-        with open(transposition_file, "wb") as file:
+        with open(self.transposition_file, "wb") as file:
             pickle.dump(self.transposition_table, file)
             self.transposition_table = {}
             self.transposition_table_change = False
-            logger.info(f"save transposition table to {transposition_file}") if self.debug_mode else None
+            logger.info(f"save transposition table to {self.transposition_file}") if self.debug_mode else None
+    def end_game(self):
+        pass
+        
+    def end_model(self):
+        self.save_transposition_table() if self.transposition_mode else None

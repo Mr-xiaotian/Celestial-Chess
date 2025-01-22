@@ -45,13 +45,13 @@ class ChessPolicyModel(nn.Module):
     
 
 class DeepLearningAI(AIAlgorithm):
-    def __init__(self, model_path, complate_mode=True):
+    def __init__(self, model_path, complete_mode=True):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = ChessPolicyModel().to(self.device)
         self.model.load_state_dict(torch.load(model_path, map_location=self.device))
         self.model.eval()
 
-        self.complate_mode = complate_mode
+        self.complete_mode = complete_mode
 
     def process_output(self, output, board_state):
         """
@@ -132,7 +132,7 @@ class DeepLearningAI(AIAlgorithm):
             move_index = torch.argmax(masked_outputs).item()
             move = (move_index // 5, move_index % 5)
 
-        if self.complate_mode:
+        if self.complete_mode:
             self.trans_softmax(masked_outputs)
             game.set_current_win_rate()
         return move
