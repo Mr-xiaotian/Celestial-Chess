@@ -49,6 +49,32 @@ def get_model_score_by_mcts(
     test_model.end_model()
     return mcts_iter - 10, score_dict
 
+def get_best_c_param(game_state, policy_net=None, start_c_param=0.0, test_game_num=1000):
+    best_c_param = start_c_param
+    c_param_dict = {}
+    best_mcts = MCTSAI(100, c_param=best_c_param, policy_net=policy_net, complate_mode=False)
+
+    for param in range(0, 11, 1):
+        win = 0
+        test_mcts = MCTSAI(100, c_param=param/10, policy_net=policy_net, complate_mode=False)
+
+        for _ in tqdm(range(test_game_num), desc=f"C param {param/10}"):
+            test_game = ChessGame(*game_state)
+            test_game.init_history()
+            over_game = ai_battle(best_mcts, test_mcts, test_game, display=False)
+            winner = over_game.who_is_winner()
+            if winner == 1:
+                win += 1
+            elif winner == 0:
+                win += 0.5
+
+        c_param_dict[f"{best_c_param} : {param/10}"] = win
+        if win < test_game_num / 2:
+            best_c_param = param/10
+            best_mcts = MCTSAI(100, c_param=best_c_param, complate_mode=False)
+        
+    return best_c_param, c_param_dict
+
 def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = ChessGame(), display=True):
     """
     对两个AI进行对战

@@ -56,8 +56,8 @@ class MCTSNode:
         """使用UCB1策略选择最佳子节点"""
         if policy_net:
             move_probs = policy_net.get_move_probs(self.chess_game)
-            wins_visits_probs = np.array([[child.wins, child.visits, move_probs[child.get_current_move()[0], child.get_current_move()[1]]] 
-                                           for child in self.children], dtype=np.float64)
+            wins_visits_probs = np.array([[child.wins, child.visits, move_probs[child.get_current_move()[0], child.get_current_move()[1]]]
+                                          for child in self.children], dtype=np.float64)
             # test_arr = [(win_rate * policy_prob, math.sqrt(self.visits) / (1 + child_visit), policy_prob) 
             #             for win_rate, child_visit, policy_prob in rates_visits_probs]
             best_index = get_best_index_by_puct(wins_visits_probs, self.visits, c_param)

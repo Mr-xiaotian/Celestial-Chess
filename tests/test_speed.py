@@ -23,8 +23,10 @@ filename
 def get_output_file_name(target_func):
     now_data = strftime("%Y-%m-%d", localtime())
     now_time = strftime("%H-%M", localtime())
+
     parent_path = Path(f'profile/{now_data}')
     parent_path.mkdir(parents=True, exist_ok=True)
+    
     output_file = f'{parent_path}/{target_func}({now_time}).prof'
     return output_file
 
