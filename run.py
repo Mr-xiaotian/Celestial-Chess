@@ -7,7 +7,7 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "your_secret_key"
 socketio = SocketIO(app)
 
-chess_state = ((19, 19), 4)
+chess_state = ((8, 10), 3)
 (row_len, col_len), power = chess_state # 棋盘大小，power
 
 game = ChessGame(*chess_state)
