@@ -18,6 +18,18 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById("mctsButton").addEventListener("click", function () {
         socket.emit('mcts_move')
     });
+    document.getElementById("monkyButton").addEventListener("click", function () {
+        socket.emit('monky_move')
+    });
+    document.getElementById("minimaxAuto").addEventListener("click", function () {
+        socket.emit('minimax_auto')
+    });
+    document.getElementById("mctsAuto").addEventListener("click", function () {
+        socket.emit('mcts_auto')
+    });
+    document.getElementById("monkyAuto").addEventListener("click", function () {
+        socket.emit('monky_auto')
+    });
 
     fetch('/init_state')
         .then(response => response.json())
@@ -28,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
             updateTotalScore(data.score); // 初始化分数
             toggleColor(data.step); // 根据步数切换颜色
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => console.error('InitError:', error));
 
     // 添加 SocketIO 事件监听器
     socket.on('update_board', function (data) {
@@ -183,21 +195,6 @@ function updateTotalScore(score) {
 }
 
 function onCellClick(row, col) {
-    // fetch('/play', {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({ row: row, col: col, color: currentColor })
-    // })
-    //     .then(response => response.json())
-    //     .then(data => {
-    //         updateChessboard(data.board);
-    //         updateTotalScore(data.score); // 更新总分数
-    //         toggleColor(data.step); // 切换颜色
-    //     })
-    //     .catch(error => console.error('Error:', error));
     socket.emit('play_move', { row: row, col: col, color: currentColor });
-    // console.log('Clicked cell:', row, col);
 }
 

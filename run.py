@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, render_template
 from flask_socketio import SocketIO
+from concurrent.futures import ThreadPoolExecutor
 from game.chess_game import ChessGame
 from ai import MinimaxAI, MCTSAI, MonkyAI
 
@@ -7,7 +8,10 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "your_secret_key"
 socketio = SocketIO(app)
 
-chess_state = ((8, 10), 3)
+# 创建线程池
+executor = ThreadPoolExecutor(max_workers=3)
+
+chess_state = ((8, 8), 3)
 (row_len, col_len), power = chess_state # 棋盘大小，power
 
 game = ChessGame(*chess_state)
@@ -17,6 +21,10 @@ game.init_history()
 minimax_ai = MinimaxAI(5, chess_state)
 mcts_ai = MCTSAI(10000)
 monky_ai = MonkyAI()
+
+minimax_auto = False
+mcts_auto = False
+monky_auto = False
 
 def convert_inf_to_string(value):
     if value == float("inf"):
@@ -64,23 +72,29 @@ def handle_play_move(data):
     col = data["col"]
     color = data["color"]  # 前端发送了颜色信息
 
-    if game.is_move_valid(row, col):
-        game.update_chessboard(row, col, color)
-        game.update_history(row, col)
-        sendDataToBackend(game)
+    if not game.is_move_valid(row, col):
+        return
+    
+    game.update_chessboard(row, col, color)
+    game.update_history(row, col)
+    sendDataToBackend(game)
 
+    if minimax_auto:
+        executor.submit(handle_minimax_move)
+    elif mcts_auto:
+        executor.submit(handle_mcts_move)
+    elif monky_auto:
+        executor.submit(handle_monky_move)
 
 @socketio.on("undo_move")
 def handle_undo_move():
     game.undo()
     sendDataToBackend(game)
 
-
 @socketio.on("redo_move")
 def handle_redo_move():
     game.redo()
     sendDataToBackend(game)
-    
 
 @socketio.on("restart_game")
 def handle_restart_game():
@@ -114,7 +128,7 @@ def handle_mcts_move():
 
 @socketio.on("monky_move")
 def handle_monky_move():
-    # MCTSAI执棋
+    # MonkyAI执棋
     if game.is_game_over():
         return
     color = game.get_color()
@@ -124,6 +138,36 @@ def handle_monky_move():
     game.update_history(*move)
     sendDataToBackend(game)
 
+
+@socketio.on("minimax_auto")
+def handle_minimax_auto():
+    # 与Minimax对弈
+    global minimax_auto, mcts_auto, monky_auto
+    minimax_auto = True
+    mcts_auto = False
+    monky_auto = False
+
+    handle_minimax_move()
+
+@socketio.on("mcts_auto")
+def handle_mcts_auto():
+    # 与MCTS对弈
+    global minimax_auto, mcts_auto, monky_auto
+    minimax_auto = False
+    mcts_auto = True
+    monky_auto = False
+
+    handle_mcts_move()
+
+@socketio.on("monky_auto")
+def handle_monky_auto():
+    # 与Monky对弈
+    global minimax_auto, mcts_auto, monky_auto
+    minimax_auto = False
+    mcts_auto = False
+    monky_auto = True
+
+    handle_monky_move()
 
 if __name__ == "__main__":
     socketio.run(app, debug=True, port=5005)
