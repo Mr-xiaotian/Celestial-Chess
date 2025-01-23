@@ -48,25 +48,6 @@ class TrainDataThread(ExampleTaskManager):
                     cell[0] = 5
         return processed_board
 
-def load_train_data(file_path):
-    with open(file_path, "rb") as f:
-        data = pickle.load(f)
-    return data
-
-def save_train_data(data, train_num, mcts_iter):
-    data_size = len(data)
-    now_data = strftime("%Y-%m-%d", localtime())
-    now_time = strftime("%H-%M", localtime())
-    
-    parent_path = Path(f'train_data/{now_data}')
-    parent_path.mkdir(parents=True, exist_ok=True)
-
-    mcts_iter_str = f'MCTS{mcts_iter//1000}k'
-    train_num_str = f'Games{train_num//1000}k' if train_num > 1000 else f'Games{train_num}'
-    data_size_str = f'Length{data_size}'
-
-    pickle.dump(data, open(f"{parent_path}/{mcts_iter_str}_{train_num_str}_{data_size_str}({now_time}).pkl", "wb"))
-
 def start_train_data(train_num: int, mcts_iter: int=1000, execution_mode: str='serial'):
     train_data_threader = TrainDataThread(
             ai_battle,
@@ -85,6 +66,27 @@ def start_train_data(train_num: int, mcts_iter: int=1000, execution_mode: str='s
     
     return all_training_data
 
+def save_train_data(data, train_num, mcts_iter):
+    data_size = len(data)
+    now_data = strftime("%Y-%m-%d", localtime())
+    now_time = strftime("%H-%M", localtime())
+    
+    parent_path = Path(f'train_data/{now_data}')
+    parent_path.mkdir(parents=True, exist_ok=True)
+
+    mcts_iter_str = f'MCTS{mcts_iter//1000}k'
+    train_num_str = f'Games{train_num//1000}k' if train_num > 1000 else f'Games{train_num}'
+    data_size_str = f'Length{data_size}'
+
+    train_data_path = f"{parent_path}/{mcts_iter_str}_{train_num_str}_{data_size_str}({now_time}).pkl"
+    pickle.dump(data, open(train_data_path, "wb"))
+
+    return train_data_path
+
+def load_train_data(file_path):
+    with open(file_path, "rb") as f:
+        data = pickle.load(f)
+    return data
 
 import torch
 import torch.nn as nn
