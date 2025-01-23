@@ -5,7 +5,8 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
 from pathlib import Path
 from time import strftime, localtime
-from ai.deeplearning import ChessPolicyModel
+from ai import get_model_score_by_mcts
+from ai.deeplearning import ChessPolicyModel, DeepLearningAI
 
 
 class ChessDataset(Dataset):
@@ -75,15 +76,17 @@ class ModelTrainer:
     def save_model_loss(self, train_log_text, data_size):
         now_data = strftime("%Y-%m-%d", localtime())
         now_time = strftime("%H-%M", localtime())
+
         parent_path = Path(f'../models_loss/{now_data}')
         parent_path.mkdir(parents=True, exist_ok=True)
+        
         model_loss_path = f'{parent_path}/dl_model_loss({now_time})({data_size}).txt'
         with open(model_loss_path, 'w') as f:
             f.write('\n'.join(train_log_text))
 
-def get_model_info_dict(path, train_data_path, model):
+def get_model_info_dict(model_path, train_data_path, model):
     model_info_dict = {}
-    model_info_dict["path"] = path
+    model_info_dict["model_path"] = model_path
     model_info_dict["train_data_path"] = train_data_path
 
     model_str = str(model)
@@ -96,6 +99,16 @@ def get_model_info_dict(path, train_data_path, model):
         
         layer_dict[layer_name] = layer_args
     model_info_dict["layers"] = layer_dict
+
+    game_state = ((5,5), 2)
+    dl_model = DeepLearningAI(model_path, complete_mode=False)
+    score, score_dict = get_model_score_by_mcts(dl_model, game_state)
+    now_data = strftime("%Y-%m-%d", localtime())
+    test_dict = {now_data: {"complete_mode": False,
+                            "score": score,
+                            "score_dict": score_dict}
+                            }
+    model_info_dict["test"] = test_dict
 
     return model_info_dict
 

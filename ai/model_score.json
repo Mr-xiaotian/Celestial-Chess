@@ -82,7 +82,7 @@
   "MinimaxAI": [
     {
       "depth": 5,
-      "complete_mode": false,
+      "transposition_mode": false,
       "score": 0,
       "score_dict": {
         "10": 0.495
@@ -90,7 +90,7 @@
     },
     {
       "depth": 5,
-      "complete_mode": true,
+      "transposition_mode": true,
       "score": 0,
       "score_dict": {
         "10": 0.47
@@ -98,7 +98,7 @@
     },
     {
       "depth": 3,
-      "complete_mode": false,
+      "transposition_mode": false,
       "score": 0,
       "score_dict": {
         "10": 0.44
@@ -108,7 +108,7 @@
       "depth": 6,
       "test": {
         "unlnow": {
-          "complete_mode": false,
+          "transposition_mode": false,
           "score": 30,
           "score_dict": {
             "10": 0.72,
@@ -118,12 +118,24 @@
           }
         },
         "7-10-2024": {
-          "complete_mode": false,
+          "transposition_mode": false,
           "score": 20,
           "score_dict": {
             "10": 0.71,
             "20": 0.56,
             "30": 0.4
+          }
+        },
+        "2025-01-23": {
+          "transposition_mode": true,
+          "score": 50,
+          "score_dict": {
+            "10": 0.705,
+            "20": 0.64,
+            "30": 0.595,
+            "40": 0.54,
+            "50": 0.535,
+            "60": 0.48
           }
         }
       }
@@ -132,7 +144,7 @@
       "depth": 10,
       "test": {
         "7-10-2024": {
-          "complete_mode": true,
+          "transposition_mode": true,
           "score": 50,
           "score_dict": {
             "10": 0.725,
@@ -558,8 +570,8 @@
       }
     },
     {
-      "path": "..\\models\\2025-01-23/dl_model(14-56)(135).pth",
-      "train_data_path": "..\\train_data\\2025-01-23/MCTS0k_Games0_Length135(14-55).pkl",
+      "model_path": "..\\models\\2025-01-23/dl_model(16-05)(131).pth",
+      "train_data_path": "..\\train_data\\2025-01-23/MCTS1k_Games10_Length131(16-04).pkl",
       "layers": {
         "conv1": "Conv2d(3, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
         "conv2": "Conv2d(30, 60, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
@@ -568,12 +580,12 @@
         "fc1": "Linear(in_features=6000, out_features=512, bias=True)",
         "fc2": "Linear(in_features=512, out_features=25, bias=True)"
       },
-      "tests": {
-        "2025-1-23": {
+      "test": {
+        "2025-01-23": {
           "complete_mode": false,
           "score": 0,
           "score_dict": {
-            "10": 0.41
+            "10": 0.215
           }
         }
       }
