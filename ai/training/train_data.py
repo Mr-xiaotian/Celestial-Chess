@@ -4,10 +4,10 @@ from pathlib import Path
 from time import strftime, localtime
 from ai import MCTSAI, ai_battle
 from game.chess_game import ChessGame
-from CelestialVault.instances.inst_task import ExampleTaskManager
+from celestialvault.instances.inst_task import TaskManager
 
 
-class TrainDataThread(ExampleTaskManager):
+class TrainDataThread(TaskManager):
     def set_ai(self, ai_0, ai_1):
         self.ai_0 = ai_0
         self.ai_1 = ai_1
@@ -20,8 +20,8 @@ class TrainDataThread(ExampleTaskManager):
     
     def process_result_dict(self):
         all_training_data = []
-        result_dict = self.get_result_dict()
-        for over_game in result_dict.values():
+        success_dict = self.get_success_dict()
+        for over_game in success_dict.values():
             history_board = over_game.history_board
             history_move = over_game.history_move
             for step in range(over_game.max_step - 1):
