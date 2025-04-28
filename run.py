@@ -6,7 +6,7 @@ from ai import MinimaxAI, MCTSAI, MonkyAI
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "your_secret_key"
-socketio = SocketIO(app)
+socketio = SocketIO(app, async_mode="threading")
 
 # 创建线程池
 executor = ThreadPoolExecutor(max_workers=3)
