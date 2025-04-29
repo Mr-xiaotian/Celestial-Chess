@@ -1,6 +1,7 @@
 from typing import Tuple
 from loguru import logger
 from time import strftime, localtime
+
 from cc_game.chess_game import ChessGame
 
 

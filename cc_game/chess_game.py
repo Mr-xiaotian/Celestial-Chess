@@ -4,6 +4,7 @@ Vision: 1.4
 """
 import hashlib
 import numpy as np
+
 from cc_tools.chess_func import *
 
 class ChessGame:

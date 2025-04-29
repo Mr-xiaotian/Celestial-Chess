@@ -5,6 +5,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
 from pathlib import Path
 from time import strftime, localtime
+
 from cc_ai import get_model_score_by_mcts
 from cc_ai.deeplearning import ChessPolicyModel, DeepLearningAI
 
@@ -66,7 +67,7 @@ class ModelTrainer:
         now_data = strftime("%Y-%m-%d", localtime())
         now_time = strftime("%H-%M", localtime())
 
-        parent_path = Path(f'../models/{now_data}')
+        parent_path = Path(f'./data/models/{now_data}')
         parent_path.mkdir(parents=True, exist_ok=True)
 
         model_path = f'{parent_path}/dl_model({now_time})({data_size}).pth'
@@ -77,7 +78,7 @@ class ModelTrainer:
         now_data = strftime("%Y-%m-%d", localtime())
         now_time = strftime("%H-%M", localtime())
 
-        parent_path = Path(f'../models_loss/{now_data}')
+        parent_path = Path(f'./data/models_loss/{now_data}')
         parent_path.mkdir(parents=True, exist_ok=True)
         
         model_loss_path = f'{parent_path}/dl_model_loss({now_time})({data_size}).txt'
@@ -113,10 +114,10 @@ def get_model_info_dict(model_path, train_data_path, model):
     return model_info_dict
 
 def save_model_info_dict(info_dict, model_type):
-    with open('../model_score.json', 'r') as f:
+    with open('./cc_ai/model_score.json', 'r') as f:
         model_score = json.load(f)
 
     model_score[model_type].append(info_dict)
 
-    with open('../model_score.json', 'w') as f:
+    with open('./cc_ai/model_score.json', 'w') as f:
         json.dump(model_score, f, indent=2)

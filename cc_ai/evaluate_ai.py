@@ -1,9 +1,10 @@
 from time import time
 from tqdm import tqdm
 from typing import Tuple, Dict
-from cc_ai import AIAlgorithm, MinimaxAI, MCTSAI
-from cc_ai.deeplearning import DeepLearningAI
+
 from cc_game.chess_game import ChessGame
+from .ai_algorithm import AIAlgorithm
+from .mcts import MCTSAI
 
 def get_model_score_by_mcts(
         test_model: AIAlgorithm, game_state: Tuple[Tuple[int, int], int],
