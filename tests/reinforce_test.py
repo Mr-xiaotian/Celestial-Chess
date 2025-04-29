@@ -7,7 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 from torch.utils.tensorboard import SummaryWriter
-from game.chess_game_env import ChessGameEnv
+from cc_game.chess_game_env import ChessGameEnv
 
 
 class Policy(nn.Module):

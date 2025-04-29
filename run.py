@@ -1,8 +1,8 @@
 from flask import Flask, jsonify, render_template
 from flask_socketio import SocketIO
 from concurrent.futures import ThreadPoolExecutor
-from game.chess_game import ChessGame
-from ai import MinimaxAI, MCTSAI, MonkyAI
+from cc_game.chess_game import ChessGame
+from cc_ai import MinimaxAI, MCTSAI, MonkyAI
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "your_secret_key"

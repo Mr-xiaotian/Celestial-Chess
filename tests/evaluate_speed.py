@@ -1,12 +1,8 @@
-import sys
-import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 import cProfile
 from pathlib import Path
 from time import strftime, localtime
-from ai import AIAlgorithm, MinimaxAI, MCTSAI
-from game.chess_game import ChessGame
+from cc_ai import AIAlgorithm, MinimaxAI, MCTSAI
+from cc_game.chess_game import ChessGame
 import subprocess
 
 
@@ -42,7 +38,7 @@ game_state = ((5, 5), 2)
 game = ChessGame(*game_state)
 game.init_cfunc()
 mcts_ai = MCTSAI(50000, complete_mode=False)
-minimax_ai = MinimaxAI(10, game_state, complete_mode=True)
+minimax_ai = MinimaxAI(10, game_state, transposition_mode=True)
 
 target_func = 'profile_mcts'
 output_file = get_output_file_name(target_func)
