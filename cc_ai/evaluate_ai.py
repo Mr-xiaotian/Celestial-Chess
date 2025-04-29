@@ -1,8 +1,3 @@
-import sys
-import os
-project_root = os.path.abspath(".")
-sys.path.insert(0, project_root)
-
 from time import time
 from tqdm import tqdm
 from typing import Tuple, Dict
@@ -131,19 +126,3 @@ def ai_battle(ai_blue: AIAlgorithm, ai_red: AIAlgorithm, test_game: ChessGame = 
 
     return test_game
 
-if __name__ == '__main__':
-    chess_state = ((5, 5), 2)
-    test_game = ChessGame(*chess_state)
-    test_game.init_cfunc()
-    test_game.init_history()
-
-    minimax_ai = MinimaxAI(5, chess_state, debug_mode=False, transposition_mode=True)
-    mcts_ai_0 = MCTSAI(10000, complete_mode=True)
-    mcts_ai_1 = MCTSAI(20000, complete_mode=True)
-    deeplearning_ai = DeepLearningAI(r'ai\models\2024-06-28\dl_model(06-28-15-00)(136090).pth', complete_mode=True)
-
-    # policy_model = DeepLearningAI('ai/models/dl_model(06-22-21-18)(136090)(32-64-128-256).pth', complete_mode=False)
-    # mcts_ai_policy_0 = MCTSAI(1000, c_param=0.5, policy_net=policy_model, complete_mode=True)
-
-    ai_battle(mcts_ai_0, mcts_ai_1, test_game)
-    #Microsoft_767292

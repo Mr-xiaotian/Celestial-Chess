@@ -9,8 +9,8 @@ __pycache__/
 *$py.class
 
 
-*.pickle
-
 .vscode
 profile
 mnist
+celestial_chess.egg-info
+data

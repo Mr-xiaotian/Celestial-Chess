@@ -65,7 +65,7 @@ def save_train_data(data, train_num, mcts_iter):
     now_data = strftime("%Y-%m-%d", localtime())
     now_time = strftime("%H-%M", localtime())
     
-    parent_path = Path(f'../train_data/{now_data}')
+    parent_path = Path(f'./data/train_data/{now_data}')
     parent_path.mkdir(parents=True, exist_ok=True)
 
     mcts_iter_str = f'MCTS{mcts_iter // 1000}k'

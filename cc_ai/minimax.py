@@ -1,4 +1,5 @@
 import pickle
+from pathlib import Path
 from functools import lru_cache
 from typing import Tuple
 from cc_game.chess_game import ChessGame
@@ -91,7 +92,8 @@ class MinimaxAI(AIAlgorithm):
         加载transposition table
         """
         (row_len, col_len), power = chess_state
-        self.transposition_file = f"./transposition_table/transposition_table({row_len}_{col_len}&{power})(sha256).pickle"
+        self.transposition_file = Path(f"./data/transposition_table/transposition_table({row_len}_{col_len}&{power})(sha256).pickle")
+        self.transposition_file.parent.mkdir(parents=True, exist_ok=True)
         
         self.transposition_table = {}
         self.transposition_table_change = False
