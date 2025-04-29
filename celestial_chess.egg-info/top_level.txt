@@ -1,4 +1,0 @@
-cc_ai
-cc_game
-cc_tools
-tests
