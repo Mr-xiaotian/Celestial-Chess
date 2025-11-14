@@ -2,7 +2,7 @@ import numpy as np
 import pickle
 from pathlib import Path
 from time import strftime, localtime
-from celestialvault.instances.inst_task import TaskManager
+from celestialflow import TaskManager
 
 from cc_ai import MCTSAI, ai_battle
 from cc_game.chess_game import ChessGame
