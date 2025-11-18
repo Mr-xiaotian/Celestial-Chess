@@ -171,4 +171,4 @@ def handle_monky_auto():
     handle_monky_move()
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True, port=5005)
+    socketio.run(app, debug=True, port=5001)
