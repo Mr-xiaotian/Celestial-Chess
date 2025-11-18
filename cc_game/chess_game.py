@@ -4,6 +4,7 @@ Vision: 1.4
 """
 import hashlib
 import numpy as np
+from typing import Tuple
 
 from cc_tools.chess_func import *
 
@@ -11,16 +12,16 @@ class ChessGame:
     BLACK_HOLE = np.inf
 
     def __init__(self, board_range=(5, 5), power=2) -> None:
-        self.chessboard = np.zeros((board_range[0], board_range[1], 2), dtype=float)
+        self.chessboard: np.NDArray = np.zeros((board_range[0], board_range[1], 2), dtype=float)
 
         # 仅定义模拟运行必须的参数
-        self.board_range = board_range
+        self.board_range: Tuple[int, int] = board_range
         self.power: int = power
         self.threshold: int = self.power * 2 + 1
         self.balance_num: float = self.get_balance_num()
 
         self.current_color: int = 1
-        self.current_move = (-1, -1)
+        self.current_move: Tuple[int, int] = (-1, -1)
 
     def init_history(self):
         """
