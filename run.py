@@ -1,11 +1,10 @@
 from flask import Flask, jsonify, render_template
 from flask_socketio import SocketIO
 from concurrent.futures import ThreadPoolExecutor
-from cc_game.chess_game import ChessGame
-from cc_ai import MinimaxAI, MCTSAI, MonkyAI
+
+from celestialchess import ChessGame, MinimaxAI, MCTSAI, MonkyAI
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "your_secret_key"
 socketio = SocketIO(app, async_mode="threading")
 
 # 创建线程池
@@ -53,7 +52,18 @@ def get_update_board(game: ChessGame):
     prepared_board = prepare_board_for_json(game.chessboard)
     score = game.get_score()
     move = game.get_current_move()
-    return {"board": prepared_board, "move": move, "score": score, "step": game.step}
+    
+    game_over = game.is_game_over()
+    winner = game.who_is_winner() if game_over else None
+    
+    return {
+        "board": prepared_board,
+        "move": move,
+        "score": score,
+        "step": game.step,
+        "game_over": game_over,
+        "winner": winner
+    }
 
 def sendDataToBackend(game: ChessGame):
     try:
@@ -91,6 +101,9 @@ def handle_play_move(data):
     game.update_history(row, col)
     sendDataToBackend(game)
 
+    if game.is_game_over():
+        return
+
     if minimax_auto:
         executor.submit(handle_minimax_move)
     elif mcts_auto:
@@ -118,8 +131,6 @@ def handle_restart_game():
 @socketio.on("minimax_move")
 def handle_minimax_move():
     # MinimaxAI执棋
-    if game.is_game_over():
-        return
     color = game.get_color()
     move = minimax_ai.find_best_move(game)
 
@@ -130,8 +141,6 @@ def handle_minimax_move():
 @socketio.on("mcts_move")
 def handle_mcts_move():
     # MCTSAI执棋
-    if game.is_game_over():
-        return
     color = game.get_color()
     move = mcts_ai.find_best_move(game)
 
@@ -142,8 +151,6 @@ def handle_mcts_move():
 @socketio.on("monky_move")
 def handle_monky_move():
     # MonkyAI执棋
-    if game.is_game_over():
-        return
     color = game.get_color()
     move = monky_ai.find_best_move(game)
 

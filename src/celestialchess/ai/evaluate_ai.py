@@ -2,7 +2,7 @@ from time import time
 from tqdm import tqdm
 from typing import Tuple, Dict
 
-from cc_game.chess_game import ChessGame
+from ..chess_game import ChessGame
 from .ai_algorithm import AIAlgorithm
 from .mcts import MCTSAI
 

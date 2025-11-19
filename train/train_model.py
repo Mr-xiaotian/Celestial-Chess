@@ -6,8 +6,8 @@ from torch.utils.data import DataLoader, Dataset
 from pathlib import Path
 from time import strftime, localtime
 
-from cc_ai import get_model_score_by_mcts
-from cc_ai.deeplearning import ChessPolicyModel, DeepLearningAI
+from celestialchess.ai import get_model_score_by_mcts
+from celestialchess.ai.deeplearning import ChessPolicyModel, DeepLearningAI
 
 
 class ChessDataset(Dataset):

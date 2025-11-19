@@ -1,16 +1,142 @@
-# 忽略日志
-logs/
-*.log
-
-
-# 忽略Byte编译的文件
+# =====================================
+# 基础 Python/Build 忽略项目
+# =====================================
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+*.pyd
 
+# Build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
 
-.vscode
-profile
-mnist
-celestial_chess.egg-info
-data
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Cython / Numba build cache
+*.c
+*.cpp
+*.o
+*.llv*
+*.obj
+*.pdb
+*.exp
+*.dll
+*.dylib
+*.lib
+.cache/
+
+# Torch checkpoints / model weights
+*.pth
+*.pt
+
+# =====================================
+# Web 前端相关
+# =====================================
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# 静态文件缓存
+static/*.map
+
+# =====================================
+# Jupyter Notebook
+# =====================================
+.ipynb_checkpoints/
+*.ipynb_checkpoint
+**/.ipynb_checkpoints/
+*.nbconvert/
+*.nb.tmp
+
+# Large output in notebooks
+*.h5
+*.hdf5
+
+# =====================================
+# Celestial-Chess 项目特定目录
+# =====================================
+
+# 巨大训练数据目录（必须忽略）
+data/
+train_data/
+models/
+models_loss/
+profile/
+experiments/*outputs*/
+transposition_table/
+old/
+mnist/
+
+# NN 存档
+**/models/*.pth
+**/models/*.pt
+**/*.pickle
+**/*.pkl
+
+# TensorBoard
+runs/
+**/events.out.tfevents.*
+
+# Profiling outputs
+*.prof
+*.lprof
+*.cprofile
+
+# SocketIO temporary
+*.pid
+*.sock
+
+# Flask caching
+*.db
+instance/
+tmp/
+flask_session/
+
+# =====================================
+# IDE / OS
+# =====================================
+
+# VSCode
+.vscode/
+.vscode/settings.json
+.vscode/launch.json
+
+# JetBrains (PyCharm)
+.idea/
+
+# Windows
+Thumbs.db
+ehthumbs.db
+*.stackdump
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+
+# =====================================
+# Misc
+# =====================================
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+backup/
+cache/
+output/

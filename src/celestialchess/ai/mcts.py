@@ -2,8 +2,8 @@ from __future__ import annotations
 import numpy as np
 from typing import Tuple, List, Optional
 
-from cc_game.chess_game import ChessGame
-from cc_tools.mcts_func import *
+from ..chess_game import ChessGame
+from ..tools.mcts_func import *
 from .ai_algorithm import AIAlgorithm, logger
 from .deeplearning import DeepLearningAI
 

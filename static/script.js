@@ -46,10 +46,26 @@ document.addEventListener('DOMContentLoaded', function () {
     socket.on('update_board', function (data) {
         if (data.error) {
             console.error('Error:', data.error);
-        } else {
-            updateChessboard(data.board, data.move);
-            updateTotalScore(data.score);
-            toggleColor(data.step);
+            return;
+        }
+
+        updateChessboard(data.board, data.move);
+        updateTotalScore(data.score);
+        toggleColor(data.step);
+
+        if (data.game_over) {
+            let msg = "";
+            if (data.winner === 1) {
+                msg = "蓝方胜利！";
+            } else if (data.winner === -1) {
+                msg = "红方胜利！";
+            } else {
+                msg = "平局！";
+            }
+
+            setTimeout(() => {
+                alert("游戏结束\n" + msg);
+            }, 100); 
         }
     });
 });

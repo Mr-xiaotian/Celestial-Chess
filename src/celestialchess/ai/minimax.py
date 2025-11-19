@@ -3,7 +3,7 @@ from pathlib import Path
 from functools import lru_cache
 from typing import Tuple
 
-from cc_game.chess_game import ChessGame
+from ..chess_game import ChessGame
 from .ai_algorithm import AIAlgorithm, logger
 
 

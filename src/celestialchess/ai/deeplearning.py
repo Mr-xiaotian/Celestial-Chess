@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 
-from cc_game.chess_game import ChessGame
+from ..chess_game import ChessGame
 from .ai_algorithm import AIAlgorithm, logger
 
 

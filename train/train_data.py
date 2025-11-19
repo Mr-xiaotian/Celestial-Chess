@@ -4,8 +4,7 @@ from pathlib import Path
 from time import strftime, localtime
 from celestialflow import TaskManager
 
-from cc_ai import MCTSAI, ai_battle
-from cc_game.chess_game import ChessGame
+from celestialchess import ChessGame, MCTSAI, ai_battle
 
 
 class TrainDataThread(TaskManager):

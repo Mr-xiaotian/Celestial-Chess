@@ -1,7 +1,8 @@
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
-from cc_game.chess_game import ChessGame
+
+from .chess_game import ChessGame
 
 class ChessGameEnv(gym.Env):
     def __init__(self):

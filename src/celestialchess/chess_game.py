@@ -1,12 +1,8 @@
-"""
-Author: 晓天
-Vision: 1.4
-"""
 import hashlib
 import numpy as np
 from typing import Tuple
 
-from cc_tools.chess_func import *
+from .tools.chess_func import *
 
 class ChessGame:
     BLACK_HOLE = np.inf

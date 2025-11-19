@@ -2,7 +2,7 @@ import numpy as np
 import numpy.random as nr
 import scipy.special as sp
 from mnist import MNIST
-from celestialvault.instances import NeuralNetwork, ActivationLayer, DenseLayer, SequentialNetwork
+from celestialvault.instances.inst_network import NeuralNetwork, ActivationLayer, DenseLayer, SequentialNetwork
 
 # 加载MNIST数据
 mndata = MNIST(r'G:\Project\Celestial-Chess\tests\mnist')
