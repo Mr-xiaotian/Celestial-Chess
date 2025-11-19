@@ -3,6 +3,7 @@ from typing import Tuple
 from ..chess_game import ChessGame
 from .base_ai import AIAlgorithm, logger
 
+
 class MonkyAI(AIAlgorithm):
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
         # 随机选择一个合法的移动

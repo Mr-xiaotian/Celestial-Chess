@@ -4,11 +4,14 @@ from typing import Tuple
 
 from .tools.chess_func import *
 
+
 class ChessGame:
     BLACK_HOLE = np.inf
 
     def __init__(self, board_range=(5, 5), power=2) -> None:
-        self.chessboard: np.NDArray = np.zeros((board_range[0], board_range[1], 2), dtype=float)
+        self.chessboard: np.NDArray = np.zeros(
+            (board_range[0], board_range[1], 2), dtype=float
+        )
 
         # 仅定义模拟运行必须的参数
         self.board_range: Tuple[int, int] = board_range
@@ -32,7 +35,7 @@ class ChessGame:
         self.history_board = np.empty((max_steps, row_len, col_len, 2), dtype=float)
         self.history_move = np.empty((max_steps, 2), dtype=int)
         self.history_board[0] = np.zeros((row_len, col_len, 2), dtype=float)
-        self.history_move[0] = (-1, -1) # is same as np.array((-1, -1))
+        self.history_move[0] = (-1, -1)  # is same as np.array((-1, -1))
 
     def init_cfunc(self):
         """
@@ -58,13 +61,21 @@ class ChessGame:
         new_game.current_color = self.current_color
         new_game.current_move = self.current_move
         return new_game
-        
+
     def update_chessboard(self, row, col, color):
         """
         根据新规则更新棋盘状态，并考虑黑洞点的影响。
         """
         # 用bfs扩散落子点及周围点的值, 然后更新黑洞点
-        bfs_expand_with_power_threshold(self.chessboard, self.board_range, row, col, color, self.power, self.threshold)
+        bfs_expand_with_power_threshold(
+            self.chessboard,
+            self.board_range,
+            row,
+            col,
+            color,
+            self.power,
+            self.threshold,
+        )
 
         # 更新必要棋盘状态
         self.current_color *= -1
@@ -113,7 +124,7 @@ class ChessGame:
     def get_current_win_rate(self):
         """获取当前玩家的胜率"""
         return self.current_win_rate
-    
+
     def get_current_move(self):
         """获取当前玩家的移动"""
         current_move = self.current_move
@@ -123,7 +134,7 @@ class ChessGame:
         """计算棋盘上所有非无穷大格子的总分数"""
         total_score = calculate_no_inf(self.chessboard, self.board_range)
         return total_score - self.balance_num
-    
+
     def get_balance_num(self):
         """计算平衡数"""
         balance_num = self.power * (self.power + 1) * (2 * self.power + 1) / 12
@@ -132,7 +143,7 @@ class ChessGame:
     def get_all_moves(self):
         """获取所有合法移动"""
         return get_all_zero_index(self.chessboard, self.board_range)
-    
+
     def get_random_move(self):
         """获取随机合法移动"""
         return get_random_zero_index(self.chessboard, self.board_range)
@@ -153,48 +164,48 @@ class ChessGame:
             filtered_moves = get_all_zero_index(self.chessboard, self.board_range)
 
         return filtered_moves
-        
+
     def get_board_key(self):
-        '''
+        """
         获取棋盘的哈希值
-        '''
+        """
         # 将数组转换为字节数据
         arr_bytes = self.chessboard.tobytes()
-        
+
         # 计算 SHA-256 哈希值
         sha256_hash = hashlib.sha256(arr_bytes).hexdigest()
-        
+
         return sha256_hash
-    
+
     def get_board_value(self):
-        '''获取棋盘的值'''
+        """获取棋盘的值"""
         return get_first_channel(self.chessboard, self.board_range)
-    
+
     def get_color(self):
-        '''获取当前玩家的颜色的颜色'''
+        """获取当前玩家的颜色的颜色"""
         return self.current_color
-    
+
     def get_format_board(self):
-        '''获取棋盘的格式化'''
+        """获取棋盘的格式化"""
         return self.format_matrix(self.chessboard)
-    
+
     def get_format_board_value(self):
-        '''获取棋盘数值的格式化'''
+        """获取棋盘数值的格式化"""
         return self.format_simple_matrix(self.get_board_value())
 
     def is_game_over(self):
-        '''
+        """
         判断游戏是否结束
         :return: 游戏是否结束
-        '''
+        """
         return optimized_not_exist_zero_index(self.chessboard, self.board_range)
-    
+
     def is_move_valid(self, row, col):
-        '''
+        """
         判断移动是否有效
         :param move: 移动
         :return: 移动是否有效
-        '''
+        """
         row_len, col_len = self.board_range
         if self.chessboard[row, col, 0] != 0:
             # raise ValueError(f"须在值为0处落子, ({row},{col})为{self.chessboard[row, col, 0]}")
@@ -204,21 +215,21 @@ class ChessGame:
             return False
         else:
             return True
-    
-    def who_is_winner(self, color = None):
-        '''
+
+    def who_is_winner(self, color=None):
+        """
         判断当前玩家是否获胜
         :return: 1 蓝方获胜，-1 红方获胜，0 平局
-        '''
+        """
         score = self.get_score()
         balance_num = self.balance_num
         color = color if color is not None else self.get_color()
-        comparison = score + color * balance_num # color: 1 蓝方，-1 红方
+        comparison = score + color * balance_num  # color: 1 蓝方，-1 红方
 
         return (comparison > 0) - (comparison < 0)
-    
+
     def simulate_by_random(self):
-        '''
+        """
         随机模拟游戏
         :return: 1 蓝方获胜，-1 红方获胜，0 平局
 
@@ -228,60 +239,76 @@ class ChessGame:
             random_move = self.get_random_move()
             self.update_chessboard(*random_move, current_color)
             current_color *= -1
-        
+
         return self.who_is_winner(current_color)
-        '''
-        return go_random_simulate(self.chessboard, self.board_range, self.current_color,
-                                  self.power, self.threshold, self.balance_num)
-        
+        """
+        return go_random_simulate(
+            self.chessboard,
+            self.board_range,
+            self.current_color,
+            self.power,
+            self.threshold,
+            self.balance_num,
+        )
+
     def show_chessboard(self):
-        '''打印棋盘'''
+        """打印棋盘"""
         print(self.get_format_board())
 
     def show_chessboard_value(self):
-        '''打印棋盘数值部分'''
+        """打印棋盘数值部分"""
         print(self.get_format_board_value())
 
     def format_matrix(self, matrix, decimal_places=(0, 0)):
-        '''
+        """
         格式化矩阵
         :param matrix: 矩阵
         :param decimal_places: 保留的小数点位数 (第一个数的位数, 第二个数的位数)
         :return: 格式化后的字符串
-        '''
+        """
         # 确定每个元素的最大宽度
-        max_widths = [max(
-                        len(f"{sublist[idx]:.{decimal_place}f}")
-                        for row in matrix
-                        for sublist in row
-                    ) for idx, decimal_place in enumerate(decimal_places)]
-        
+        max_widths = [
+            max(
+                len(f"{sublist[idx]:.{decimal_place}f}")
+                for row in matrix
+                for sublist in row
+            )
+            for idx, decimal_place in enumerate(decimal_places)
+        ]
+
         formatted_rows = []
         for row in matrix:
             formatted_row = "  ["
             for sublist in row:
-                formatted_row += "[" + ", ".join(f"{item:>{max_widths[item_idx]}.{decimal_places[item_idx]}f}" for item_idx, item in enumerate(sublist)) + "], "
+                formatted_row += (
+                    "["
+                    + ", ".join(
+                        f"{item:>{max_widths[item_idx]}.{decimal_places[item_idx]}f}"
+                        for item_idx, item in enumerate(sublist)
+                    )
+                    + "], "
+                )
             formatted_row = formatted_row.rstrip(", ") + "]"
             formatted_rows.append(formatted_row)
-        
+
         formatted_string = "[\n" + ",\n".join(formatted_rows) + "\n]"
         return formatted_string
-    
+
     def format_simple_matrix(self, matrix):
-        '''
+        """
         格式化简单矩阵
         :param matrix: 矩阵
         :return: 格式化后的字符串
-        '''
+        """
         # 确定每个元素的最大宽度
         max_width = max(len(str(item)) for row in matrix for item in row)
-        
+
         formatted_rows = []
         for row in matrix:
-            formatted_row = "  [" + ", ".join(f"{item:>{max_width}}" for item in row) + "]"
+            formatted_row = (
+                "  [" + ", ".join(f"{item:>{max_width}}" for item in row) + "]"
+            )
             formatted_rows.append(formatted_row)
-        
+
         formatted_string = "[\n" + ",\n".join(formatted_rows) + "\n]"
         return formatted_string
-
-

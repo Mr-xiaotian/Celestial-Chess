@@ -22,7 +22,9 @@ class REINFORCE(object):
     def __init__(self, state_dim, action_dim):
         self.state_dim = state_dim
         self.action_dim = action_dim
-        self.hidden_width = 64  # The number of neurons in hidden layers of the neural network
+        self.hidden_width = (
+            64  # The number of neurons in hidden layers of the neural network
+        )
         self.lr = 4e-4  # learning rate
         self.GAMMA = 0.99  # discount factor
         self.episode_s, self.episode_a, self.episode_r = [], [], []
@@ -32,12 +34,18 @@ class REINFORCE(object):
 
     def choose_action(self, s, deterministic):
         s = torch.unsqueeze(torch.tensor(s, dtype=torch.float), 0)
-        prob_weights = self.policy(s).detach().numpy().flatten()  # probability distribution(numpy)
+        prob_weights = (
+            self.policy(s).detach().numpy().flatten()
+        )  # probability distribution(numpy)
         if deterministic:  # We use the deterministic policy during the evaluating
-            a = np.argmax(prob_weights)  # Select the action with the highest probability
+            a = np.argmax(
+                prob_weights
+            )  # Select the action with the highest probability
             return a
         else:  # We use the stochastic policy during the training
-            a = np.random.choice(range(self.action_dim), p=prob_weights)  # Sample the action according to the probability distribution
+            a = np.random.choice(
+                range(self.action_dim), p=prob_weights
+            )  # Sample the action according to the probability distribution
             return a
 
     def store(self, s, a, r):
@@ -45,7 +53,9 @@ class REINFORCE(object):
         self.episode_a.append(a)
         self.episode_r.append(r)
 
-    def learn(self, ):
+    def learn(
+        self,
+    ):
         G = []
         g = 0
         for r in reversed(self.episode_r):  # calculate the return G reversely
@@ -75,7 +85,9 @@ def evaluate_policy(env, agent):
         done = False
         episode_reward = 0
         while not done:
-            a = agent.choose_action(s, deterministic=True)  # We use the deterministic policy during the evaluating
+            a = agent.choose_action(
+                s, deterministic=True
+            )  # We use the deterministic policy during the evaluating
             s_, r, done, truncated, _ = env.step(a)
             done = done or truncated
             episode_reward += r
@@ -85,7 +97,7 @@ def evaluate_policy(env, agent):
     return int(evaluate_reward / times)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     env = ChessGameEnv()
     env_evaluate = ChessGameEnv()  # 评估时需要重新构建环境
     number = 1
@@ -105,7 +117,11 @@ if __name__ == '__main__':
     print("max_episode_steps={}".format(max_episode_steps))
 
     agent = REINFORCE(state_dim, action_dim)
-    writer = SummaryWriter(log_dir='tests/runs/REINFORCE/REINFORCE_env_{}_number_{}_seed_{}'.format("ChessGameEnv", number, seed))  # 构建tensorboard
+    writer = SummaryWriter(
+        log_dir="tests/runs/REINFORCE/REINFORCE_env_{}_number_{}_seed_{}".format(
+            "ChessGameEnv", number, seed
+        )
+    )  # 构建tensorboard
 
     max_train_steps = 1e5  # 最大训练步数
     evaluate_freq = 1e3  # 每隔evaluate_freq步评估一次策略
@@ -133,11 +149,19 @@ if __name__ == '__main__':
                 evaluate_num += 1
                 evaluate_reward = evaluate_policy(env_evaluate, agent)
                 evaluate_rewards.append(evaluate_reward)
-                print(f"evaluate_num:{evaluate_num} \t evaluate_reward:{evaluate_reward} \t")
-                writer.add_scalar(f'step_rewards_{"ChessGameEnv"}', evaluate_reward, global_step=total_steps)
+                print(
+                    f"evaluate_num:{evaluate_num} \t evaluate_reward:{evaluate_reward} \t"
+                )
+                writer.add_scalar(
+                    f'step_rewards_{"ChessGameEnv"}',
+                    evaluate_reward,
+                    global_step=total_steps,
+                )
                 if evaluate_num % 10 == 0:
-                    np.save(f'tests/data_train/REINFORCE_env_{"ChessGameEnv"}_number_{number}_seed_{seed}.npy', 
-                            np.array(evaluate_rewards))
+                    np.save(
+                        f'tests/data_train/REINFORCE_env_{"ChessGameEnv"}_number_{number}_seed_{seed}.npy',
+                        np.array(evaluate_rewards),
+                    )
 
             total_steps += 1
 

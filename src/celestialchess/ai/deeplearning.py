@@ -43,7 +43,7 @@ class ChessPolicyModel(nn.Module):
         # # 将分数转换为概率分布
         # x = F.softmax(x, dim=1)
         return x
-    
+
 
 class DeepLearningAI(AIAlgorithm):
     def __init__(self, model_path, complete_mode=True):
@@ -64,16 +64,16 @@ class DeepLearningAI(AIAlgorithm):
         # print(output.view(5, 5))
         batch_size = output.size(0)
         output = output.view(batch_size, 5, 5)
-        
+
         # 找到已经有落子的点
         occupied = torch.any(board_state[:, :1, :, :] != 0, dim=1)  # (batch_size, 5, 5)
         # print(occupied)
-        
+
         # 将这些点的输出设为极小值
-        output[occupied] = -float('inf')
-        
+        output[occupied] = -float("inf")
+
         return output.view(batch_size, -1)
-    
+
     def process_board(self, game: ChessGame):
         """
         将棋盘状态转换为模型输入的格式
@@ -89,7 +89,7 @@ class DeepLearningAI(AIAlgorithm):
                 if cell[0] == float("inf"):
                     cell[0] = 5
         return processed_board
-    
+
     def trans_softmax(self, outputs):
         """
         将输出转换为概率分布
@@ -97,16 +97,16 @@ class DeepLearningAI(AIAlgorithm):
         :return: 归一化概率分布，形状为 (batch_size, 25)
         """
         # 将负无穷大部分屏蔽掉
-        mask = outputs != float('-inf')
-        
+        mask = outputs != float("-inf")
+
         # 对屏蔽后的部分进行softmax计算
         masked_tensor = outputs.clone()
-        masked_tensor[~mask] = float('-inf')  # 使用负无穷大来忽略这些值
+        masked_tensor[~mask] = float("-inf")  # 使用负无穷大来忽略这些值
         softmax_tensor = F.softmax(masked_tensor, dim=-1)
-        
+
         # 保持负无穷大部分不变
-        softmax_tensor[~mask] = float('-inf')
-        print(softmax_tensor.reshape(5,5))
+        softmax_tensor[~mask] = float("-inf")
+        print(softmax_tensor.reshape(5, 5))
 
         return softmax_tensor
 
@@ -114,18 +114,26 @@ class DeepLearningAI(AIAlgorithm):
         chessboard = self.process_board(game)
 
         board_state = np.array(chessboard).reshape(1, 5, 5, 3)
-        board_state = torch.tensor(board_state, dtype=torch.float32).permute(0, 3, 1, 2).to(self.device)
+        board_state = (
+            torch.tensor(board_state, dtype=torch.float32)
+            .permute(0, 3, 1, 2)
+            .to(self.device)
+        )
         with torch.no_grad():
             outputs = self.model(board_state)
             masked_outputs = self.process_output(outputs, board_state)
 
         return masked_outputs.view(5, 5)
-    
+
     def find_best_move(self, game: ChessGame):
         chessboard = self.process_board(game)
 
         board_state = np.array(chessboard).reshape(1, 5, 5, 3)
-        board_state = torch.tensor(board_state, dtype=torch.float32).permute(0, 3, 1, 2).to(self.device)
+        board_state = (
+            torch.tensor(board_state, dtype=torch.float32)
+            .permute(0, 3, 1, 2)
+            .to(self.device)
+        )
         with torch.no_grad():
             outputs = self.model(board_state)
             masked_outputs = self.process_output(outputs, board_state)
@@ -137,7 +145,7 @@ class DeepLearningAI(AIAlgorithm):
             self.trans_softmax(masked_outputs)
             game.set_current_win_rate()
         return move
-    
+
     def end_game(self):
         pass
 

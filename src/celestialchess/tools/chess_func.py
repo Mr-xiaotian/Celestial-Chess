@@ -12,7 +12,11 @@ def optimized_not_exist_zero_index(chessboard, board_range):
                 return False
     return True
 
-@njit(types.int32[:, :](types.float64[:, :, :], types.UniTuple(types.int32, 2)), cache=True)
+
+@njit(
+    types.int32[:, :](types.float64[:, :, :], types.UniTuple(types.int32, 2)),
+    cache=True,
+)
 def get_all_zero_index(chessboard, board_range):
     row_len, col_len = board_range
     move_list = np.empty((row_len * col_len, 2), dtype=np.int32)
@@ -26,20 +30,27 @@ def get_all_zero_index(chessboard, board_range):
                 count += 1
     return move_list[:count]  # 截取有效的部分
 
-@njit(types.UniTuple(types.int32, 2)(types.float64[:, :, :], types.UniTuple(types.int32, 2)), cache=True)
+
+@njit(
+    types.UniTuple(types.int32, 2)(
+        types.float64[:, :, :], types.UniTuple(types.int32, 2)
+    ),
+    cache=True,
+)
 def get_random_zero_index(chessboard, board_range):
     row_len, col_len = board_range
     chosen_row, chosen_col = -1, -1
     count = 0
-    
+
     for row_idx in range(row_len):
         for col_idx in range(col_len):
             if chessboard[row_idx, col_idx, 0] == 0.0:
                 count += 1
                 if random.randint(0, count - 1) == 0:
                     chosen_row, chosen_col = row_idx, col_idx
-    
+
     return chosen_row, chosen_col
+
 
 @njit(types.int32(types.float64[:, :, :], types.UniTuple(types.int32, 2)), cache=True)
 def calculate_no_inf(chessboard, board_range):
@@ -52,7 +63,11 @@ def calculate_no_inf(chessboard, board_range):
                 total_score += score
     return total_score
 
-@njit(types.float64[:, :](types.float64[:, :, :], types.UniTuple(types.int32, 2)), cache=True)
+
+@njit(
+    types.float64[:, :](types.float64[:, :, :], types.UniTuple(types.int32, 2)),
+    cache=True,
+)
 def get_first_channel(chessboard, board_range):
     rows, cols = board_range
     first_channel = np.empty((rows, cols), dtype=np.float64)
@@ -61,12 +76,15 @@ def get_first_channel(chessboard, board_range):
             first_channel[row_idx, col_idx] = chessboard[row_idx, col_idx, 0]
     return first_channel
 
+
 @njit(cache=True)
-def bfs_expand_with_power_threshold(chessboard, board_range, row, col, color, power, threshold):
+def bfs_expand_with_power_threshold(
+    chessboard, board_range, row, col, color, power, threshold
+):
     row_len, col_len = board_range
     board_size = row_len * col_len
     max_size = board_size * 2
-    
+
     # 第一层存储power_expand的visit信息, 第二层存储threshold_expand的visit信息
     visited = np.zeros((row_len, col_len, 2), dtype=np.bool_)
 
@@ -84,7 +102,11 @@ def bfs_expand_with_power_threshold(chessboard, board_range, row, col, color, po
 
     while head < tail:
         """更新落子点周围的格子，考虑黑洞点对路径的阻挡作用，同时只影响下方的格子"""
-        r, c, distance = expand_queue_r[head], expand_queue_c[head], expand_queue_d[head]
+        r, c, distance = (
+            expand_queue_r[head],
+            expand_queue_c[head],
+            expand_queue_d[head],
+        )
         head += 1
 
         if visited[r, c, 0] or distance <= 0 or chessboard[r, c, 0] == np.inf:
@@ -114,16 +136,20 @@ def bfs_expand_with_power_threshold(chessboard, board_range, row, col, color, po
 
     while head < over_threshold_max_index:
         """扩张黑洞区域"""
-        r, c, distance = expand_queue_r[head], expand_queue_c[head], expand_queue_d[head]
+        r, c, distance = (
+            expand_queue_r[head],
+            expand_queue_c[head],
+            expand_queue_d[head],
+        )
         head += 1
 
         if visited[r, c, 1] or distance <= 0:
             continue
-        
+
         visited[r, c, 1] = True
         if r < row_len:
             chessboard[r, c, 0] = np.inf
-        
+
         for dr, dc in [(0, 1), (0, -1), (-1, 0)]:
             nr, nc = r + dr, (c + dc) % col_len
             expand_queue_r[over_threshold_max_index] = nr
@@ -131,8 +157,11 @@ def bfs_expand_with_power_threshold(chessboard, board_range, row, col, color, po
             expand_queue_d[over_threshold_max_index] = distance - 1
             over_threshold_max_index += 1
 
+
 @njit(cache=True)
-def go_random_simulate(chessboard, board_range, current_color, power, threshold, balance_num):
+def go_random_simulate(
+    chessboard, board_range, current_color, power, threshold, balance_num
+):
     row_len, col_len = board_range
     board_size = row_len * col_len
     max_size = board_size * 2
@@ -142,7 +171,7 @@ def go_random_simulate(chessboard, board_range, current_color, power, threshold,
     expand_queue_r = np.empty(max_size, dtype=np.int32)
     expand_queue_c = np.empty(max_size, dtype=np.int32)
     expand_queue_d = np.empty(max_size, dtype=np.int32)
-    
+
     count = 0
     for row_idx in range(row_len):
         for col_idx in range(col_len):
@@ -163,7 +192,11 @@ def go_random_simulate(chessboard, board_range, current_color, power, threshold,
 
         while head < tail:
             """更新落子点周围的格子，考虑黑洞点对路径的阻挡作用，同时只影响下方的格子"""
-            r, c, distance = expand_queue_r[head], expand_queue_c[head], expand_queue_d[head]
+            r, c, distance = (
+                expand_queue_r[head],
+                expand_queue_c[head],
+                expand_queue_d[head],
+            )
             head += 1
 
             if visited[r, c, 0] or distance <= 0 or chessboard[r, c, 0] == np.inf:
@@ -193,16 +226,20 @@ def go_random_simulate(chessboard, board_range, current_color, power, threshold,
 
         while head < over_threshold_max_index:
             """扩张黑洞区域"""
-            r, c, distance = expand_queue_r[head], expand_queue_c[head], expand_queue_d[head]
+            r, c, distance = (
+                expand_queue_r[head],
+                expand_queue_c[head],
+                expand_queue_d[head],
+            )
             head += 1
 
             if visited[r, c, 1] or distance <= 0:
                 continue
-            
+
             visited[r, c, 1] = True
             if r < board_range[0]:
                 chessboard[r, c, 0] = np.inf
-            
+
             for dr, dc in [(0, 1), (0, -1), (-1, 0)]:
                 nr, nc = r + dr, (c + dc) % board_range[1]
                 expand_queue_r[over_threshold_max_index] = nr
@@ -219,8 +256,8 @@ def go_random_simulate(chessboard, board_range, current_color, power, threshold,
                     count += 1
                     if random.randint(0, count - 1) == 0:
                         chosen_row, chosen_col = row_idx, col_idx
-    
-    comparison_score =  current_color * balance_num - balance_num
+
+    comparison_score = current_color * balance_num - balance_num
     for row_index in range(row_len):
         for col_index in range(col_len):
             score = chessboard[row_index, col_index, 0]
@@ -233,4 +270,3 @@ def go_random_simulate(chessboard, board_range, current_color, power, threshold,
         return -1
     else:
         return 0
-    

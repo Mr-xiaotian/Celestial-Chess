@@ -2,10 +2,15 @@ import numpy as np
 import numpy.random as nr
 import scipy.special as sp
 from mnist import MNIST
-from celestialvault.instances.inst_network import NeuralNetwork, ActivationLayer, DenseLayer, SequentialNetwork
+from celestialvault.instances.inst_network import (
+    NeuralNetwork,
+    ActivationLayer,
+    DenseLayer,
+    SequentialNetwork,
+)
 
 # 加载MNIST数据
-mndata = MNIST(r'G:\Project\Celestial-Chess\tests\mnist')
+mndata = MNIST(r"G:\Project\Celestial-Chess\tests\mnist")
 images, labels = mndata.load_training()
 test_images, test_labels = mndata.load_testing()
 
@@ -13,9 +18,11 @@ test_images, test_labels = mndata.load_testing()
 images = np.array(images) / 255.0
 test_images = np.array(test_images) / 255.0
 
+
 # 将标签转换为独热编码
 def one_hot_encode(labels, num_classes=10):
     return np.eye(num_classes)[labels]
+
 
 labels = one_hot_encode(labels)
 test_labels = one_hot_encode(test_labels)
