@@ -3,7 +3,7 @@ from tqdm import tqdm
 from typing import Tuple, Dict
 
 from ..chess_game import ChessGame
-from .ai_algorithm import AIAlgorithm
+from .base_ai import AIAlgorithm
 from .mcts import MCTSAI
 
 def get_model_score_by_mcts(

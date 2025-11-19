@@ -1,4 +1,4 @@
-from .ai_algorithm import AIAlgorithm, logger
+from .base_ai import AIAlgorithm, logger
 # from .deeplearning import ChessModel, DeepLearningAI
 from .minimax import MinimaxAI
 from .monky import MonkyAI

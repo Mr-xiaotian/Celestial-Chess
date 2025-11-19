@@ -1,12 +1,14 @@
 import cProfile
 from pathlib import Path
 from time import strftime, localtime
-from cc_ai import AIAlgorithm, MinimaxAI, MCTSAI
-from cc_game.chess_game import ChessGame
 import subprocess
+
+from celestialchess import ChessGame, MinimaxAI, MCTSAI
 
 
 '''
+cProfile 输出字段说明：
+
 ncalls：函数被调用的次数。
 tottime：函数自身执行的总时间（不包括子函数的时间）。
 percall：每次调用的平均时间（tottime/ncalls）。
@@ -34,13 +36,16 @@ def profile_minimax():
     minimax_ai.find_best_move(game)
     minimax_ai.end_model()
 
-game_state = ((5, 5), 2)
-game = ChessGame(*game_state)
-game.init_cfunc()
-mcts_ai = MCTSAI(50000, complete_mode=False)
-minimax_ai = MinimaxAI(10, game_state, transposition_mode=True)
 
-target_func = 'profile_mcts'
+chess_state = ((5, 5), 2)
+game = ChessGame(*chess_state)
+game.init_cfunc()
+
+mcts_ai = MCTSAI(50000, complete_mode=False)
+minimax_ai = MinimaxAI(10)
+minimax_ai.set_transposition_mode(chess_state, r"Q:\Project\Celestial-Chess\data\transposition_table")
+
+target_func = 'profile_minimax'
 output_file = get_output_file_name(target_func)
 
 cProfile.run(target_func + '()', output_file)

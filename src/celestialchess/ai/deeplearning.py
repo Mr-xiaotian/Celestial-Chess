@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import numpy as np
 
 from ..chess_game import ChessGame
-from .ai_algorithm import AIAlgorithm, logger
+from .base_ai import AIAlgorithm, logger
 
 
 class ChessPolicyModel(nn.Module):

@@ -4,7 +4,7 @@ from typing import Tuple, List, Optional
 
 from ..chess_game import ChessGame
 from ..tools.mcts_func import *
-from .ai_algorithm import AIAlgorithm, logger
+from .base_ai import AIAlgorithm, logger
 from .deeplearning import DeepLearningAI
 
 
