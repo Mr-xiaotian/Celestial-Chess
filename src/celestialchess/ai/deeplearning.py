@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import numpy as np
 
 from ..chess_game import ChessGame
-from .base_ai import AIAlgorithm, logger
+from .base_ai import BaseAI, logger
 
 
 class ChessPolicyModel(nn.Module):
@@ -45,7 +45,7 @@ class ChessPolicyModel(nn.Module):
         return x
 
 
-class DeepLearningAI(AIAlgorithm):
+class DeepLearningAI(BaseAI):
     def __init__(self, model_path, complete_mode=True):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = ChessPolicyModel().to(self.device)

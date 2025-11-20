@@ -4,7 +4,7 @@ from typing import Tuple, List, Optional
 
 from ..chess_game import ChessGame
 from ..tools.mcts_tool import *
-from .base_ai import AIAlgorithm, logger
+from .base_ai import BaseAI, logger
 from .deeplearning import DeepLearningAI
 
 
@@ -133,7 +133,7 @@ class MCTSNode:
             node = node.parent
 
 
-class MCTSAI(AIAlgorithm):
+class MCTSAI(BaseAI):
     def __init__(self, itermax: int = 1000, c_param=0.8, complete_mode=True) -> None:
         self.itermax = itermax
         self.c_param = c_param

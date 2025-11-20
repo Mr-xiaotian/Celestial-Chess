@@ -15,7 +15,7 @@ logger.add(
 )
 
 
-class AIAlgorithm:
+class BaseAI:
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
         raise NotImplementedError("This method should be overridden by subclasses.")
 

@@ -5,10 +5,10 @@ from pathlib import Path
 from typing import Tuple
 
 from ..chess_game import ChessGame
-from .base_ai import AIAlgorithm, logger
+from .base_ai import BaseAI, logger
 
 
-class MinimaxAI(AIAlgorithm):
+class MinimaxAI(BaseAI):
     def __init__(self, depth: int, log_mode: bool = False) -> None:
         self.depth = depth
         self.log_mode = log_mode

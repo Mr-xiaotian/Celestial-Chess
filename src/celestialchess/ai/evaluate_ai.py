@@ -3,12 +3,12 @@ from tqdm import tqdm
 from typing import Tuple, Dict
 
 from ..chess_game import ChessGame
-from .base_ai import AIAlgorithm
+from .base_ai import BaseAI
 from .mcts import MCTSAI
 
 
 def get_model_score_by_mcts(
-    test_model: AIAlgorithm,
+    test_model: BaseAI,
     game_state: Tuple[Tuple[int, int], int],
     start_mcts_iter: float = 1e1,
     end_mcts_iter: float = 1e4,
@@ -79,8 +79,8 @@ def get_best_c_param(game_state, start_c_param=0.0, test_game_num=1000):
 
 
 def ai_battle(
-    ai_blue: AIAlgorithm,
-    ai_red: AIAlgorithm,
+    ai_blue: BaseAI,
+    ai_red: BaseAI,
     test_game: ChessGame = ChessGame(),
     display=True,
 ):
