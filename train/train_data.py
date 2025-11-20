@@ -1,4 +1,5 @@
 import numpy as np
+import json
 import pickle
 from pathlib import Path
 from time import strftime, localtime
@@ -30,14 +31,35 @@ class TrainDataThread(TaskManager):
         return all_training_data
 
     def process_board(self, chess_board, step):
-        color = 1 if step % 2 == 0 else -1
-        color_channel = np.full((5, 5, 1), color)
-        processed_board = np.concatenate((chess_board, color_channel), axis=2)
+        """
+        构造训练用棋盘输入张量（5×5×4）
+        通道含义：
+        0: value（inf 替换为 0）
+        1: load
+        2: color（当前行动方）
+        3: blackhole_flag（1=黑洞）
+        """
 
-        for row in processed_board:
-            for cell in row:
-                if cell[0] == float("inf"):
-                    cell[0] = 5
+        # 当前行动方颜色
+        color = 1 if step % 2 == 0 else -1
+        color_channel = np.full((5, 5), color, dtype=float)
+
+        # 处理 value 通道：将 inf / -inf 替换为 0
+        value_channel = chess_board[:, :, 0].copy()
+        value_channel[np.isinf(value_channel)] = 0.0
+
+        # load 通道保持不变
+        load_channel = chess_board[:, :, 1].copy()
+
+        # 黑洞通道：inf → 1，其他 → 0
+        blackhole_channel = np.isinf(chess_board[:, :, 0]).astype(float)
+
+        # 组合成最终 4 通道输入
+        processed_board = np.stack(
+            [value_channel, load_channel, color_channel, blackhole_channel],
+            axis=2
+        )
+
         return processed_board
 
 
@@ -47,6 +69,7 @@ def start_train_data(
     train_data_threader = TrainDataThread(
         ai_battle,
         execution_mode=execution_mode,
+        enable_result_cache=True,
         progress_desc="TrainDataProcess",
         show_progress=True,
     )
@@ -60,35 +83,63 @@ def start_train_data(
     return all_training_data
 
 
+def convert_training_data_to_json_format(data):
+    """
+    将训练数据转换为 JSON 可序列化格式
+    data: list of (np.array(5,5,4), (row, col))
+    """
+    json_list = []
+    for board, move in data:
+        json_list.append({
+            "board": board.tolist(),   # numpy -> python list
+            "move": [int(move[0]), int(move[1])]   # int32 -> int
+        })
+    return json_list
+
+
 def save_train_data(data, train_num, mcts_iter):
     """
-    保存训练数据到指定路径
+    以 JSON 格式保存训练数据
     """
-    data_size = len(data)
-    now_data = strftime("%Y-%m-%d", localtime())
+    # 先转换格式
+    json_data = convert_training_data_to_json_format(data)
+    
+    now_date = strftime("%Y-%m-%d", localtime())
     now_time = strftime("%H-%M", localtime())
 
-    parent_path = Path(f"./data/train_data/{now_data}")
+    parent_path = Path(f"./data/train_data/{now_date}")
     parent_path.mkdir(parents=True, exist_ok=True)
 
-    mcts_iter_str = f"MCTS{mcts_iter // 1000}k"
+    mcts_iter_str = f"MCTS{mcts_iter/1000}k"
     train_num_str = (
-        f"Games{train_num // 1000}k" if train_num > 1000 else f"Games{train_num}"
+        f"Games{train_num/1000}k" if train_num > 1000 else f"Games{train_num}"
     )
-    data_size_str = f"Length{data_size}"
+    data_size_str = f"Length{len(data)}"
 
-    train_data_path = (
-        f"{parent_path}/{mcts_iter_str}_{train_num_str}_{data_size_str}({now_time}).pkl"
+    file_path = (
+        f"{parent_path}/{mcts_iter_str}_{train_num_str}_{data_size_str}({now_time}).json"
     )
-    pickle.dump(data, open(train_data_path, "wb"))
 
-    return train_data_path
+    with open(file_path, "w", encoding="utf-8") as f:
+        json.dump(json_data, f, ensure_ascii=False)
+
+    return file_path
 
 
 def load_train_data(file_path):
     """
-    从指定路径加载训练数据
+    从 JSON 文件中加载训练数据，恢复为 numpy 格式
     """
-    with open(file_path, "rb") as f:
-        data = pickle.load(f)
+    import numpy as np
+
+    with open(file_path, "r", encoding="utf-8") as f:
+        json_data = json.load(f)
+
+    data = []
+    for sample in json_data:
+        board_np = np.array(sample["board"], dtype=float)
+        move = tuple(sample["move"])
+        data.append((board_np, move))
+
     return data
+

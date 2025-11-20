@@ -610,6 +610,31 @@
           }
         }
       }
+    },
+    {
+      "model_path": "data\\models\\2025-11-20/dl_model(16-37)(140).pth",
+      "train_data_path": "Q:\\Project\\Celestial-Chess\\train\\data\\train_data\\2025-11-20\\MCTS1.0k_Games10_Length140(16-16).json",
+      "layers": {
+        "conv1": "Conv2d(4, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "bn1": "BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)",
+        "conv2": "Conv2d(32, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "bn2": "BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)",
+        "conv3": "Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "bn3": "BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)",
+        "conv4": "Conv2d(128, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "bn4": "BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)",
+        "fc1": "Linear(in_features=6400, out_features=512, bias=True)",
+        "fc2": "Linear(in_features=512, out_features=25, bias=True)"
+      },
+      "tests": {
+        "2025-11-20": {
+          "complete_mode": false,
+          "score": 0,
+          "score_dict": {
+            "10": 0.41
+          }
+        }
+      }
     }
   ]
 }
