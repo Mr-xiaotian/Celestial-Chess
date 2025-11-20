@@ -2,7 +2,7 @@ import hashlib
 import numpy as np
 from typing import Tuple
 
-from .tools.chess_func import *
+from .tools.chess_tool import *
 
 
 class ChessGame:
@@ -185,13 +185,14 @@ class ChessGame:
         """获取当前玩家的颜色的颜色"""
         return self.current_color
 
-    def get_format_board(self):
+    def get_format_board(self, matrix=None, decimal_places=(0, 0)):
         """获取棋盘的格式化"""
-        return self.format_matrix(self.chessboard)
+        matrix = self.chessboard if matrix is None else matrix
+        return format_matrix(matrix, decimal_places)
 
     def get_format_board_value(self):
         """获取棋盘数值的格式化"""
-        return self.format_simple_matrix(self.get_board_value())
+        return format_simple_matrix(self.get_board_value())
 
     def is_game_over(self):
         """
@@ -208,10 +209,10 @@ class ChessGame:
         """
         row_len, col_len = self.board_range
         if self.chessboard[row, col, 0] != 0:
-            # raise ValueError(f"须在值为0处落子, ({row},{col})为{self.chessboard[row, col, 0]}")
+            # 须在值为0处落子
             return False
         elif row >= row_len or row < 0 or col >= col_len or col < 0:
-            # raise ValueError(f"超出棋盘范围, ({row},{col})")
+            # 超出棋盘范围
             return False
         else:
             return True
@@ -258,57 +259,3 @@ class ChessGame:
     def show_chessboard_value(self):
         """打印棋盘数值部分"""
         print(self.get_format_board_value())
-
-    def format_matrix(self, matrix, decimal_places=(0, 0)):
-        """
-        格式化矩阵
-        :param matrix: 矩阵
-        :param decimal_places: 保留的小数点位数 (第一个数的位数, 第二个数的位数)
-        :return: 格式化后的字符串
-        """
-        # 确定每个元素的最大宽度
-        max_widths = [
-            max(
-                len(f"{sublist[idx]:.{decimal_place}f}")
-                for row in matrix
-                for sublist in row
-            )
-            for idx, decimal_place in enumerate(decimal_places)
-        ]
-
-        formatted_rows = []
-        for row in matrix:
-            formatted_row = "  ["
-            for sublist in row:
-                formatted_row += (
-                    "["
-                    + ", ".join(
-                        f"{item:>{max_widths[item_idx]}.{decimal_places[item_idx]}f}"
-                        for item_idx, item in enumerate(sublist)
-                    )
-                    + "], "
-                )
-            formatted_row = formatted_row.rstrip(", ") + "]"
-            formatted_rows.append(formatted_row)
-
-        formatted_string = "[\n" + ",\n".join(formatted_rows) + "\n]"
-        return formatted_string
-
-    def format_simple_matrix(self, matrix):
-        """
-        格式化简单矩阵
-        :param matrix: 矩阵
-        :return: 格式化后的字符串
-        """
-        # 确定每个元素的最大宽度
-        max_width = max(len(str(item)) for row in matrix for item in row)
-
-        formatted_rows = []
-        for row in matrix:
-            formatted_row = (
-                "  [" + ", ".join(f"{item:>{max_width}}" for item in row) + "]"
-            )
-            formatted_rows.append(formatted_row)
-
-        formatted_string = "[\n" + ",\n".join(formatted_rows) + "\n]"
-        return formatted_string

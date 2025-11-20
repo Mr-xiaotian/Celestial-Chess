@@ -112,7 +112,7 @@ class MinimaxAI(AIAlgorithm):
                 game.get_format_board_value() if self.log_mode else None,
             )
 
-            return best_eval
+        return best_eval
 
     def load_transposition_table(
         self, chess_state: Tuple[Tuple[int, int], int]

@@ -109,16 +109,16 @@ def get_model_info_dict(model_path, train_data_path, model):
     test_dict = {
         now_data: {"complete_mode": False, "score": score, "score_dict": score_dict}
     }
-    model_info_dict["test"] = test_dict
+    model_info_dict["tests"] = test_dict
 
     return model_info_dict
 
 
 def save_model_info_dict(info_dict, model_type):
-    with open("./cc_ai/model_score.json", "r") as f:
+    with open(".model_score.json", "r") as f:
         model_score = json.load(f)
 
     model_score[model_type].append(info_dict)
 
-    with open("./cc_ai/model_score.json", "w") as f:
+    with open(".model_score.json", "w") as f:
         json.dump(model_score, f, indent=2)

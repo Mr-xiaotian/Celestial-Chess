@@ -3,7 +3,7 @@ import numpy as np
 from typing import Tuple, List, Optional
 
 from ..chess_game import ChessGame
-from ..tools.mcts_func import *
+from ..tools.mcts_tool import *
 from .base_ai import AIAlgorithm, logger
 from .deeplearning import DeepLearningAI
 
@@ -189,7 +189,7 @@ class MCTSAI(AIAlgorithm):
 
         game.set_current_win_rate(best_win_rate)
         game.set_MCTSscore_board(next_win_rate_board)
-        print(game.format_matrix(current_win_rate_board, (3, 0)))
+        print(game.get_format_board(current_win_rate_board, (3, 0)))
 
     def MCTS(self, root: MCTSNode) -> MCTSNode:
         """执行迭代次数为 itermax 的 MCTS 搜索，返回最佳子节点"""

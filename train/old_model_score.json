@@ -1,0 +1,222 @@
+{
+  "EarlyMCTSAI": [
+    {
+      "name": "test_minimax_depth6",
+      "type": "MinimaxAI",
+      "depth": 6,
+      "score": 50
+    },
+    {
+      "name": "mcts_1000",
+      "type": "MCTSAI",
+      "itermax": 1000,
+      "flag": false,
+      "score": null,
+      "score_dict": null
+    },
+    {
+      "name": "mcts_100_flagTrue",
+      "type": "MCTSAI",
+      "itermax": 100,
+      "flag": true,
+      "score": 50,
+      "score_dict": {
+        "10": 0.50
+      }
+    },
+    {
+      "name": "mcts_100_flagFalse",
+      "type": "MCTSAI",
+      "itermax": 100,
+      "flag": false,
+      "score": 80,
+      "score_dict": null
+    },
+    {
+      "name": "mcts_60_flagTrue",
+      "type": "MCTSAI",
+      "itermax": 60,
+      "flag": true,
+      "score": 50,
+      "score_dict": {
+        "10": 0.82,
+        "20": 0.76,
+        "30": 0.53,
+        "40": 0.57,
+        "50": 0.51,
+        "60": 0.32
+      }
+    },
+    {
+      "name": "mcts_60_flagFalse",
+      "type": "MCTSAI",
+      "itermax": 60,
+      "flag": false,
+      "score": 110,
+      "score_dict": {
+        "10": 0.86,
+        "20": 0.86,
+        "30": 0.77,
+        "40": 0.63,
+        "50": 0.58,
+        "60": 0.63,
+        "70": 0.58,
+        "80": 0.52,
+        "90": 0.51,
+        "100": 0.50,
+        "110": 0.52,
+        "120": 0.45
+      }
+    },
+    {
+      "name": "mcts_10_flagTrue",
+      "type": "MCTSAI",
+      "itermax": 10,
+      "flag": true,
+      "score": 0,
+      "score_dict": {
+        "10": 0.45
+      }
+    },
+    {
+      "name": "mcts_10_flagFalse",
+      "type": "MCTSAI",
+      "itermax": 10,
+      "flag": false,
+      "score": 50,
+      "score_dict": {
+        "10": 0.76,
+        "20": 0.69,
+        "30": 0.57,
+        "40": 0.56,
+        "50": 0.50,
+        "60": 0.40
+      }
+    },
+    {
+      "name": "mcts_500_flagTrue",
+      "type": "MCTSAI",
+      "itermax": 500,
+      "flag": true,
+      "score": null,
+      "score_dict": null
+    }
+  ],
+  "DeepLearningAI": [
+    {
+      "model_path": "old/models/chess_ai_model(06-13-19).pth",
+      "score": 20,
+      "score_dict": {
+        "10": 0.7,
+        "20": 0.68,
+        "30": 0.47
+      },
+      "train_from": "unknown"
+    },
+    {
+      "model_path": "old/models/chess_ai_model(06-15-17)(1506).pth",
+      "score": 20,
+      "score_dict": {
+        "10": 0.7,
+        "20": 0.51,
+        "30": 0.43
+      },
+      "train_from": "MCTSAI(itermax=1000, flag=True), train 100 rounds"
+    },
+    {
+      "model_path": "old/models/chess_ai_model(06-15-17)(1471).pth",
+      "score": 20,
+      "score_dict": {
+        "10": 0.75,
+        "20": 0.65,
+        "30": 0.47
+      },
+      "train_from": "MCTSAI(itermax=10000, flag=True), train 100 rounds"
+    },
+    {
+      "model_path": "old/models/chess_ai_model(06-15-17)(936).pth",
+      "score": 10,
+      "score_dict": {
+        "10": 0.63,
+        "20": 0.41
+      },
+      "train_from": "MCTSAI(itermax=10000, flag=True), train 100 rounds, deduplicated"
+    },
+    {
+      "model_path": "old/models/chess_ai_model(06-15-17)(15475).pth",
+      "score": 50,
+      "score_dict": {
+        "10": 0.82,
+        "20": 0.76,
+        "30": 0.65,
+        "40": 0.57,
+        "50": 0.56,
+        "60": 0.44
+      },
+      "train_from": "MCTSAI(itermax=1000, flag=True), train 1000 rounds"
+    },
+    {
+      "model_path": "old/models/chess_ai_model(06-15-17)(9598).pth",
+      "score": 50,
+      "score_dict": {
+        "10": 0.84,
+        "20": 0.58,
+        "30": 0.57,
+        "40": 0.61,
+        "50": 0.56,
+        "60": 0.41
+      },
+      "train_from": "MCTSAI(itermax=1000, flag=True), train 1000 rounds, deduplicated"
+    },
+    {
+      "model_path": "old/models/chess_ai_model(06-16-15)(1400).pth",
+      "score": 0,
+      "score_dict": {
+        "10": 0.32
+      },
+      "train_from": "MCTSAI(itermax=10000, flag=False), train 100 rounds"
+    },
+    {
+      "model_path": "old/models/chess_ai_model(06-16-20)(1542).pth",
+      "score": 10,
+      "score_dict": {
+        "10": 0.55,
+        "20": 0.48
+      },
+      "train_from": "MCTSAI(itermax=1000, flag=False), train 100 rounds"
+    },
+    {
+      "model_path": "old/models/chess_ai_model(06-17-12)(15475).pth",
+      "score": 40,
+      "score_dict": {
+        "10": 0.82,
+        "20": 0.73,
+        "30": 0.67,
+        "40": 0.52,
+        "50": 0.46
+      },
+      "train_from": "MCTSAI(itermax=1000, flag=True), train 1000 rounds, conv 32-64-128, fc 128-256-25"
+    },
+    {
+      "model_path": "old/models/chess_ai_model(06-17-12)(1506).pth",
+      "score": 10,
+      "score_dict": {
+        "10": 0.72,
+        "20": 0.39
+      },
+      "train_from": "MCTSAI(itermax=1000, flag=True), train 100 rounds, conv 32-64-128, fc 128-256-25"
+    },
+    {
+      "model_path": "old/models/chess_ai_model(06-17-13)(15475).pth",
+      "score": 80,
+      "score_dict": {
+        "10": 0.9,
+        "20": 0.84,
+        "30": 0.72,
+        "40": 0.6,
+        "50": 0.48
+      },
+      "train_from": "MCTSAI(itermax=1000, flag=True), conv 16-32-64, fc 64-128-25, train 1000 rounds"
+    }
+  ]
+}

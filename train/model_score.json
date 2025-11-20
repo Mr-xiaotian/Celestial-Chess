@@ -27,7 +27,7 @@
             "120": 0.415
           }
         },
-        "7-9-2024": {
+        "2024-7-9": {
           "score": 110,
           "c_param": 0.8,
           "score_dict": {
@@ -45,7 +45,7 @@
             "120": 0.46
           }
         },
-        "7-18-2024": {
+        "2024-7-18": {
           "score": 120,
           "c_param": 0.8,
           "score_dict": {
@@ -107,7 +107,7 @@
     {
       "depth": 6,
       "test": {
-        "unlnow": {
+        "unknow": {
           "transposition_mode": false,
           "score": 30,
           "score_dict": {
@@ -117,7 +117,7 @@
             "40": 0.435
           }
         },
-        "7-10-2024": {
+        "2024-7-10": {
           "transposition_mode": false,
           "score": 20,
           "score_dict": {
@@ -143,7 +143,7 @@
     {
       "depth": 10,
       "test": {
-        "7-10-2024": {
+        "2024-7-10": {
           "transposition_mode": true,
           "score": 50,
           "score_dict": {
@@ -160,7 +160,7 @@
   ],
   "DeepLearningAI": [
     {
-      "path": "./data/models/dl_model(06-22-16)(127)(16-32-64).pth",
+      "model_path": "./data/models/2024-06-22/dl_model(06-22-16)(127)(16-32-64).pth",
       "Conv Layer": "16-32-64",
       "FC Layer": "128-25",
       "complete_mode": false,
@@ -171,7 +171,7 @@
       "data_from": "1000iter mcts run 10 times"
     },
     {
-      "path": "./data/models/dl_model(06-22-20)(136090)(16-32-64).pth",
+      "model_path": "./data/models/2024-06-22/dl_model(06-22-20)(136090)(16-32-64).pth",
       "Conv Layer": "16-32-64",
       "FC Layer": "128-25",
       "complete_mode": false,
@@ -188,7 +188,7 @@
       "data_from": "1000iter mcts run 10000 times"
     },
     {
-      "path": "./data/models/dl_model(06-22-20)(136090)(32-64-128).pth",
+      "model_path": "./data/models/2024-06-22/dl_model(06-22-20)(136090)(32-64-128).pth",
       "Conv Layer": "32-64-128",
       "FC Layer": "256-25",
       "complete_mode": false,
@@ -211,7 +211,7 @@
       "data_from": "1000iter mcts run 10000 times"
     },
     {
-      "path": "./data/models/dl_model(06-22-21-09)(136090)(32-64-64-128).pth",
+      "model_path": "./data/models/2024-06-22/dl_model(06-22-21-09)(136090)(32-64-64-128).pth",
       "Conv Layer": "32-64-64-128",
       "FC Layer": "256-25",
       "complete_mode": false,
@@ -225,7 +225,7 @@
       "data_from": "1000iter mcts run 10000 times"
     },
     {
-      "path": "./data/models/dl_model(06-22-21-18)(136090)(32-64-128-256).pth",
+      "model_path": "./data/models/2024-06-22/dl_model(06-22-21-18)(136090)(32-64-128-256).pth",
       "Conv Layer": "32-64-128-256",
       "FC Layer": "512-25",
       "complete_mode": false,
@@ -255,7 +255,7 @@
       "data_from": "1000iter mcts run 10000 times"
     },
     {
-      "path": "./data/models/dl_model(06-23-08-36)(12963)(32-64-128-256).pth",
+      "model_path": "./data/models/2024-06-23/dl_model(06-23-08-36)(12963)(32-64-128-256).pth",
       "Conv Layer": "32-64-128-256",
       "FC Layer": "512-25",
       "complete_mode": false,
@@ -269,7 +269,7 @@
       "data_from": "1000iter mcts run 1000 times"
     },
     {
-      "path": "./data/models/dl_model(06-23-08-48)(13631)(32-64-128-256).pth",
+      "model_path": "./data/models/2024-06-23/dl_model(06-23-08-48)(13631)(32-64-128-256).pth",
       "Conv Layer": "32-64-128-256",
       "FC Layer": "512-25",
       "complete_mode": false,
@@ -282,7 +282,7 @@
       "data_from": "10000iter mcts run 1000 times"
     },
     {
-      "path": "./data/models/dl_model(06-28-15-00)(136090).pth",
+      "model_path": "./data/models/2024-06-28/dl_model(06-28-15-00)(136090).pth",
       "train_data_path": "./data/train_data(06-22-17)(MCTS1k_Games10k_Length136090).pkl",
       "layers": {
         "conv1": "Conv2d(3, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
@@ -292,7 +292,7 @@
         "fc1": "Linear(in_features=6000, out_features=512, bias=True)",
         "fc2": "Linear(in_features=512, out_features=25, bias=True)"
       },
-      "test": {
+      "tests": {
         "unknow": {
           "complete_mode": false,
           "score": 280,
@@ -327,7 +327,7 @@
             "280": 0.505,
             "290": 0.465
           },
-          "7-10-2024": {
+          "2024-7-10": {
             "complete_mode": false,
             "score": 320,
             "score_dict": {
@@ -406,8 +406,8 @@
       }
     },
     {
-      "path": "./data/models/dl_model(06-28-16-32)(136090).pth",
-      "train_data_path": "./data/train_data(06-22-17)(MCTS1k_Games10k_Length136090).pkl",
+      "model_path": "./data/models/2024-06-28/dl_model(06-28-16-32)(136090).pth",
+      "train_data_path": "./data/2024-06-22/train_data(06-22-17)(MCTS1k_Games10k_Length136090).pkl",
       "layers": {
         "conv1": "Conv2d(3, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
         "conv2": "Conv2d(30, 60, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
@@ -438,8 +438,8 @@
       }
     },
     {
-      "path": "./data/models/dl_model(06-29-12-52)(136090).pth",
-      "train_data_path": "./data/train_data(06-22-17)(MCTS1k_Games10k_Length136090).pkl",
+      "model_path": "./data/models/2024-06-29/dl_model(06-29-12-52)(136090).pth",
+      "train_data_path": "./data/2024-06-22/train_data(06-22-17)(MCTS1k_Games10k_Length136090).pkl",
       "layers": {
         "conv1": "Conv2d(3, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
         "conv2": "Conv2d(30, 60, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
@@ -473,8 +473,8 @@
       }
     },
     {
-      "path": "./data/models/dl_model(07-04-11-10)(136090).pth",
-      "train_data_path": "./data/train_data/2024-06-22/MCTS1k_Games10k_Length136090(17).pkl",
+      "model_path": "./data/models/2024-07-04/dl_model(07-04-11-10)(136090).pth",
+      "train_data_path": "./data/train_data/2024-06-22/2024-06-22/MCTS1k_Games10k_Length136090(17).pkl",
       "layers": {
         "conv1": "Conv2d(3, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
         "bn1": "BatchNorm2d(30, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)",
@@ -487,7 +487,7 @@
         "fc1": "Linear(in_features=6000, out_features=960, bias=True)",
         "fc2": "Linear(in_features=960, out_features=25, bias=True)"
       },
-      "test": {
+      "tests": {
         "unknow": {
           "complete_mode": false,
           "score": 120,
@@ -531,7 +531,7 @@
       }
     },
     {
-      "path": "./data/models/2025-01-22/dl_model(15-00)(136090).pth",
+      "model_path": "./data/models/2025-01-22/dl_model(15-00)(136090).pth",
       "train_data_path": "./data/train_data/2024-06-22/MCTS1k_Games10k_Length136090(17).pkl",
       "layers": {
         "conv1": "Conv2d(3, 30, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
@@ -580,7 +580,7 @@
         "fc1": "Linear(in_features=6000, out_features=512, bias=True)",
         "fc2": "Linear(in_features=512, out_features=25, bias=True)"
       },
-      "test": {
+      "tests": {
         "2025-01-23": {
           "complete_mode": false,
           "score": 0,
@@ -601,7 +601,7 @@
         "fc1": "Linear(in_features=6000, out_features=512, bias=True)",
         "fc2": "Linear(in_features=512, out_features=25, bias=True)"
       },
-      "test": {
+      "tests": {
         "2025-04-29": {
           "complete_mode": false,
           "score": 0,
