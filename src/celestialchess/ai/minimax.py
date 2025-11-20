@@ -34,7 +34,7 @@ class MinimaxAI(BaseAI):
         color = game.get_color()
         if self.log_mode:
             logger.debug(
-                f"MinimaxAI is thinking in depth {depth}...\n{game.format_matrix(game.chessboard)}"
+                f"MinimaxAI is thinking in depth {depth}...\n{game.get_format_board()}"
             )
 
         best_score = float("-inf") if color == 1 else float("inf")

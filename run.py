@@ -89,16 +89,13 @@ def index():
 def init_state():
     # 获取初始棋局状态
     prepared_board = prepare_board_for_json(game.chessboard)
-    score = game.get_score()
-    # move = game.get_current_move()
+    
     return jsonify(
         {
             "power": power,
             "row_len": row_len,
             "col_len": col_len,
             "board": prepared_board,
-            "score": score,
-            "step": game.step,
         }
     )
 

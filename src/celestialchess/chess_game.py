@@ -130,15 +130,22 @@ class ChessGame:
         current_move = self.current_move
         return (int(current_move[0]), int(current_move[1]))
 
-    def get_score(self):
-        """计算棋盘上所有非无穷大格子的总分数"""
-        total_score = calculate_no_inf(self.chessboard, self.board_range)
-        return total_score - self.balance_num
-
     def get_balance_num(self):
         """计算平衡数"""
         balance_num = self.power * (self.power + 1) * (2 * self.power + 1) / 12
         return balance_num
+
+    def get_raw_score(self):
+        """计算棋盘上所有非无穷大格子的总分数, 不考虑当前玩家颜色"""
+        total_score = calculate_no_inf(self.chessboard, self.board_range)
+        return total_score - self.balance_num
+
+    def get_score(self):
+        """计算当前玩家的总分数"""
+        if self.current_color == 1:
+            return self.get_raw_score() + self.balance_num
+        elif self.current_color == -1:
+            return self.get_raw_score() - self.balance_num
 
     def get_all_moves(self):
         """获取所有合法移动"""

@@ -37,8 +37,8 @@ document.addEventListener('DOMContentLoaded', function () {
             power = data.power; // 初始化power
             renderChessboard(data.row_len, data.col_len); // 初始化棋盘size
             updateChessboard(data.board, data.move); // 初始化棋盘
-            updateTotalScore(data.score); // 初始化分数
-            toggleColor(data.step); // 根据步数切换颜色
+            updateTotalScore(0); // 初始化分数
+            toggleColor(0); // 根据步数切换颜色
         })
         .catch(error => console.error('InitError:', error));
 
@@ -207,7 +207,8 @@ function updatePlayerIndicator() {
 }
 
 function updateTotalScore(score) {
-    document.getElementById("totalScore").textContent = score;
+    document.getElementById("Score").textContent = score;
+    document.getElementById("Score").style.color = (score > 0) ? "lightblue" : (score < 0) ? "lightcoral" : "black";
 }
 
 function onCellClick(row, col) {
