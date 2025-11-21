@@ -135,7 +135,7 @@ class MCTSNode:
 
 class MCTSAI(BaseAI):
     def __init__(self, itermax: int = 1000, c_param=0.8, complate_mode=False) -> None:
-        self.name = f"MCTSAI({itermax})"
+        self.name = f"MCTSAI"
 
         self.itermax = itermax
         self.c_param = c_param

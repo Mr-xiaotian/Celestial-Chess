@@ -11,7 +11,7 @@ from .base_ai import BaseAI, logger
 
 class MinimaxAI(BaseAI):
     def __init__(self, depth: int, log_mode: bool = False) -> None:
-        self.name = f"MinimaxAI({depth})"
+        self.name = f"MinimaxAI"
 
         self.depth = depth
         self.log_mode = log_mode
@@ -246,7 +246,7 @@ class MinimaxAI(BaseAI):
         )
 
         if random.random() < 0.8:
-            self.name = f"MinimaxAI({depth})"
+            self.name = f"MinimaxAI"
             return mood
         else:
             self.name = "【Minimax 报告】"

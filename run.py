@@ -20,7 +20,7 @@ game.init_history()
 
 minimax_ai = MinimaxAI(2, False)
 minimax_ai.set_transposition_mode(chess_state, r"transposition_table/")
-mcts_ai = MCTSAI(1000)
+mcts_ai = MCTSAI(1000, complate_mode=True)
 monky_ai = MonkyAI()
 # dl_ai = DeepLearningAI(r"train\data\models\2025-11-21\dl_model(11-16)(133927).pth", complete_mode=True)
 
@@ -44,7 +44,7 @@ def set_auto_mode(mode=None):
 
 def handle_ai_move(ai: BaseAI, game: ChessGame):
     # MCTSAI执棋
-    cmd_print(f"{ai.name} thinking...")
+    cmd_print(f"({ai.name} thinking...)")
 
     color = game.get_color()
     move = ai.find_best_move(game)
@@ -149,6 +149,7 @@ def handle_play_move(data):
     color = data["color"]  # 前端发送了颜色信息
 
     if not game.is_move_valid(row, col):
+        cmd_print(f"非法落子位置: ({row}, {col})")
         return
 
     game.update_chessboard(row, col, color)
@@ -156,6 +157,9 @@ def handle_play_move(data):
     sendDataToBackend(game)
 
     if game.is_game_over():
+        set_auto_mode()
+        minimax_ai.end_model()
+        cmd_print(f"已落子 ({row}, {col})，游戏结束。")
         return
 
     if minimax_auto:
@@ -170,12 +174,14 @@ def handle_play_move(data):
 def handle_undo_move():
     game.undo()
     sendDataToBackend(game)
+    cmd_print("已悔棋。")
 
 
 @socketio.on("redo_move")
 def handle_redo_move():
     game.redo()
     sendDataToBackend(game)
+    cmd_print("已重悔。")
 
 
 @socketio.on("restart_game")
@@ -183,6 +189,7 @@ def handle_restart_game():
     game.restart()
     sendDataToBackend(game)
     set_auto_mode()
+    cmd_print("已重开棋局。")
 
 
 @socketio.on("minimax_move")
@@ -214,6 +221,7 @@ def handle_minimax_auto():
     # 与Minimax对弈
     set_auto_mode("minimax")
     handle_minimax_move()
+    cmd_print("已开启与 Minimax 对弈模式。")
 
 
 @socketio.on("mcts_auto")
@@ -221,6 +229,7 @@ def handle_mcts_auto():
     # 与MCTS对弈
     set_auto_mode("mcts")
     handle_mcts_move()
+    cmd_print("已开启与 MCTS 对弈模式。")
 
 
 @socketio.on("monky_auto")
@@ -228,6 +237,7 @@ def handle_monky_auto():
     # 与Monky对弈
     set_auto_mode("monky")
     handle_monky_move()
+    cmd_print("已开启与 Monky 对弈模式。")
 
 
 # @socketio.on("al_auto")
@@ -285,48 +295,20 @@ def handle_cmd_input(data):
             cmd_print(f"play 参数错误: {e}")
             return
 
-        if not game.is_move_valid(row, col):
-            cmd_print(f"非法落子位置: ({row}, {col})")
-            return
-
-        # 等价于 handle_play_move 的逻辑
-        game.update_chessboard(row, col, color)
-        game.update_history(row, col)
-        sendDataToBackend(game)
-
-        if game.is_game_over():
-            cmd_print(f"已落子 ({row}, {col})，游戏结束。")
-            return
-
-        # 自动模式下，调对应 AI 一步
-        if minimax_auto:
-            executor.submit(handle_minimax_move)
-        elif mcts_auto:
-            executor.submit(handle_mcts_move)
-        elif monky_auto:
-            executor.submit(handle_monky_move)
-
-        cmd_print(f"已落子 ({row}, {col})，color={color}。")
+        handle_play_move({"row": row, "col": col, "color": color})
         return
 
     # --------- 基础操作：undo / redo / restart ----------
     elif cmd == "undo":
-        game.undo()
-        sendDataToBackend(game)
-        cmd_print("已悔棋。")
+        handle_undo_move()
         return
 
     elif cmd == "redo":
-        game.redo()
-        sendDataToBackend(game)
-        cmd_print("已重悔。")
+        handle_redo_move()
         return
 
     elif cmd == "restart":
-        game.restart()
-        sendDataToBackend(game)
-        set_auto_mode()
-        cmd_print("已重开棋局。")
+        handle_restart_game()
         return
 
     # --------- 单步 AI 执棋：ai minimax/mcts/monky ----------
@@ -362,22 +344,15 @@ def handle_cmd_input(data):
         ai_type = rest[0]
 
         if ai_type == "minimax":
-            set_auto_mode("minimax")
-            executor.submit(handle_minimax_move)
-            msg = "已开启与 Minimax 对弈模式。"
+            handle_minimax_auto()
         elif ai_type == "mcts":
             set_auto_mode("mcts")
-            executor.submit(handle_mcts_move)
-            msg = "已开启与 MCTS 对弈模式。"
+            handle_mcts_auto()
         elif ai_type == "monky":
-            set_auto_mode("monky")
-            executor.submit(handle_monky_move)
-            msg = "已开启与 Monky 对弈模式。"
+            handle_monky_auto()
         else:
             cmd_print(f"未知 auto 类型: {ai_type}")
-            return
 
-        cmd_print(msg)
         return
 
     # --------- 未知命令 ----------
