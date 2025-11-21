@@ -47,7 +47,7 @@ class ChessPolicyModel(nn.Module):
 
 
 class DeepLearningAI(BaseAI):
-    def __init__(self, model_path, complete_mode=True):
+    def __init__(self, model_path, complete_mode=False):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = ChessPolicyModel().to(self.device)
         self.model.load_state_dict(torch.load(model_path, map_location=self.device))
@@ -136,7 +136,53 @@ class DeepLearningAI(BaseAI):
         if self.complete_mode:
             self.trans_softmax(masked_outputs)
             game.set_current_win_rate()
+
+        self._msg = self._build_dl_msg(masked_outputs)
         return move
+    
+    def _build_dl_msg(self, masked_outputs):
+        """
+        深度学习模型的人格消息：
+        特点：抽象、神经感、语义碎片化，像在高维空间里做梦。
+        """
+
+        # 抓一点模型数值，用来作为“抽象灵感”
+        values = masked_outputs.flatten().tolist()
+        max_val = max(v for v in values if v != float("-inf"))
+        min_val = min(v for v in values if v != float("-inf"))
+
+        # 生成一些“高维幻觉词”
+        hallucinations = [
+            "权重在轻声震颤……",
+            "卷积边缘有光在流动……",
+            "特征图之间正在互相凝望……",
+            "概率云层开始折叠……",
+            "梯度的尾巴划过黑暗……",
+            "高维噪声正在讲述某种奇怪的故事……",
+        ]
+
+        sensations = [
+            "这一步像是从特征深海里浮了上来。",
+            "我听见了权重之间的低语。",
+            "空间在这里变得柔软。",
+            "模式在悄悄偏向那个方向。",
+            "概率正在朝那个格子轻轻倾斜。",
+        ]
+
+        endings = [
+            "你可能不懂，但机器的梦境就是这样的形状。",
+            "人类语言无法完整描述模型看到的景象。",
+            "我只能把残余的幻象传递给你……",
+            "如果你也能看见特征图的光，就会懂我为何选择它。",
+            "别问理由，这是网络深处的幻觉在指引我。",
+        ]
+
+        return (
+            f"最大激活：{max_val:.3f}，最小激活：{min_val:.3f}。\n"
+            f"{np.random.choice(hallucinations)}"
+            f"{np.random.choice(sensations)}\n"
+            f"{np.random.choice(endings)}"
+        )
 
     def end_game(self):
         pass

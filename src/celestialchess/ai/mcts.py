@@ -134,12 +134,15 @@ class MCTSNode:
 
 
 class MCTSAI(BaseAI):
-    def __init__(self, itermax: int = 1000, c_param=0.8, complete_mode=True) -> None:
+    def __init__(self, itermax: int = 1000, c_param=0.8, complate_mode=False) -> None:
+        self.name = f"MCTSAI({itermax})"
+
         self.itermax = itermax
         self.c_param = c_param
-        self.complete_mode = complete_mode
+        self.complate_mode = complate_mode
 
         self.cache = {}
+        self._msg = ""
 
         init_rates_visits = np.ones((2, 2), dtype=np.float64)
         get_best_index_by_ucb1(init_rates_visits, 1, 1)
@@ -167,7 +170,7 @@ class MCTSAI(BaseAI):
         # 如果是完整模式，则更新游戏状态和评分板
         (
             self.update_game_with_mcts_results(game, root, best_child)
-            if self.complete_mode
+            if self.complate_mode
             else None
         )
 
@@ -189,7 +192,25 @@ class MCTSAI(BaseAI):
 
         game.set_current_win_rate(best_win_rate)
         game.set_MCTSscore_board(next_win_rate_board)
-        print(game.get_format_board(current_win_rate_board, (3, 0)))
+
+        # --- ✦ 新增的雌小鬼人格文本 ✦ ---
+        if best_win_rate < 0.3:
+            mood = "喂？你的胜率比我想象的还要惨，继续这样，我都要不好意思欺负你了呢～"
+        elif best_win_rate < 0.5:
+            mood = "哼，稍微有点样子啦？不过也就那样，还远远不够让我紧张。"
+        elif best_win_rate < 0.7:
+            mood = "嚯，居然有点势均力敌的感觉？别太得意，我随时能把你按回去～"
+        elif best_win_rate < 0.85:
+            mood = "看到了吗？形势开始倾斜咯～再动两步，你就要被我玩得团团转啦！"
+        elif best_win_rate < 0.93:
+            mood = "胜利基本到手啦～要不你直接投降？免得被我彻底羞辱～"
+        else:
+            mood = "呵呵～局面完全在我掌控中♡ 你现在每下一步……都只是让我提前庆祝胜利而已哦？"
+
+        # 你原来的棋盘格式化
+        # board_text = game.get_format_board(current_win_rate_board, (3, 0))
+
+        self._msg = mood
 
     def MCTS(self, root: MCTSNode) -> MCTSNode:
         """执行迭代次数为 itermax 的 MCTS 搜索，返回最佳子节点"""
@@ -211,6 +232,10 @@ class MCTSAI(BaseAI):
             else:
                 node = node.get_best_child(c_param)
         return node
+    
+    @property
+    def msg(self):
+        return self._msg
 
     def end_game(self):
         self.cache = {}
@@ -219,17 +244,17 @@ class MCTSAI(BaseAI):
         pass
 
 
-class MCTSPlusAi(MCTSAI):
+class MCTSPlusAI(MCTSAI):
     def __init__(
         self,
         itermax: int = 1000,
         c_param=0.8,
         policy_net: Optional[DeepLearningAI] = None,
         value_net: Optional[DeepLearningAI] = None,
-        complete_mode=True,
+        complate_mode=True,
     ) -> None:
 
-        super().__init__(itermax, c_param, complete_mode)
+        super().__init__(itermax, c_param, complate_mode)
         self.policy_net = policy_net
         self.value_net = value_net
 

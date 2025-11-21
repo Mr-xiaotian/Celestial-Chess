@@ -2,7 +2,7 @@ from flask import Flask, jsonify, render_template
 from flask_socketio import SocketIO
 from concurrent.futures import ThreadPoolExecutor
 
-from celestialchess import ChessGame, MinimaxAI, MCTSAI, MonkyAI
+from celestialchess import ChessGame, BaseAI, MinimaxAI, MCTSAI, MonkyAI, DeepLearningAI
 
 app = Flask(__name__)
 socketio = SocketIO(app, async_mode="threading")
@@ -17,10 +17,11 @@ game = ChessGame(*chess_state)
 game.init_cfunc()
 game.init_history()
 
-minimax_ai = MinimaxAI(2, True)
+minimax_ai = MinimaxAI(2, False)
 minimax_ai.set_transposition_mode(chess_state, r"transposition_table/")
-mcts_ai = MCTSAI(10000)
+mcts_ai = MCTSAI(1000)
 monky_ai = MonkyAI()
+# dl_ai = DeepLearningAI(r"train\data\models\2025-11-21\dl_model(11-16)(133927).pth", complete_mode=True)
 
 minimax_auto = False
 mcts_auto = False
@@ -40,11 +41,22 @@ def set_auto_mode(mode=None):
         monky_auto = True
 
 
+def handle_ai_move(ai: BaseAI, game: ChessGame):
+    # MCTSAI执棋
+    cmd_print(f"{ai.name} thinking...")
+
+    color = game.get_color()
+    move = ai.find_best_move(game)
+    cmd_print(f"{ai.name}: {ai.msg}")
+
+    game.update_chessboard(*move, color)
+    game.update_history(*move)
+    sendDataToBackend(game)
+
+
 def convert_inf_to_string(value):
     if value == float("inf"):
         return "inf"
-    elif value == float("-inf"):
-        return "-inf"
     else:
         return value
 
@@ -151,37 +163,25 @@ def handle_restart_game():
 @socketio.on("minimax_move")
 def handle_minimax_move():
     # MinimaxAI执棋
-    cmd_print("Minimax thinking (depth=2)...")
-    color = game.get_color()
-    move = minimax_ai.find_best_move(game)
-
-    game.update_chessboard(*move, color)
-    game.update_history(*move)
-    sendDataToBackend(game)
+    handle_ai_move(minimax_ai, game)
 
 
 @socketio.on("mcts_move")
 def handle_mcts_move():
     # MCTSAI执棋
-    cmd_print("MCTS thinking (10000 simulations)...")
-    color = game.get_color()
-    move = mcts_ai.find_best_move(game)
-
-    game.update_chessboard(*move, color)
-    game.update_history(*move)
-    sendDataToBackend(game)
+    handle_ai_move(mcts_ai, game)
 
 
 @socketio.on("monky_move")
 def handle_monky_move():
     # MonkyAI执棋
-    cmd_print("Monky thinking...")
-    color = game.get_color()
-    move = monky_ai.find_best_move(game)
+    handle_ai_move(monky_ai, game)
 
-    game.update_chessboard(*move, color)
-    game.update_history(*move)
-    sendDataToBackend(game)
+
+# @socketio.on("dl_move")
+# def handle_dl_move():
+#     # DeepLearningAI执棋
+#     handle_ai_move(dl_ai, game)
 
 
 @socketio.on("minimax_auto")
@@ -203,6 +203,13 @@ def handle_monky_auto():
     # 与Monky对弈
     set_auto_mode("monky")
     handle_monky_move()
+
+
+# @socketio.on("al_auto")
+# def handle_al_auto():
+#     # 与DeepLearningAI对弈
+#     set_auto_mode("dl")
+#     handle_dl_move()
 
 
 if __name__ == "__main__":

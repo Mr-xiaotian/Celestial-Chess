@@ -115,11 +115,11 @@ def get_model_info_dict(model_path, train_data_path, model):
     model_info_dict["layers"] = layer_dict
 
     game_state = ((5, 5), 2)
-    dl_model = DeepLearningAI(model_path, complete_mode=False)
+    dl_model = DeepLearningAI(model_path)
     score, score_dict = get_model_score_by_mcts(dl_model, game_state)
     now_data = strftime("%Y-%m-%d", localtime())
     test_dict = {
-        now_data: {"complete_mode": False, "score": score, "score_dict": score_dict}
+        now_data: {"score": score, "score_dict": score_dict}
     }
     model_info_dict["tests"] = test_dict
 

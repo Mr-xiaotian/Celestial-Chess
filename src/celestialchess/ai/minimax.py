@@ -1,4 +1,5 @@
 import json
+import random
 from pathlib import Path
 
 # from functools import lru_cache
@@ -10,6 +11,8 @@ from .base_ai import BaseAI, logger
 
 class MinimaxAI(BaseAI):
     def __init__(self, depth: int, log_mode: bool = False) -> None:
+        self.name = f"MinimaxAI({depth})"
+
         self.depth = depth
         self.log_mode = log_mode
         self.transposition_mode = False
@@ -50,7 +53,12 @@ class MinimaxAI(BaseAI):
                 best_score = score
                 best_move = move
 
+        # Minimax 没有真正 win_rate，这里保持接口一致但用不到
         game.set_current_win_rate()
+
+        # ✦ 新增：生成带人格的 Minimax 消息 ✦
+        self._msg = self._build_minimax_msg(best_score, color, depth, self.iterate_time)
+
         return best_move
 
     # @lru_cache(maxsize=None)
@@ -191,6 +199,58 @@ class MinimaxAI(BaseAI):
 
         self.transposition_table = {}
         self.transposition_table_change = False
+
+    def _build_minimax_msg(self, best_score: float, color: int, depth: int, iters: int) -> str:
+        """
+        根据评分生成带人格的 Minimax 文本。
+        Minimax 走冷静毒舌、学霸式“我计算过了”的风格。
+        """
+        # 从当前行动方视角看：正数 = 我方占优
+        signed_score = best_score if color == 1 else -best_score
+
+        # 分档语气
+        if signed_score < -5:
+            mood = (
+                "计算完成。\n"
+                "推断结果：我方局势已接近不可逆转的崩坏。\n"
+                "我现在只是在思考：怎么输得不那么丢脸。"
+            )
+        elif signed_score < -1:
+            mood = (
+                "分析结束。\n"
+                "当前态势对我方明显不利。\n"
+                "这不是悲观，只是数学。"
+            )
+        elif -1 <= signed_score <= 1:
+            mood = (
+                "评估结果：大致均势。\n"
+                "不过你每下一步跟‘随机退火’一样混乱，\n"
+                "让我很难继续维持所谓的“平衡”。"
+            )
+        elif signed_score <= 5:
+            mood = (
+                "局面评估完成。\n"
+                "我方略占优势。\n"
+                "这不是运气好，而是因为我在思考，而你在祈祷。"
+            )
+        else:
+            mood = (
+                "搜索结束。\n"
+                "我方胜势极大，几乎无需再计算。\n"
+                "接下来只是策略演示，不是对弈。"
+            )
+
+        meta = (
+            f"【Minimax 报告】搜索深度 = {depth}, 节点数 ≈ {iters}。\n"
+            "我已经分析完所有你没注意到的失败分支。"
+        )
+
+        return random.choice([mood, meta])
+
+
+    @property
+    def msg(self):
+        return self._msg
 
     def end_game(self):
         pass

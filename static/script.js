@@ -36,10 +36,12 @@ function bindUIButtons() {
     clickBind("minimaxButton", 'minimax_move');
     clickBind("mctsButton", 'mcts_move');
     clickBind("monkyButton", 'monky_move');
+    // clickBind("dlButton", 'dl_move');
 
     clickBind("minimaxAuto", 'minimax_auto');
     clickBind("mctsAuto", 'mcts_auto');
     clickBind("monkyAuto", 'monky_auto');
+    // clickBind("dlAuto", 'dl_auto');
 
     // CMD 开关
     document.getElementById("toggleCmd").addEventListener("click", toggleCmdPanel);
@@ -147,7 +149,6 @@ function updateChessboard(board, move) {
             numberSpan.style.zIndex = '1';
 
             numberSpan.textContent = (value === "inf") ? '∞'
-                                 : (value === "-inf") ? '-∞'
                                  : load;
 
             cell.appendChild(numberSpan);
@@ -164,7 +165,7 @@ function updateChessboard(board, move) {
 // 落子颜色、背景计算
 // ==========================================================
 function getColor(value) {
-    if (value === "inf" || value === "-inf") {
+    if (value === "inf") {
         return 'lightgrey';
     }
 

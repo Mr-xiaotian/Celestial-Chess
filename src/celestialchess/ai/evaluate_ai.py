@@ -30,7 +30,7 @@ def get_model_score_by_mcts(
 
     for mcts_iter in range(int(start_mcts_iter), int(end_mcts_iter), mcts_step):
         win = 0
-        test_mcts = MCTSAI(mcts_iter, complete_mode=False)
+        test_mcts = MCTSAI(mcts_iter, enable_cps=False)
         for _ in tqdm(range(simulate_num), desc=f"Mcts Iter {mcts_iter}"):
             test_game = ChessGame(*game_state)
             test_game.init_history()
@@ -54,11 +54,11 @@ def get_model_score_by_mcts(
 def get_best_c_param(game_state, start_c_param=0.0, test_game_num=1000):
     best_c_param = start_c_param
     c_param_dict = {}
-    best_mcts = MCTSAI(100, c_param=best_c_param, complete_mode=False)
+    best_mcts = MCTSAI(100, c_param=best_c_param, enable_cps=False)
 
     for param in range(0, 11, 1):
         win = 0
-        test_mcts = MCTSAI(100, c_param=param / 10, complete_mode=False)
+        test_mcts = MCTSAI(100, c_param=param / 10, enable_cps=False)
 
         for _ in tqdm(range(test_game_num), desc=f"C param {param/10}"):
             test_game = ChessGame(*game_state)
@@ -73,7 +73,7 @@ def get_best_c_param(game_state, start_c_param=0.0, test_game_num=1000):
         c_param_dict[f"{best_c_param} : {param/10}"] = win
         if win < test_game_num / 2:
             best_c_param = param / 10
-            best_mcts = MCTSAI(100, c_param=best_c_param, complete_mode=False)
+            best_mcts = MCTSAI(100, c_param=best_c_param, enable_cps=False)
 
     return best_c_param, c_param_dict
 

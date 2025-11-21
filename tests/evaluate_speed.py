@@ -44,7 +44,7 @@ chess_state = ((5, 5), 2)
 game = ChessGame(*chess_state)
 game.init_cfunc()
 
-mcts_ai = MCTSAI(50000, complete_mode=False)
+mcts_ai = MCTSAI(50000)
 minimax_ai = MinimaxAI(10)
 minimax_ai.set_transposition_mode(
     chess_state, r"Q:\Project\Celestial-Chess\data\transposition_table"

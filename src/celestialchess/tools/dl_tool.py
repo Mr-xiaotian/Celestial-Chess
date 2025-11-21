@@ -15,7 +15,7 @@ def process_board(chess_board: np.ndarray, color: int) -> np.ndarray:
     # 当前行动方颜色
     color_channel = np.full((rows, cols), color, dtype=float)
 
-    # 处理 value 通道：将 inf / -inf 替换为 0
+    # 处理 value 通道：将 inf 替换为 0
     value_channel = chess_board[:, :, 0].copy()
     value_channel[np.isinf(value_channel)] = 0.0
 

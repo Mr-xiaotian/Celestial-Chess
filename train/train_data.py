@@ -42,7 +42,7 @@ def start_train_data(
         show_progress=True,
     )
 
-    mcts_ai = MCTSAI(mcts_iter, complete_mode=False)
+    mcts_ai = MCTSAI(mcts_iter, enable_cps=False)
     train_data_threader.set_ai(mcts_ai, mcts_ai)
 
     train_data_threader.start(range(train_num))
