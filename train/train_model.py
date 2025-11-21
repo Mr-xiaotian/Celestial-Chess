@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
+from torchsummary import summary
 from pathlib import Path
 from time import strftime, localtime
 
@@ -61,6 +62,8 @@ class ModelTrainer:
         data_size = len(train_data)
         model_path = self.save_model(model, data_size)
         self.save_model_loss(train_log_text, data_size)
+
+        summary(model, input_size=(4, 5, 5))  # 输入模型和输入tensor尺寸
         return model_path, model
 
     def save_model(self, model, data_size):
@@ -92,14 +95,23 @@ def get_model_info_dict(model_path, train_data_path, model):
     model_info_dict["train_data_path"] = train_data_path
 
     model_str = str(model)
-    model_lines = re.split(r"\n", model_str)
-    layer_dict = {}
-    for line in model_lines[1:-1]:  # 跳过开头和结尾的行
-        re_ = re.compile(r"\((.*?)\): (.*)")
-        layer_name = re_.search(line).group(1)
-        layer_args = re_.search(line).group(2)
+    model_lines = model_str.split("\n")
 
+    layer_dict = {}
+    pattern = re.compile(r"\((.*?)\): (.*)")
+
+    for line in model_lines:
+        line = line.strip()
+        if "): " not in line:
+            continue
+
+        m = pattern.match(line)
+        if not m:
+            continue
+
+        layer_name, layer_args = m.groups()
         layer_dict[layer_name] = layer_args
+
     model_info_dict["layers"] = layer_dict
 
     game_state = ((5, 5), 2)

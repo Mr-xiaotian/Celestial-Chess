@@ -5,6 +5,7 @@ import torch.nn.functional as F
 import numpy as np
 
 from ..chess_game import ChessGame
+from ..tools.dl_tool import process_board
 from .base_ai import BaseAI, logger
 
 
@@ -13,13 +14,13 @@ class ChessPolicyModel(nn.Module):
         super(ChessPolicyModel, self).__init__()
         # 卷积层，卷积核大小为3x3，填充为1
         self.conv1 = nn.Conv2d(4, 32, kernel_size=3, padding=1)
-        self.bn1 = nn.BatchNorm2d(32)
+        # self.bn1 = nn.BatchNorm2d(32)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
-        self.bn2 = nn.BatchNorm2d(64)
+        # self.bn2 = nn.BatchNorm2d(64)
         self.conv3 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
-        self.bn3 = nn.BatchNorm2d(128)
+        # self.bn3 = nn.BatchNorm2d(128)
         self.conv4 = nn.Conv2d(128, 256, kernel_size=3, padding=1)
-        self.bn4 = nn.BatchNorm2d(256)
+        # self.bn4 = nn.BatchNorm2d(256)
 
         # 全连接层，输出大小为25（棋盘的5x5个可能的移动位置）
         self.fc1 = nn.Linear(256 * 5 * 5, 512)
@@ -28,10 +29,10 @@ class ChessPolicyModel(nn.Module):
 
     def forward(self, x):
         # 通过卷积层，然后进行ReLU激活
-        x = F.relu(self.bn1(self.conv1(x)))
-        x = F.relu(self.bn2(self.conv2(x)))
-        x = F.relu(self.bn3(self.conv3(x)))
-        x = F.relu(self.bn4(self.conv4(x)))
+        x = F.relu(self.conv1(x))
+        x = F.relu(self.conv2(x))
+        x = F.relu(self.conv3(x))
+        x = F.relu(self.conv4(x))
         # 将特征图展平为一维向量
         x = x.reshape(-1, 256 * 5 * 5)
         # 通过第一个全连接层，然后进行ReLU激活
@@ -85,37 +86,6 @@ class DeepLearningAI(BaseAI):
 
         return output.view(batch_size, -1)
 
-    def process_board(self, game: ChessGame):
-        """
-        将棋盘状态转换为模型输入的格式
-        :param game: 当前游戏状态
-        :return: 模型输入，形状为 (5, 5, 4)
-                 通道依次为 [value, load, color, blackhole_flag]
-        """
-        board = game.chessboard  # 形状 (5,5,2)，[value, load]
-
-        # 拆出原始通道
-        value_channel = board[:, :, 0].copy()
-        load_channel = board[:, :, 1].copy()
-
-        # 当前行动方颜色通道
-        color = game.get_color()
-        color_channel = np.full((5, 5), color, dtype=float)
-
-        # 黑洞通道：inf / -inf 标记为 1
-        blackhole_channel = np.isinf(value_channel).astype(float)
-
-        # value 通道中将 inf / -inf 替换为 0（避免误导网络）
-        value_channel[np.isinf(value_channel)] = 0.0
-
-        # 按 [value, load, color, blackhole] 堆叠
-        processed_board = np.stack(
-            [value_channel, load_channel, color_channel, blackhole_channel],
-            axis=2
-        )  # (5,5,4)
-
-        return processed_board
-
     def trans_softmax(self, outputs):
         """
         将输出转换为概率分布
@@ -133,7 +103,7 @@ class DeepLearningAI(BaseAI):
         return softmax_tensor
 
     def get_move_probs(self, game: ChessGame):
-        chessboard = self.process_board(game)              # (5,5,4)
+        chessboard = process_board(game)              # (5,5,4)
 
         board_state = np.array(chessboard).reshape(1, 5, 5, 4)
         board_state = (
@@ -148,7 +118,7 @@ class DeepLearningAI(BaseAI):
         return masked_outputs.view(5, 5)
 
     def find_best_move(self, game: ChessGame):
-        chessboard = self.process_board(game)              # (5,5,4)
+        chessboard = process_board(game.chessboard, game.get_color())              # (5,5,4)
 
         board_state = np.array(chessboard).reshape(1, 5, 5, 4)
         board_state = (

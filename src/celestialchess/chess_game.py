@@ -9,7 +9,7 @@ class ChessGame:
     BLACK_HOLE = np.inf
 
     def __init__(self, board_range=(5, 5), power=2) -> None:
-        self.chessboard: np.NDArray = np.zeros(
+        self.chessboard: np.ndarray = np.zeros(
             (board_range[0], board_range[1], 2), dtype=float
         )
 

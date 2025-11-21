@@ -1,11 +1,9 @@
-import numpy as np
 import json
-import pickle
 from pathlib import Path
 from time import strftime, localtime
 from celestialflow import TaskManager
 
-from celestialchess import ChessGame, MCTSAI, ai_battle
+from celestialchess import ChessGame, MCTSAI, ai_battle, process_board
 
 
 class TrainDataThread(TaskManager):
@@ -26,41 +24,10 @@ class TrainDataThread(TaskManager):
             history_board = over_game.history_board
             history_move = over_game.history_move
             for step in range(over_game.max_step - 1):
-                board = self.process_board(history_board[step], step)
+                color = 1 if step % 2 == 0 else -1
+                board = process_board(history_board[step], color)
                 all_training_data.append((board, history_move[step + 1]))
         return all_training_data
-
-    def process_board(self, chess_board, step):
-        """
-        构造训练用棋盘输入张量（5×5×4）
-        通道含义：
-        0: value（inf 替换为 0）
-        1: load
-        2: color（当前行动方）
-        3: blackhole_flag（1=黑洞）
-        """
-
-        # 当前行动方颜色
-        color = 1 if step % 2 == 0 else -1
-        color_channel = np.full((5, 5), color, dtype=float)
-
-        # 处理 value 通道：将 inf / -inf 替换为 0
-        value_channel = chess_board[:, :, 0].copy()
-        value_channel[np.isinf(value_channel)] = 0.0
-
-        # load 通道保持不变
-        load_channel = chess_board[:, :, 1].copy()
-
-        # 黑洞通道：inf → 1，其他 → 0
-        blackhole_channel = np.isinf(chess_board[:, :, 0]).astype(float)
-
-        # 组合成最终 4 通道输入
-        processed_board = np.stack(
-            [value_channel, load_channel, color_channel, blackhole_channel],
-            axis=2
-        )
-
-        return processed_board
 
 
 def start_train_data(
@@ -69,6 +36,7 @@ def start_train_data(
     train_data_threader = TrainDataThread(
         ai_battle,
         execution_mode=execution_mode,
+        worker_limit = 5,
         enable_result_cache=True,
         progress_desc="TrainDataProcess",
         show_progress=True,

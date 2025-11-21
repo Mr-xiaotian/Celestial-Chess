@@ -613,7 +613,7 @@
     },
     {
       "model_path": "data\\models\\2025-11-20/dl_model(16-37)(140).pth",
-      "train_data_path": "Q:\\Project\\Celestial-Chess\\train\\data\\train_data\\2025-11-20\\MCTS1.0k_Games10_Length140(16-16).json",
+      "train_data_path": "\\data\\train_data\\2025-11-20\\MCTS1.0k_Games10_Length140(16-16).json",
       "layers": {
         "conv1": "Conv2d(4, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
         "bn1": "BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)",
@@ -632,6 +632,82 @@
           "score": 0,
           "score_dict": {
             "10": 0.41
+          }
+        }
+      }
+    },
+    {
+      "model_path": "data\\models\\2025-11-20/dl_model(18-58)(133927).pth",
+      "train_data_path": "data\\train_data\\2025-11-20\\MCTS1.0k_Games10_Length140(16-16).json",
+      "layers": {
+        "conv1": "Conv2d(4, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "bn1": "BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)",
+        "conv2": "Conv2d(32, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "bn2": "BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)",
+        "conv3": "Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "bn3": "BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)",
+        "conv4": "Conv2d(128, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "bn4": "BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)",
+        "fc1": "Linear(in_features=6400, out_features=512, bias=True)",
+        "fc2": "Linear(in_features=512, out_features=25, bias=True)"
+      },
+      "tests": {
+        "2025-11-20": {
+          "complete_mode": false,
+          "score": 20,
+          "score_dict": {
+            "10": 0.63,
+            "20": 0.61,
+            "30": 0.52
+          }
+        }
+      }
+    },
+    {
+      "model_path": "data\\models\\2025-11-21/dl_model(10-45)(133927).pth",
+      "train_data_path": "data\\train_data\\2025-11-20\\MCTS1.0k_Games10.0k_Length133927(18-34).json",
+      "layers": {
+        "conv1": "Sequential(",
+        "0": "Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "1": "BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)",
+        "2": "ReLU(inplace=True)",
+        "res1": "Sequential(",
+        "3": "Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "4": "BatchNorm2d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)",
+        "res2": "Sequential(",
+        "relu": "ReLU(inplace=True)",
+        "gap": "AdaptiveAvgPool2d(output_size=1)",
+        "fc": "Linear(in_features=32, out_features=25, bias=True)"
+      },
+      "tests": {
+        "2025-11-21": {
+          "complete_mode": false,
+          "score": 0,
+          "score_dict": {
+            "10": 0.5
+          }
+        }
+      }
+    },
+    {
+      "model_path": "data\\models\\2025-11-21/dl_model(11-16)(133927).pth",
+      "train_data_path": "data\\train_data\\2025-11-20\\MCTS1.0k_Games10.0k_Length133927(18-34).json",
+      "layers": {
+        "conv1": "Conv2d(4, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "conv2": "Conv2d(32, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "conv3": "Conv2d(64, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "conv4": "Conv2d(128, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))",
+        "fc1": "Linear(in_features=6400, out_features=512, bias=True)",
+        "fc2": "Linear(in_features=512, out_features=25, bias=True)"
+      },
+      "tests": {
+        "2025-11-21": {
+          "complete_mode": false,
+          "score": 20,
+          "score_dict": {
+            "10": 0.69,
+            "20": 0.54,
+            "30": 0.43
           }
         }
       }
