@@ -17,7 +17,8 @@ game = ChessGame(*chess_state)
 game.init_cfunc()
 game.init_history()
 
-minimax_ai = MinimaxAI(5, chess_state)
+minimax_ai = MinimaxAI(2, True)
+minimax_ai.set_transposition_mode(chess_state, r"transposition_table/")
 mcts_ai = MCTSAI(10000)
 monky_ai = MonkyAI()
 
@@ -70,6 +71,10 @@ def get_update_board(game: ChessGame):
         "game_over": game_over,
         "winner": winner,
     }
+
+
+def cmd_print(msg: str):
+    socketio.emit("cmd_log", {"msg": msg})
 
 
 def sendDataToBackend(game: ChessGame):
@@ -146,6 +151,7 @@ def handle_restart_game():
 @socketio.on("minimax_move")
 def handle_minimax_move():
     # MinimaxAI执棋
+    cmd_print("Minimax thinking (depth=2)...")
     color = game.get_color()
     move = minimax_ai.find_best_move(game)
 
@@ -157,6 +163,7 @@ def handle_minimax_move():
 @socketio.on("mcts_move")
 def handle_mcts_move():
     # MCTSAI执棋
+    cmd_print("MCTS thinking (10000 simulations)...")
     color = game.get_color()
     move = mcts_ai.find_best_move(game)
 
@@ -168,6 +175,7 @@ def handle_mcts_move():
 @socketio.on("monky_move")
 def handle_monky_move():
     # MonkyAI执棋
+    cmd_print("Monky thinking...")
     color = game.get_color()
     move = monky_ai.find_best_move(game)
 

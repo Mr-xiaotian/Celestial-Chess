@@ -1,0 +1,137 @@
+* {
+    /* 初始化 */
+    margin: 0;
+    padding: 0;
+}
+body {
+    /* 100%窗口高度 */
+    height: 100vh;
+    /* 弹性布局 居中 */
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff;
+}
+
+/* nav */
+ul {
+    list-style: none;
+}
+nav {
+    /* 固定定位 */
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 50px;
+    height: 100vh;
+    background-color: #f9f9f9;
+}
+.menus {
+    margin: 50px 0;
+    color: #000000;
+}
+.menu_item {
+    letter-spacing: 2px;
+    font-size: 17px;
+    font-weight: 600;
+    padding: 16px 0;
+    /* 动画过渡 */
+    transition: 0.3s;
+}
+.menus li:hover {
+    background-color: #ececec;
+}
+.menu_item .fa {
+    font-size: 20px;
+    width: 50px;
+    height: 20px;
+    text-align: center;
+    margin-left: 5px;
+}
+.menu_item ul {
+    width: 0;
+    height: 100%;
+    padding: 50px 0;
+    background-color: #f2f3f3;
+    position: absolute;
+    top: 0;
+    left: 50px;
+    overflow: hidden;
+    transition: 0.3s;
+}
+.menu_item ul li {
+    padding: 16px 24px;
+    /* 文字禁止换行 */
+    white-space: nowrap;
+    transition: 0.3s;
+}
+.menu_item:hover ul {
+    width: 200px;
+}
+.menu_item ul li:hover {
+    background-color: #ececec;
+    cursor: pointer; /* 设置鼠标悬停时的指针样式 */
+}
+
+/* main */
+.main {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* 设置间距 */
+    margin-left: 50px;
+}
+#celestial {
+    /* 初始颜色，可以根据需要调整 */
+    color: grey;
+    font-weight: bold; /* 如果你想让文字更显眼 */
+    /* 其他可能的样式 */
+}
+table {
+    border-collapse: collapse;
+    margin: auto;
+    /* display: grid; */
+    width: min(80vh, 80vw); /* 100% viewport width */
+    height: min(80vh, 80vw);
+}
+td {
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid black;
+    cursor: pointer;
+    position: relative;
+}
+
+/* cmd */
+.cmd-panel {
+    width: 400px;
+    height: 400px;
+    background: #111;
+    color: #eee;
+    font-family: Consolas, monospace;
+    padding: 10px;
+    margin-left: 20px;
+    display: none; /* 默认隐藏 */
+    flex-direction: column;
+    border-radius: 5px;
+
+    position: fixed;
+    right: 100px;
+    top: 30%;
+    z-index: 999;
+}
+.cmd-input {
+    width: 85%;
+    background: #111;
+    border: none;
+    outline: none;
+    color: #eee;
+    font-family: inherit;
+    font-size: 14px;
+}
+.cmd-output {
+    flex: 1;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    padding-bottom: 10px;
+}
