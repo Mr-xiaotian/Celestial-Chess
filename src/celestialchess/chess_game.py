@@ -93,6 +93,7 @@ class ChessGame:
     def undo(self):
         """悔棋"""
         self.step -= 1 if self.step >= 1 else 0
+        self.current_color *= -1
         self.chessboard = np.copy(self.history_board[self.step])
         self.current_move = self.history_move[self.step]
 
@@ -100,12 +101,15 @@ class ChessGame:
         """重悔"""
         if self.step + 1 <= self.max_step:
             self.step += 1
+            self.current_color *= -1
             self.chessboard = np.copy(self.history_board[self.step])
             self.current_move = self.history_move[self.step]
 
     def restart(self):
         """重开"""
         self.step = 0
+        self.max_step = 0
+        self.current_color = 1
         self.chessboard = np.copy(self.history_board[self.step])
         self.current_move = self.history_move[self.step]
 

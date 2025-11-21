@@ -1,8 +1,9 @@
+import shlex
 from flask import Flask, jsonify, render_template
 from flask_socketio import SocketIO
 from concurrent.futures import ThreadPoolExecutor
 
-from celestialchess import ChessGame, BaseAI, MinimaxAI, MCTSAI, MonkyAI, DeepLearningAI
+from celestialchess import ChessGame, BaseAI, MinimaxAI, MCTSAI, MonkyAI #, DeepLearningAI
 
 app = Flask(__name__)
 socketio = SocketIO(app, async_mode="threading")
@@ -87,6 +88,30 @@ def get_update_board(game: ChessGame):
 
 def cmd_print(msg: str):
     socketio.emit("cmd_log", {"msg": msg})
+
+
+def parse_options(tokens):
+    """
+    简单解析类似 Linux 风格参数:
+    --row 3 --col 4 --color 1  -> {"row": "3", "col": "4", "color": "1"}
+    """
+    opts = {}
+    i = 0
+    while i < len(tokens):
+        t = tokens[i]
+        if t.startswith("--"):
+            key = t[2:]
+            # 有值且不是下一个选项
+            if i + 1 < len(tokens) and not tokens[i + 1].startswith("--"):
+                opts[key] = tokens[i + 1]
+                i += 2
+            else:
+                # 纯 flag，如 --foo
+                opts[key] = True
+                i += 1
+        else:
+            i += 1
+    return opts
 
 
 def sendDataToBackend(game: ChessGame):
@@ -210,6 +235,161 @@ def handle_monky_auto():
 #     # 与DeepLearningAI对弈
 #     set_auto_mode("dl")
 #     handle_dl_move()
+
+
+@socketio.on("cmd_input")
+def handle_cmd_input(data):
+    """
+    前端发来：socket.emit('cmd_input', { text: 'celestial play --row 3 --col 4 --color 1' })
+    在这里解析并执行相应操作。
+    """
+    text = data.get("text", "").strip()
+
+    if not text:
+        cmd_print("空命令。")
+        return
+
+    try:
+        args = shlex.split(text)
+    except ValueError as e:
+        socketio.emit("cmd_output", {
+            "success": False,
+            "message": f"命令解析错误: {e}"
+        })
+        return
+
+    # 可选的前缀，例如 "celestial"
+    if args and args[0] == "celestial":
+        args = args[1:]
+
+    if not args:
+        cmd_print("未指定子命令。")
+        return
+
+    cmd = args[0]
+    rest = args[1:]
+
+    # --------- play: 落子 ----------
+    if cmd == "play":
+        opts = parse_options(rest)
+
+        try:
+            # 必填: row, col；color 默认为当前行动方
+            if "row" not in opts or "col" not in opts:
+                raise ValueError("缺少 --row 或 --col")
+
+            row = int(opts["row"])
+            col = int(opts["col"])
+            color = int(opts.get("color", game.get_color()))
+        except Exception as e:
+            cmd_print(f"play 参数错误: {e}")
+            return
+
+        if not game.is_move_valid(row, col):
+            cmd_print(f"非法落子位置: ({row}, {col})")
+            return
+
+        # 等价于 handle_play_move 的逻辑
+        game.update_chessboard(row, col, color)
+        game.update_history(row, col)
+        sendDataToBackend(game)
+
+        if game.is_game_over():
+            cmd_print(f"已落子 ({row}, {col})，游戏结束。")
+            return
+
+        # 自动模式下，调对应 AI 一步
+        if minimax_auto:
+            executor.submit(handle_minimax_move)
+        elif mcts_auto:
+            executor.submit(handle_mcts_move)
+        elif monky_auto:
+            executor.submit(handle_monky_move)
+
+        cmd_print(f"已落子 ({row}, {col})，color={color}。")
+        return
+
+    # --------- 基础操作：undo / redo / restart ----------
+    elif cmd == "undo":
+        game.undo()
+        sendDataToBackend(game)
+        cmd_print("已悔棋。")
+        return
+
+    elif cmd == "redo":
+        game.redo()
+        sendDataToBackend(game)
+        cmd_print("已重悔。")
+        return
+
+    elif cmd == "restart":
+        game.restart()
+        sendDataToBackend(game)
+        set_auto_mode()
+        cmd_print("已重开棋局。")
+        return
+
+    # --------- 单步 AI 执棋：ai minimax/mcts/monky ----------
+    elif cmd == "ai":
+        if not rest:
+            cmd_print("ai 后需要指定类型: minimax / mcts / monky")
+            return
+
+        ai_type = rest[0]
+
+        if game.is_game_over():
+            cmd_print("游戏已结束，无法继续 AI 执棋。")
+            return
+
+        if ai_type == "minimax":
+            executor.submit(handle_minimax_move)
+        elif ai_type == "mcts":
+            executor.submit(handle_mcts_move)
+        elif ai_type == "monky":
+            executor.submit(handle_monky_move)
+        else:
+            cmd_print(f"未知 AI 类型: {ai_type}")
+            return
+
+        return
+
+    # --------- 自动对弈：auto minimax/mcts/monky ----------
+    elif cmd == "auto":
+        if not rest:
+            cmd_print("auto 后需要指定类型: minimax / mcts / monky")
+            return
+
+        ai_type = rest[0]
+
+        if ai_type == "minimax":
+            set_auto_mode("minimax")
+            executor.submit(handle_minimax_move)
+            msg = "已开启与 Minimax 对弈模式。"
+        elif ai_type == "mcts":
+            set_auto_mode("mcts")
+            executor.submit(handle_mcts_move)
+            msg = "已开启与 MCTS 对弈模式。"
+        elif ai_type == "monky":
+            set_auto_mode("monky")
+            executor.submit(handle_monky_move)
+            msg = "已开启与 Monky 对弈模式。"
+        else:
+            cmd_print(f"未知 auto 类型: {ai_type}")
+            return
+
+        cmd_print(msg)
+        return
+
+    # --------- 未知命令 ----------
+    else:
+        cmd_print(f"未知命令: {cmd}")
+        return
+
+    # 你想要的逻辑都可以写在这里
+    # 比如调用 AI、查看棋盘、运行 debug 命令、执行脚本等
+
+    # 也可以回消息
+    # cmd_print(f"Echo: {text}")
 
 
 if __name__ == "__main__":

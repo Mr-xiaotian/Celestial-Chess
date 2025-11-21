@@ -193,11 +193,11 @@ class MCTSAI(BaseAI):
         game.set_current_win_rate(best_win_rate)
         game.set_MCTSscore_board(next_win_rate_board)
 
-        # --- ✦ 新增的雌小鬼人格文本 ✦ ---
+        # --- ✦ 雌小鬼人格文本 ✦ ---
         if best_win_rate < 0.3:
-            mood = "喂？你的胜率比我想象的还要惨，继续这样，我都要不好意思欺负你了呢～"
+            mood = "什、什么？！这点胜率才不是我慌了！只是……只是我在让你啦！！你别得意太早！！"
         elif best_win_rate < 0.5:
-            mood = "哼，稍微有点样子啦？不过也就那样，还远远不够让我紧张。"
+            mood = "嘁……局面有点糟，但我还没输！你要是敢露出一点破绽，我马上就反打回去！"
         elif best_win_rate < 0.7:
             mood = "嚯，居然有点势均力敌的感觉？别太得意，我随时能把你按回去～"
         elif best_win_rate < 0.85:

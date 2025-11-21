@@ -241,12 +241,16 @@ class MinimaxAI(BaseAI):
             )
 
         meta = (
-            f"【Minimax 报告】搜索深度 = {depth}, 节点数 ≈ {iters}。\n"
+            f"搜索深度 = {depth}, 节点数 ≈ {iters}。\n"
             "我已经分析完所有你没注意到的失败分支。"
         )
 
-        return random.choice([mood, meta])
-
+        if random.random() < 0.8:
+            self.name = f"MinimaxAI({depth})"
+            return mood
+        else:
+            self.name = "【Minimax 报告】"
+            return meta
 
     @property
     def msg(self):

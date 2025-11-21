@@ -84,10 +84,9 @@ function bindSocketEvents() {
 
         // CMD 输出
         if (cmdPanel.style.display !== "none") {
-            cmdPrint(`Move = ${JSON.stringify(data.move)}, Score = ${data.score}`);
+            cmdPrint(`(Move = ${JSON.stringify(data.move)}, Score = ${data.score})`);
             if (data.game_over) {
-                cmdPrint("Game Over.");
-                cmdPrint("Winner = " + data.winner);
+                cmdPrint("Game Over. Winner = " + data.winner);
             }
         }
 
@@ -246,7 +245,11 @@ cmdInput.addEventListener("keydown", function(e) {
     if (e.key === "Enter") {
         let text = cmdInput.value.trim();
         if (text.length > 0) {
-            cmdPrint("I:" + text);
+            // 本地显示
+            cmdPrint("I: " + text);
+
+            // 发送给后端
+            socket.emit("cmd_input", { text });
         }
         cmdInput.value = "";
     }
