@@ -189,7 +189,7 @@ class MinimaxAI(BaseAI):
             return
 
         with open(self.transposition_file, "w", encoding="utf-8") as file:
-            json.dump(self.transposition_table, file, indent=4)
+            json.dump(self.transposition_table, file)
 
         (
             logger.info(f"Saved transposition table to {self.transposition_file}")
@@ -241,8 +241,7 @@ class MinimaxAI(BaseAI):
             )
 
         meta = (
-            f"搜索深度 = {depth}, 节点数 ≈ {iters}。\n"
-            "我已经分析完所有你没注意到的失败分支。"
+            f"搜索深度 = {depth}, 节点数 ≈ {iters}。"
         )
 
         if random.random() < 0.8:

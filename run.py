@@ -156,10 +156,13 @@ def handle_play_move(data):
     game.update_history(row, col)
     sendDataToBackend(game)
 
+    cmd_print(f"(Move = ({row}, {col}), Score = {game.get_score()})")
+
     if game.is_game_over():
         set_auto_mode()
         minimax_ai.end_model()
-        cmd_print(f"已落子 ({row}, {col})，游戏结束。")
+
+        cmd_print(f"Game Over. Winner = {game.who_is_winner()}")
         return
 
     if minimax_auto:
@@ -219,25 +222,25 @@ def handle_monky_move():
 @socketio.on("minimax_auto")
 def handle_minimax_auto():
     # 与Minimax对弈
+    cmd_print("已开启与 Minimax 对弈模式。")
     set_auto_mode("minimax")
     handle_minimax_move()
-    cmd_print("已开启与 Minimax 对弈模式。")
 
 
 @socketio.on("mcts_auto")
 def handle_mcts_auto():
     # 与MCTS对弈
+    cmd_print("已开启与 MCTS 对弈模式。")
     set_auto_mode("mcts")
     handle_mcts_move()
-    cmd_print("已开启与 MCTS 对弈模式。")
 
 
 @socketio.on("monky_auto")
 def handle_monky_auto():
     # 与Monky对弈
+    cmd_print("已开启与 Monky 对弈模式。")
     set_auto_mode("monky")
     handle_monky_move()
-    cmd_print("已开启与 Monky 对弈模式。")
 
 
 # @socketio.on("al_auto")

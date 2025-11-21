@@ -86,7 +86,9 @@ def bfs_expand_with_power_threshold(
     max_size = board_size * 2
 
     # 第一层存储power_expand的visit信息, 第二层存储threshold_expand的visit信息
-    visited = np.zeros((row_len, col_len, 2), dtype=np.bool_)
+    virtual_rows = row_len + power - 2  # 允许中心落在下面几层, 此处数值经过计算
+    visited = np.zeros((virtual_rows, col_len, 2), dtype=np.bool_)
+    visited[row, col, 0] = True
 
     # 前board_size存储power_expand内容, 后board_size存储threshold_expand内容
     expand_queue_r = np.empty(max_size, dtype=np.int32)
@@ -109,7 +111,7 @@ def bfs_expand_with_power_threshold(
         )
         head += 1
 
-        if visited[r, c, 0] or distance <= 0 or chessboard[r, c, 0] == np.inf:
+        if distance <= 0 or chessboard[r, c, 0] == np.inf:
             continue
 
         visited[r, c, 0] = True
@@ -118,15 +120,19 @@ def bfs_expand_with_power_threshold(
         chessboard[r, c, 1] += distance
 
         if chessboard[r, c, 1] >= threshold:
-            expand_queue_r[over_threshold_max_index] = r + black_hole_power - 1
+            seed_r = r + black_hole_power - 1
+
+            visited[seed_r, c, 1] = True
+            expand_queue_r[over_threshold_max_index] = seed_r
             expand_queue_c[over_threshold_max_index] = c
             expand_queue_d[over_threshold_max_index] = black_hole_power
             over_threshold_max_index += 1
 
         for dr, dc in [(0, 1), (0, -1), (1, 0)]:
             nr, nc = r + dr, (c + dc) % col_len
-            if nr >= row_len:
+            if nr >= row_len or visited[nr, nc, 0]:
                 continue
+            visited[nr, nc, 0] = True
             expand_queue_r[tail] = nr
             expand_queue_c[tail] = nc
             expand_queue_d[tail] = distance - 1
@@ -143,7 +149,7 @@ def bfs_expand_with_power_threshold(
         )
         head += 1
 
-        if visited[r, c, 1] or distance <= 0:
+        if distance <= 0:
             continue
 
         visited[r, c, 1] = True
@@ -152,6 +158,9 @@ def bfs_expand_with_power_threshold(
 
         for dr, dc in [(0, 1), (0, -1), (-1, 0)]:
             nr, nc = r + dr, (c + dc) % col_len
+            if visited[nr, nc, 1]:
+                continue
+            visited[nr, nc, 1] = True
             expand_queue_r[over_threshold_max_index] = nr
             expand_queue_c[over_threshold_max_index] = nc
             expand_queue_d[over_threshold_max_index] = distance - 1
@@ -181,7 +190,9 @@ def go_random_simulate(
                     chosen_row, chosen_col = row_idx, col_idx
     while count != 0:
         # 第一层存储power_expand的visit信息, 第二层存储threshold_expand的visit信息
-        visited = np.zeros((row_len, col_len, 2), dtype=np.bool_)
+        virtual_rows = row_len + power - 2  # 允许中心落在下面几层, 此处数值经过计算
+        visited = np.zeros((virtual_rows, col_len, 2), dtype=np.bool_)
+        visited[chosen_row, chosen_col, 0] = True
 
         expand_queue_r[0] = chosen_row
         expand_queue_c[0] = chosen_col
@@ -199,7 +210,7 @@ def go_random_simulate(
             )
             head += 1
 
-            if visited[r, c, 0] or distance <= 0 or chessboard[r, c, 0] == np.inf:
+            if distance <= 0 or chessboard[r, c, 0] == np.inf:
                 continue
 
             visited[r, c, 0] = True
@@ -208,15 +219,19 @@ def go_random_simulate(
             chessboard[r, c, 1] += distance
 
             if chessboard[r, c, 1] >= threshold:
-                expand_queue_r[over_threshold_max_index] = r + black_hole_power - 1
+                seed_r = r + black_hole_power - 1
+
+                visited[seed_r, c, 1] = True
+                expand_queue_r[over_threshold_max_index] = seed_r
                 expand_queue_c[over_threshold_max_index] = c
                 expand_queue_d[over_threshold_max_index] = black_hole_power
                 over_threshold_max_index += 1
 
             for dr, dc in [(0, 1), (0, -1), (1, 0)]:
                 nr, nc = r + dr, (c + dc) % board_range[1]
-                if nr >= board_range[0]:
+                if nr >= board_range[0] or visited[nr, nc, 0]:
                     continue
+                visited[nr, nc, 0] = True
                 expand_queue_r[tail] = nr
                 expand_queue_c[tail] = nc
                 expand_queue_d[tail] = distance - 1
@@ -233,7 +248,7 @@ def go_random_simulate(
             )
             head += 1
 
-            if visited[r, c, 1] or distance <= 0:
+            if distance <= 0:
                 continue
 
             visited[r, c, 1] = True
@@ -242,6 +257,9 @@ def go_random_simulate(
 
             for dr, dc in [(0, 1), (0, -1), (-1, 0)]:
                 nr, nc = r + dr, (c + dc) % board_range[1]
+                if visited[nr, nc, 1]:
+                    continue
+                visited[nr, nc, 1] = True
                 expand_queue_r[over_threshold_max_index] = nr
                 expand_queue_c[over_threshold_max_index] = nc
                 expand_queue_d[over_threshold_max_index] = distance - 1

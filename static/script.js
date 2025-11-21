@@ -82,14 +82,6 @@ function bindSocketEvents() {
         updateTotalScore(data.score);
         toggleColor(data.step);
 
-        // CMD 输出
-        if (cmdPanel.style.display !== "none") {
-            cmdPrint(`(Move = ${JSON.stringify(data.move)}, Score = ${data.score})`);
-            if (data.game_over) {
-                cmdPrint("Game Over. Winner = " + data.winner);
-            }
-        }
-
         // 游戏结束提示
         if (data.game_over) {
             let msg = (data.winner === 1) ? "蓝方胜利！"
@@ -104,9 +96,7 @@ function bindSocketEvents() {
 
     // 后端主动发送的 CMD 文本
     socket.on("cmd_log", data => {
-        if (cmdPanel.style.display !== "none") {
-            cmdPrint(data.msg);
-        }
+        cmdPrint(data.msg);
     });
 }
 

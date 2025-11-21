@@ -13,6 +13,9 @@ class ChessGame:
             (board_range[0], board_range[1], 2), dtype=float
         )
 
+        if power <= 1:
+            raise ValueError("Power must be greater than 1.")
+
         # 仅定义模拟运行必须的参数
         self.board_range: Tuple[int, int] = board_range
         self.power: int = power
