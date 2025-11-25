@@ -149,10 +149,7 @@ class ChessGame:
 
     def get_score(self):
         """计算当前玩家的总分数"""
-        if self.current_color == 1:
-            return self.get_raw_score() + self.balance_num
-        elif self.current_color == -1:
-            return self.get_raw_score() - self.balance_num
+        return self.get_raw_score() + self.current_color * self.balance_num
 
     def get_all_moves(self):
         """获取所有合法移动"""
@@ -231,17 +228,13 @@ class ChessGame:
         else:
             return True
 
-    def who_is_winner(self, color=None):
+    def who_is_winner(self):
         """
         判断当前玩家是否获胜
         :return: 1 蓝方获胜，-1 红方获胜，0 平局
         """
         score = self.get_score()
-        balance_num = self.balance_num
-        color = color if color is not None else self.get_color()
-        comparison = score + color * balance_num  # color: 1 蓝方，-1 红方
-
-        return (comparison > 0) - (comparison < 0)
+        return (score > 0) - (score < 0)
 
     def simulate_by_random(self):
         """
