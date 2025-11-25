@@ -195,7 +195,8 @@ class MCTSAI(BaseAI):
         game.set_MCTSscore_board(next_win_rate_board)
         
         # 你原来的棋盘格式化
-        # board_text = game.get_format_board(current_win_rate_board, (3, 0))
+        board_text = game.get_format_board(current_win_rate_board, (3, 0))
+        print(f"MCTSAI 思考结果：\n{board_text}")
 
         # --- ✦ 雌小鬼人格文本 ✦ ---
         dialogues = {
