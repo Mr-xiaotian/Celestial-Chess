@@ -70,7 +70,7 @@ def get_model_score_by_mcts(
         test_ai_manager.set_envirement(test_model, test_mcts, chess_state)
         test_ai_manager.start(range(simulate_num))
         win = test_ai_manager.process_result_dict()
-        print(f"MCTS Iter {mcts_iter}: Win {win} / {simulate_num}")
+        print(f"Win {win} / {simulate_num}")
 
         score_dict[f"{mcts_iter}"] = win / simulate_num
         if sum(score_dict.values()) / len(score_dict) < 0.6:
