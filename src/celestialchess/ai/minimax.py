@@ -1,5 +1,6 @@
 import json
 import random
+from enum import IntEnum
 from pathlib import Path
 
 # from functools import lru_cache
@@ -7,6 +8,12 @@ from typing import Tuple
 
 from ..chess_game import ChessGame
 from .base_ai import BaseAI, logger
+
+
+class AlphaBetaFlag(IntEnum):
+    EXACT = 0
+    LOWER = 1
+    UPPER = 2
 
 
 class MinimaxAI(BaseAI):
@@ -65,60 +72,68 @@ class MinimaxAI(BaseAI):
     def minimax(
         self, game: ChessGame, depth: int, color: int, alpha: float, beta: float
     ) -> float:
+        
         self.iterate_time += 1
+        old_alpha, old_beta = alpha, beta
 
         if self.log_mode:
             logger.debug(f"Iteration {self.iterate_time} in depth {depth}")
 
-        if self.transposition_mode:
-            board_key = game.get_board_key()
-            if (
-                board_key in self.transposition_table
-                and self.transposition_table[board_key]["depth"] >= depth
-            ):
-                return self.transposition_table[board_key]["score"]
+        # ===== ① TT 查询 =====
+        board_key = game.get_board_key() if self.transposition_mode else None
+        if self.transposition_mode and board_key in self.transposition_table:
+            entry = self.transposition_table[board_key]
+            if entry["depth"] >= depth:
+                flag = entry["flag"]
+                score = entry["score"]
 
+                if flag == AlphaBetaFlag.EXACT:   
+                    return score
+                elif flag == AlphaBetaFlag.LOWER: 
+                    alpha = max(alpha, score)
+                else:           # UPPER
+                    beta = min(beta, score)
+
+                if alpha >= beta:
+                    return score
+
+        # ===== ② 叶子节点 =====
         if depth == 0 or game.is_game_over():
             score = game.get_score()
             if self.transposition_mode:
-                self.update_transposition_table(
-                    board_key,
-                    score,
-                    depth,
-                    game.get_format_board_value() if self.log_mode else None,
-                )
+                self.update_transposition_table(board_key, score, depth, AlphaBetaFlag.EXACT)
             return score
 
-        # 初始化最大化或最小化的评估值
+        # ===== ③ 搜索子节点 =====
         best_eval = float("-inf") if color == 1 else float("inf")
-        comparison_func = max if color == 1 else min
-        alpha_beta_update = max if color == 1 else min
 
-        # 遍历所有可能的移动
         for move in game.get_all_moves():
-            current_game = game.copy()
-            current_game.update_chessboard(*move, color)
+            g2 = game.copy()
+            g2.update_chessboard(*move, color)
 
-            eval = self.minimax(current_game, depth - 1, -color, alpha, beta)
+            eval = self.minimax(g2, depth - 1, -color, alpha, beta)
 
-            best_eval = comparison_func(best_eval, eval)
             if color == 1:
-                alpha = alpha_beta_update(alpha, eval)
+                best_eval = max(best_eval, eval)
+                alpha = max(alpha, eval)
             else:
-                beta = alpha_beta_update(beta, eval)
+                best_eval = min(best_eval, eval)
+                beta = min(beta, eval)
 
-            # Alpha-Beta 剪枝
             if beta <= alpha:
                 break
 
-        # 更新置换表
+        # ===== ④ 判断 flag 类型 =====
+        if best_eval <= old_alpha:
+            flag = AlphaBetaFlag.UPPER
+        elif best_eval >= old_beta:
+            flag = AlphaBetaFlag.LOWER
+        else:
+            flag = AlphaBetaFlag.EXACT
+
+        # ===== ⑤ 写入 TT =====
         if self.transposition_mode:
-            self.update_transposition_table(
-                board_key,
-                best_eval,
-                depth,
-                game.get_format_board_value() if self.log_mode else None,
-            )
+            self.update_transposition_table(board_key, best_eval, depth, flag)
 
         return best_eval
 
@@ -160,20 +175,20 @@ class MinimaxAI(BaseAI):
                 json.dump({}, file, indent=4)
 
     def update_transposition_table(
-        self, key: str, score: int, depth: int, format_board_value: str = None
+        self, key: str, score: int, depth: int, flag: AlphaBetaFlag
     ) -> None:
         """
         更新transposition table
         """
-        old_value = self.transposition_table.get(key)
-        new_value = {"score": score, "depth": depth}
+        old_value = self.transposition_table.get(key, None)
+        new_value = {"score": score, "depth": depth, "flag": flag}
+
         if old_value is None or old_value["depth"] < new_value["depth"]:
-            old_value = self.transposition_table.get(key, None)
             self.transposition_table[key] = new_value
             self.transposition_table_change = True
             (
                 logger.info(
-                    f"Update transposition table: {old_value} -> {new_value}\n{format_board_value:>20}"
+                    f"Update transposition table: {old_value} -> {new_value}"
                 )
                 if self.log_mode
                 else None
@@ -184,8 +199,6 @@ class MinimaxAI(BaseAI):
         保存transposition table到文件
         """
         if not self.transposition_table_change:
-            self.transposition_table = {}
-            self.transposition_table_change = False
             return
 
         with open(self.transposition_file, "w", encoding="utf-8") as file:
@@ -197,7 +210,6 @@ class MinimaxAI(BaseAI):
             else None
         )
 
-        self.transposition_table = {}
         self.transposition_table_change = False
 
     def _build_minimax_msg(self, best_score: float, color: int, depth: int, iters: int) -> str:

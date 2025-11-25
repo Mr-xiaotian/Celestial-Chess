@@ -1,15 +1,42 @@
 from time import time
 from tqdm import tqdm
 from typing import Tuple, Dict
+from celestialflow import TaskManager
 
 from ..chess_game import ChessGame
 from .base_ai import BaseAI
 from .mcts import MCTSAI
 
 
+class TestAIManager(TaskManager):
+    def set_envirement(self, ai_0, ai_1, chess_state):
+        self.ai_0 = ai_0
+        self.ai_1 = ai_1
+        self.chess_state = chess_state
+
+    def get_args(self, obj: object):
+        train_game = ChessGame(*self.chess_state)
+        train_game.init_cfunc()
+        train_game.init_history()
+        return (self.ai_0, self.ai_1, train_game, False)
+
+    def process_result_dict(self):
+        win = 0
+        success_dict = self.get_success_dict()
+
+        for over_game in success_dict.values():
+            winner = over_game.who_is_winner()
+            if winner == 1:
+                win += 1
+            elif winner == 0:
+                win += 0.5
+
+        return win 
+    
+
 def get_model_score_by_mcts(
     test_model: BaseAI,
-    game_state: Tuple[Tuple[int, int], int],
+    chess_state: Tuple[Tuple[int, int], int],
     start_mcts_iter: float = 1e1,
     end_mcts_iter: float = 1e4,
     mcts_step: int = 10,
@@ -19,7 +46,7 @@ def get_model_score_by_mcts(
     使用MCTS测试AI模型的得分
 
     :param test_model: 待测试的AI模型
-    :param game_state: 游戏状态
+    :param chess_state: 游戏状态
     :param start_mcts_iter: MCTS的迭代次数的起始值
     :param end_mcts_iter: MCTS的迭代次数的终止值
     :param mcts_step: MCTS的迭代次数的步长
@@ -30,18 +57,20 @@ def get_model_score_by_mcts(
 
     for mcts_iter in range(int(start_mcts_iter), int(end_mcts_iter), mcts_step):
         win = 0
-        test_mcts = MCTSAI(mcts_iter, enable_cps=False)
-        for _ in tqdm(range(simulate_num), desc=f"Mcts Iter {mcts_iter}"):
-            test_game = ChessGame(*game_state)
-            test_game.init_history()
-
-            over_game = ai_battle(test_model, test_mcts, test_game, display=False)
-            winner = over_game.who_is_winner()
-            if winner == 1:
-                win += 1
-            elif winner == 0:
-                win += 0.5
-        test_mcts.end_model()
+        test_mcts = MCTSAI(mcts_iter, complate_mode=False)
+        
+        test_ai_manager = TestAIManager(
+            ai_battle,
+            execution_mode="process",
+            worker_limit = 5,
+            enable_result_cache=True,
+            progress_desc=f"Mcts Iter {mcts_iter}",
+            show_progress=True,
+        )
+        test_ai_manager.set_envirement(test_model, test_mcts, chess_state)
+        test_ai_manager.start(range(simulate_num))
+        win = test_ai_manager.process_result_dict()
+        print(f"MCTS Iter {mcts_iter}: Win {win} / {simulate_num}")
 
         score_dict[f"{mcts_iter}"] = win / simulate_num
         if sum(score_dict.values()) / len(score_dict) < 0.6:
@@ -51,17 +80,17 @@ def get_model_score_by_mcts(
     return mcts_iter - 10, score_dict
 
 
-def get_best_c_param(game_state, start_c_param=0.0, test_game_num=1000):
+def get_best_c_param(chess_state, start_c_param=0.0, test_game_num=1000):
     best_c_param = start_c_param
     c_param_dict = {}
-    best_mcts = MCTSAI(100, c_param=best_c_param, enable_cps=False)
+    best_mcts = MCTSAI(100, c_param=best_c_param, complate_mode=False)
 
     for param in range(0, 11, 1):
         win = 0
-        test_mcts = MCTSAI(100, c_param=param / 10, enable_cps=False)
+        test_mcts = MCTSAI(100, c_param=param / 10, complate_mode=False)
 
         for _ in tqdm(range(test_game_num), desc=f"C param {param/10}"):
-            test_game = ChessGame(*game_state)
+            test_game = ChessGame(*chess_state)
             test_game.init_history()
             over_game = ai_battle(best_mcts, test_mcts, test_game, display=False)
             winner = over_game.who_is_winner()
@@ -73,7 +102,7 @@ def get_best_c_param(game_state, start_c_param=0.0, test_game_num=1000):
         c_param_dict[f"{best_c_param} : {param/10}"] = win
         if win < test_game_num / 2:
             best_c_param = param / 10
-            best_mcts = MCTSAI(100, c_param=best_c_param, enable_cps=False)
+            best_mcts = MCTSAI(100, c_param=best_c_param, complate_mode=False)
 
     return best_c_param, c_param_dict
 
@@ -95,10 +124,10 @@ def ai_battle(
     """
     if display:
         print(
-            f"游戏开始！\n蓝方AI: {ai_blue.__class__.__name__}\n红方AI: {ai_red.__class__.__name__}\n"
+            f"游戏开始！\n蓝方AI: {ai_blue.name}\n红方AI: {ai_red.name}\n"
         )
-        ai_blue_name = "蓝方" + ai_blue.__class__.__name__
-        ai_red_name = "红方" + ai_red.__class__.__name__
+        ai_blue_name = "蓝方" + ai_blue.name
+        ai_red_name = "红方" + ai_red.name
     color = 1
 
     first_time = time()
