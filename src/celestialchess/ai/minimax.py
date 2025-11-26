@@ -18,7 +18,7 @@ class AlphaBetaFlag(IntEnum):
 
 class MinimaxAI(BaseAI):
     def __init__(self, depth: int, log_mode: bool = False) -> None:
-        self.name = f"MinimaxAI"
+        self.name = "MinimaxAI"
 
         self.depth = depth
         self.log_mode = log_mode

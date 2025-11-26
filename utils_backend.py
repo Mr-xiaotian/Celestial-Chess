@@ -69,18 +69,19 @@ def handle_ai_move(socketio: SocketIO, ai: BaseAI, game: ChessGame):
     # Step 0：设置冻结标志
     ai_thinking = True
 
-    # Step 2：AI 在副本上思考（无锁）
+    # Step 2：AI 在副本上思考
     cmd_print(socketio, f"({ai.name} thinking...)")
     move = ai.find_best_move(game)
     cmd_print(socketio, f"{ai.name}: {ai.msg}")
 
-    # Step 3：写回到真实棋局（加锁）
+    # Step 3：写回到真实棋局
     color = game.get_color()
-    game.update_chessboard(*move, color)
-    game.update_history(*move)
-    sendDataToBackend(socketio, game)
+    finished = apply_move_and_update(
+        socketio, game, move[0], move[1], color, source=ai.name
+    )
 
-    cmd_print(socketio, f"(Move = ({move[0]}, {move[1]}), Score = {game.get_score()}, Color = {color})")
+    if finished:
+        ai.end_model()
 
     # Step 4：解除冻结标志
     ai_thinking = False
@@ -94,6 +95,28 @@ def handle_ai_auto(socketio: SocketIO, ai: BaseAI, game: ChessGame):
 
 def cmd_print(socketio: SocketIO, msg: str):
     socketio.emit("cmd_log", {"msg": msg})
+
+
+def apply_move_and_update(socketio: SocketIO, game: ChessGame, row: int, col: int, color: int, source: str):
+    """
+    统一的落子更新流程：更新棋盘、历史、前端、输出日志、检查结束。
+    source = "player" 或 "ai"
+    """
+    game.update_chessboard(row, col, color)
+    game.update_history(row, col)
+
+    sendDataToBackend(socketio, game)
+
+    # 打印输出
+    msg = f"({source} Move = ({row}, {col}), Score = {game.get_score()}, Color = {color})"
+    cmd_print(socketio, msg)
+
+    # 判断游戏是否结束
+    if game.is_game_over():
+        cmd_print(socketio, f"Game Over. Winner = {game.who_is_winner()}")
+        return True
+
+    return False   # 游戏未结束
 
 
 def sendDataToBackend(socketio: SocketIO, game):

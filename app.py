@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 import utils_backend
 from celestialchess import ChessGame, MinimaxAI, MCTSAI, MonkyAI #, DeepLearningAI
-from utils_backend import sendDataToBackend, prepare_board_for_json, handle_ai_move, handle_ai_auto, cmd_print, parse_options
+from utils_backend import sendDataToBackend, prepare_board_for_json, handle_ai_move, handle_ai_auto, cmd_print, parse_options, apply_move_and_update
 
 
 app = Flask(__name__)
@@ -85,17 +85,12 @@ def handle_play_move(data):
         cmd_print(socketio, f"非法落子位置: ({row}, {col})")
         return
 
-    game.update_chessboard(row, col, color)
-    game.update_history(row, col)
-    sendDataToBackend(socketio, game)
+    # 调用统一落子逻辑
+    finished = utils_backend.apply_move_and_update(socketio, game, row, col, color, source="player")
 
-    cmd_print(socketio, f"(Move = ({row}, {col}), Score = {game.get_score()}, Color = {color})")
-
-    if game.is_game_over():
+    if finished:
         set_auto_mode()
         minimax_ai.end_model()
-
-        cmd_print(socketio, f"Game Over. Winner = {game.who_is_winner()}")
         return
 
     if minimax_auto:
