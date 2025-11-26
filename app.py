@@ -3,9 +3,8 @@ from flask import Flask, jsonify, render_template
 from flask_socketio import SocketIO
 from concurrent.futures import ThreadPoolExecutor
 
-import utils_backend
 from celestialchess import ChessGame, MinimaxAI, MCTSAI, MonkyAI #, DeepLearningAI
-from utils_backend import sendDataToBackend, prepare_board_for_json, handle_ai_move, handle_ai_auto, cmd_print, parse_options, apply_move_and_update
+import utils_backend
 
 
 app = Flask(__name__)
@@ -59,7 +58,7 @@ def index():
 @app.route("/init_state", methods=["GET"])
 def init_state():
     # 获取初始棋局状态
-    prepared_board = prepare_board_for_json(game.chessboard)
+    prepared_board = utils_backend.prepare_board_for_json(game.chessboard)
     
     return jsonify(
         {
@@ -74,7 +73,7 @@ def init_state():
 @socketio.on("play_move")
 def handle_play_move(data):
     if utils_backend.ai_thinking:
-        cmd_print(socketio, "AI 思考中，棋盘已锁定，不能下子。")
+        utils_backend.cmd_print(socketio, "AI 思考中，棋盘已锁定，不能下子。")
         return
     
     row = data["row"]
@@ -82,7 +81,7 @@ def handle_play_move(data):
     color = data["color"]  # 前端发送了颜色信息
 
     if not game.is_move_valid(row, col):
-        cmd_print(socketio, f"非法落子位置: ({row}, {col})")
+        utils_backend.cmd_print(socketio, f"非法落子位置: ({row}, {col})")
         return
 
     # 调用统一落子逻辑
@@ -94,45 +93,45 @@ def handle_play_move(data):
         return
 
     if minimax_auto:
-        executor.submit(handle_ai_move, socketio, minimax_ai, game)
+        executor.submit(utils_backend.handle_ai_move, socketio, minimax_ai, game)
     elif mcts_auto:
-        executor.submit(handle_ai_move, socketio, mcts_ai, game)
+        executor.submit(utils_backend.handle_ai_move, socketio, mcts_ai, game)
     elif monky_auto:
-        executor.submit(handle_ai_move, socketio, monky_ai, game)
+        executor.submit(utils_backend.handle_ai_move, socketio, monky_ai, game)
 
 
 @socketio.on("undo_move")
 def handle_undo_move():
     game.undo()
-    sendDataToBackend(socketio, game)
-    cmd_print(socketio, "已悔棋。")
+    utils_backend.sendDataToBackend(socketio, game)
+    utils_backend.cmd_print(socketio, "已悔棋。")
 
 
 @socketio.on("redo_move")
 def handle_redo_move():
     game.redo()
-    sendDataToBackend(socketio, game)
-    cmd_print(socketio, "已重悔。")
+    utils_backend.sendDataToBackend(socketio, game)
+    utils_backend.cmd_print(socketio, "已重悔。")
 
 
 @socketio.on("restart_game")
 def handle_restart_game():
     game.restart()
-    sendDataToBackend(socketio, game)
+    utils_backend.sendDataToBackend(socketio, game)
     set_auto_mode()
-    cmd_print(socketio, "已重开棋局。")
+    utils_backend.cmd_print(socketio, "已重开棋局。")
 
 
 def make_move_handler(ai_name):
     def handler():
-        handle_ai_move(socketio, AI_MAP[ai_name], game)
+        utils_backend.handle_ai_move(socketio, AI_MAP[ai_name], game)
     return handler
 
 
 def make_auto_handler(ai_name):
     def handler():
         set_auto_mode(ai_name)
-        handle_ai_auto(socketio, AI_MAP[ai_name], game)
+        utils_backend.handle_ai_auto(socketio, AI_MAP[ai_name], game)
     return handler
 
 
@@ -150,7 +149,7 @@ def handle_cmd_input(data):
     text = data.get("text", "").strip()
 
     if not text:
-        cmd_print(socketio, "空命令。")
+        utils_backend.cmd_print(socketio, "空命令。")
         return
 
     try:
@@ -167,7 +166,7 @@ def handle_cmd_input(data):
         args = args[1:]
 
     if not args:
-        cmd_print(socketio, "未指定子命令。")
+        utils_backend.cmd_print(socketio, "未指定子命令。")
         return
 
     cmd = args[0]
@@ -175,7 +174,7 @@ def handle_cmd_input(data):
 
     # --------- play: 落子 ----------
     if cmd == "play":
-        opts = parse_options(rest)
+        opts = utils_backend.parse_options(rest)
 
         try:
             # 必填: row, col；color 默认为当前行动方
@@ -186,7 +185,7 @@ def handle_cmd_input(data):
             col = int(opts["col"])
             color = int(opts.get("color", game.get_color()))
         except Exception as e:
-            cmd_print(socketio, f"play 参数错误: {e}")
+            utils_backend.cmd_print(socketio, f"play 参数错误: {e}")
             return
 
         handle_play_move({"row": row, "col": col, "color": color})
@@ -208,23 +207,23 @@ def handle_cmd_input(data):
     # --------- 单步 AI 执棋：ai minimax/mcts/monky ----------
     elif cmd == "ai":
         if not rest:
-            cmd_print(socketio, "ai 后需要指定类型: minimax / mcts / monky")
+            utils_backend.cmd_print(socketio, "ai 后需要指定类型: minimax / mcts / monky")
             return
 
         ai_type = rest[0]
 
         if game.is_game_over():
-            cmd_print(socketio, "游戏已结束，无法继续 AI 执棋。")
+            utils_backend.cmd_print(socketio, "游戏已结束，无法继续 AI 执棋。")
             return
 
         if ai_type == "minimax":
-            executor.submit(handle_ai_move, (socketio, minimax_ai, game))
+            executor.submit(utils_backend.handle_ai_move, socketio, minimax_ai, game)
         elif ai_type == "mcts":
-            executor.submit(handle_ai_move, (socketio, mcts_ai, game))
+            executor.submit(utils_backend.handle_ai_move, socketio, mcts_ai, game)
         elif ai_type == "monky":
-            executor.submit(handle_ai_move, (socketio, monky_ai, game))
+            executor.submit(utils_backend.handle_ai_move, socketio, monky_ai, game)
         else:
-            cmd_print(socketio, f"未知 AI 类型: {ai_type}")
+            utils_backend.cmd_print(socketio, f"未知 AI 类型: {ai_type}")
             return
 
         return
@@ -232,35 +231,35 @@ def handle_cmd_input(data):
     # --------- 自动对弈：auto minimax/mcts/monky ----------
     elif cmd == "auto":
         if not rest:
-            cmd_print(socketio, "auto 后需要指定类型: minimax / mcts / monky")
+            utils_backend.cmd_print(socketio, "auto 后需要指定类型: minimax / mcts / monky")
             return
 
         ai_type = rest[0]
 
         if ai_type == "minimax":
             set_auto_mode("minimax")
-            handle_ai_auto(socketio, minimax_ai, game)
+            utils_backend.handle_ai_auto(socketio, minimax_ai, game)
         elif ai_type == "mcts":
             set_auto_mode("mcts")
-            handle_ai_auto(socketio, mcts_ai, game)
+            utils_backend.handle_ai_auto(socketio, mcts_ai, game)
         elif ai_type == "monky":
             set_auto_mode("minimax")
-            handle_ai_auto(socketio, mcts_ai, game)
+            utils_backend.handle_ai_auto(socketio, mcts_ai, game)
         else:
-            cmd_print(socketio, f"未知 auto 类型: {ai_type}")
+            utils_backend.cmd_print(socketio, f"未知 auto 类型: {ai_type}")
 
         return
 
     # --------- 未知命令 ----------
     else:
-        cmd_print(socketio, f"未知命令: {cmd}")
+        utils_backend.cmd_print(socketio, f"未知命令: {cmd}")
         return
 
     # 你想要的逻辑都可以写在这里
     # 比如调用 AI、查看棋盘、运行 debug 命令、执行脚本等
 
     # 也可以回消息
-    # cmd_print(socketio, f"Echo: {text}")
+    # utils_backend.cmd_print(socketio, f"Echo: {text}")
 
 
 if __name__ == "__main__":
