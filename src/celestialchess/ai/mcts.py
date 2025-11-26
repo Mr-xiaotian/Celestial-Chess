@@ -6,7 +6,6 @@ from typing import Tuple, List, Optional
 from ..chess_game import ChessGame
 from ..tools.mcts_tool import *
 from .base_ai import BaseAI
-from .deeplearning import DeepLearningAI
 
 
 class MCTSNode:
@@ -71,31 +70,6 @@ class MCTSNode:
         # test_arr = [(win_rate, math.sqrt((math.log(self.visits) / child_visit))) for win_rate, child_visit in rates_visits]
         best_index = get_best_index_by_ucb1(wins_visits, self.visits, c_param)
 
-        return self.children[best_index]
-
-    def get_best_child_with_net(
-        self, policy_net: Optional[DeepLearningAI], c_param=0.6
-    ):
-        """
-        使用UCB1策略选择最佳子节点
-        """
-        move_probs = policy_net.get_move_probs(self.chess_game)
-        wins_visits_probs = np.array(
-            [
-                [
-                    child.wins,
-                    child.visits,
-                    move_probs[
-                        child.get_current_move()[0], child.get_current_move()[1]
-                    ],
-                ]
-                for child in self.children
-            ],
-            dtype=np.float64,
-        )
-        # test_arr = [(win_rate * policy_prob, math.sqrt(self.visits) / (1 + child_visit), policy_prob)
-        #             for win_rate, child_visit, policy_prob in rates_visits_probs]
-        best_index = get_best_index_by_puct(wins_visits_probs, self.visits, c_param)
         return self.children[best_index]
 
     def expand(self):
@@ -299,43 +273,3 @@ class MCTSAI(BaseAI):
         pass
 
 
-class MCTSPlusAI(MCTSAI):
-    def __init__(
-        self,
-        itermax: int = 1000,
-        c_param=0.8,
-        policy_net: Optional[DeepLearningAI] = None,
-        value_net: Optional[DeepLearningAI] = None,
-        complate_mode=True,
-    ) -> None:
-
-        super().__init__(itermax, c_param, complate_mode)
-        self.policy_net = policy_net
-        self.value_net = value_net
-
-    def MCTS(self, root: MCTSNode) -> MCTSNode:
-        """执行迭代次数为 itermax 的 MCTS 搜索，返回最佳子节点"""
-        # 提前终止条件
-        # if len(root.untried_moves) <= 1:
-        #     return root.get_best_child(c_param=0)
-
-        for _ in range(self.itermax):
-            node = self.tree_policy_with_net(
-                root, policy_net=self.policy_net, c_param=self.c_param
-            )
-            reward = node.simulate()
-            node.backpropagate(reward)
-        return root.get_best_child(c_param=0)
-
-    def tree_policy_with_net(
-        self, node: MCTSNode, policy_net: Optional[DeepLearningAI], c_param
-    ) -> MCTSNode:
-        """根据选择策略递归选择子节点，直到达到未完全展开或未被访问的节点"""
-        while not node.chess_game.is_game_over():
-            if not node.is_fully_expanded():
-                return node.expand()
-            else:
-                node = node.get_best_child_with_net(
-                    policy_net=policy_net, c_param=c_param
-                )
-        return node
