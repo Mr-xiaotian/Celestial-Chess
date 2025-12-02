@@ -172,6 +172,10 @@ class MCTSAI(BaseAI):
         board_text = game.get_format_board(current_win_rate_board, (3, 0))
         print(f"MCTSAI 思考结果：\n{board_text}")
 
+        # 更新消息
+        self._build_mcts_msg(best_win_rate)
+
+    def _build_mcts_msg(self, best_win_rate):
         # --- ✦ 雌小鬼人格文本 ✦ ---
         dialogues = {
             "very_low": [

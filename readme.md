@@ -1,9 +1,5 @@
 # Celestial Chess
 
-## 游戏名称
-
-**Celestial Chess**
-
 ## 游戏目标
 
 在棋盘上通过策略性地摆放棋子，以达到获得最高总分的目的。

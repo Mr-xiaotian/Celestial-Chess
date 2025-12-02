@@ -3,7 +3,6 @@ import random
 from enum import IntEnum
 from pathlib import Path
 
-# from functools import lru_cache
 from typing import Tuple
 
 from ..chess_game import ChessGame
@@ -31,6 +30,7 @@ class MinimaxAI(BaseAI):
     ) -> None:
         """
         启用 transposition table 模式，并指定存储路径
+        :param chess_state: 初始棋盘状态
         :param transposition_path: 存储 transposition table 的文件夹路径
         """
         self.transposition_mode = True
@@ -63,12 +63,11 @@ class MinimaxAI(BaseAI):
         # Minimax 没有真正 win_rate，这里保持接口一致但用不到
         game.set_current_win_rate()
 
-        # ✦ 新增：生成带人格的 Minimax 消息 ✦
-        self._msg = self._build_minimax_msg(best_score, color, depth, self.iterate_time)
+        # ✦ 生成带人格的 Minimax 消息 ✦
+        self._build_minimax_msg(best_score, color, depth, self.iterate_time)
 
         return best_move
 
-    # @lru_cache(maxsize=None)
     def minimax(
         self, game: ChessGame, depth: int, color: int, alpha: float, beta: float
     ) -> float:
@@ -91,7 +90,7 @@ class MinimaxAI(BaseAI):
                     return score
                 elif flag == AlphaBetaFlag.LOWER: 
                     alpha = max(alpha, score)
-                else:           # UPPER
+                elif flag == AlphaBetaFlag.UPPER:
                     beta = min(beta, score)
 
                 if alpha >= beta:
@@ -277,10 +276,10 @@ class MinimaxAI(BaseAI):
 
         if random.random() < 0.8:
             self.name = f"MinimaxAI"
-            return mood
+            self._msg =  mood
         else:
             self.name = "【Minimax 报告】"
-            return meta
+            self._msg =  meta
 
     @property
     def msg(self):
