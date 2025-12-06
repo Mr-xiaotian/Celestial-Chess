@@ -77,7 +77,7 @@ def handle_ai_move(socketio: SocketIO, ai: BaseAI, game: ChessGame):
     # Step 3：写回到真实棋局
     color = game.get_color()
     finished = apply_move_and_update(
-        socketio, game, move[0], move[1], color, source=ai.name
+        socketio, game, move[0], move[1], color
     )
 
     if finished:
@@ -97,7 +97,7 @@ def cmd_print(socketio: SocketIO, msg: str):
     socketio.emit("cmd_log", {"msg": msg})
 
 
-def apply_move_and_update(socketio: SocketIO, game: ChessGame, row: int, col: int, color: int, source: str):
+def apply_move_and_update(socketio: SocketIO, game: ChessGame, row: int, col: int, color: int):
     """
     统一的落子更新流程：更新棋盘、历史、前端、输出日志、检查结束。
     source = "player" 或 "ai"
@@ -108,7 +108,7 @@ def apply_move_and_update(socketio: SocketIO, game: ChessGame, row: int, col: in
     sendDataToBackend(socketio, game)
 
     # 打印输出
-    msg = f"({source} Move = ({row}, {col}), Score = {game.get_score()}, Color = {color})"
+    msg = f"(Move = ({row}, {col}), Score = {game.get_score()}, Color = {color})"
     cmd_print(socketio, msg)
 
     # 判断游戏是否结束

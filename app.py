@@ -85,7 +85,7 @@ def handle_play_move(data):
         return
 
     # 调用统一落子逻辑
-    finished = utils_backend.apply_move_and_update(socketio, game, row, col, color, source="player")
+    finished = utils_backend.apply_move_and_update(socketio, game, row, col, color)
 
     if finished:
         set_auto_mode()
