@@ -12,7 +12,8 @@ if flag:
 
 train_num = 10
 mcts_iter = 1000
-train_data = start_train_data(train_num, mcts_iter, execution_mode='serial')
+chess_state = ((5, 5), 2)
+train_data = start_train_data(train_num, mcts_iter, chess_state, execution_mode='serial')
 train_data_path = save_train_data(train_data, train_num, mcts_iter)
 
 # train_data_path = r"data\train_data\2025-11-20\MCTS1.0k_Games10.0k_Length133927(18-34).json"
