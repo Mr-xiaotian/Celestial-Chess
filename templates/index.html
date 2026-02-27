@@ -131,13 +131,18 @@
         </div>
       </div>
     </div>
-    <div id="cmd-panel" class="cmd-panel" style="cursor: move; display: none;">
-      <!-- 上方历史输出区 -->
+    <div id="cmd-panel" class="cmd-panel" style="display: none;">
+      <div id="cmd-header" class="cmd-header">
+        <div class="cmd-dots">
+          <button id="cmd-close" class="cmd-dot cmd-dot-close" type="button"></button>
+          <button id="cmd-minimize" class="cmd-dot cmd-dot-min" type="button"></button>
+          <button id="cmd-maximize" class="cmd-dot cmd-dot-max" type="button"></button>
+        </div>
+        <div class="cmd-title">Terminal</div>
+      </div>
       <div id="cmd-output" class="cmd-output"></div>
-
-      <!-- 输入提示行 -->
-      <div style="border-top: 1px solid #444; padding-top: 8px">
-        <span style="color: #0f0">&gt;</span>
+      <div class="cmd-input-row">
+        <span class="cmd-input-prefix">&gt;</span>
         <input id="cmd-input" class="cmd-input" type="text" />
       </div>
     </div>

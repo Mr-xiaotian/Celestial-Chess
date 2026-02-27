@@ -271,14 +271,22 @@ function onCellClick(row, col) {
 const cmdPanel  = document.getElementById("cmd-panel");
 const cmdOutput = document.getElementById("cmd-output");
 const cmdInput  = document.getElementById("cmd-input");
+const cmdHeader = document.getElementById("cmd-header");
+const cmdCloseBtn = document.getElementById("cmd-close");
+const cmdMinBtn = document.getElementById("cmd-minimize");
+const cmdMaxBtn = document.getElementById("cmd-maximize");
 
 function toggleCmdPanel() {
     cmdPanel.style.display =
         (cmdPanel.style.display === "none") ? "flex" : "none";
 }
 
-function cmdPrint(msg) {
-    cmdOutput.textContent += msg + "\n";
+function cmdPrint(msg, options = {}) {
+    const line = document.createElement("div");
+    const type = options.type || detectCmdType(msg);
+    line.classList.add("cmd-output-line", type);
+    line.textContent = msg;
+    cmdOutput.appendChild(line);
     cmdOutput.scrollTop = cmdOutput.scrollHeight;
 }
 
@@ -287,6 +295,36 @@ let uiLocked = false;
 function setUILocked(locked) {
     uiLocked = locked;
     document.body.style.cursor = locked ? "wait" : "default";
+}
+
+function detectCmdType(msg) {
+    if (msg.startsWith("I: ")) {
+        return "user";
+    }
+    if (msg.startsWith("(") || msg.includes("thinking") || msg.includes("配置已更新") || msg.includes("观战已开始") || msg.includes("观战已停止")) {
+        return "system";
+    }
+    const aiMatch = msg.match(/^([A-Za-z]+AI|MCTSAI|MinimaxAI|MonkyAI|MCTS|Minimax|Monky)\s*:/);
+    if (aiMatch) {
+        const name = aiMatch[1].toLowerCase();
+        if (name.includes("minimax")) return "ai-minimax";
+        if (name.includes("mcts")) return "ai-mcts";
+        if (name.includes("monky")) return "ai-monky";
+        return "ai-generic";
+    }
+    return "system";
+}
+
+function setCmdCollapsed(collapsed) {
+    if (collapsed) {
+        cmdPanel.classList.add("minimized");
+    } else {
+        cmdPanel.classList.remove("minimized");
+    }
+}
+
+function toggleCmdMaximize() {
+    cmdPanel.classList.toggle("maximized");
 }
 
 function setConfigInputs(rowLen, colLen, powerValue) {
@@ -423,7 +461,7 @@ cmdInput.addEventListener("keydown", function(e) {
         let text = cmdInput.value.trim();
         if (text.length > 0) {
             // 本地显示
-            cmdPrint("I: " + text);
+            cmdPrint("I: " + text, { type: "user" });
 
             // 发送给后端
             socket.emit("cmd_input", { text });
@@ -437,16 +475,16 @@ cmdInput.addEventListener("keydown", function(e) {
 // CMD 可拖拽
 // ==========================================================
 (function enableCmdDrag() {
-
     const panel = cmdPanel;
     let offsetX = 0, offsetY = 0;
     let dragging = false;
 
-    panel.addEventListener("mousedown", function(e) {
+    cmdHeader.addEventListener("mousedown", function(e) {
+        if (e.target.classList.contains("cmd-dot")) return;
         dragging = true;
         offsetX = e.clientX - panel.offsetLeft;
         offsetY = e.clientY - panel.offsetTop;
-        panel.style.cursor = "grabbing";
+        cmdHeader.style.cursor = "grabbing";
     });
 
     document.addEventListener("mousemove", function(e) {
@@ -458,7 +496,22 @@ cmdInput.addEventListener("keydown", function(e) {
 
     document.addEventListener("mouseup", function() {
         dragging = false;
-        panel.style.cursor = "move";
+        cmdHeader.style.cursor = "grab";
     });
-
 })();
+
+cmdHeader.addEventListener("dblclick", function() {
+    toggleCmdMaximize();
+});
+
+cmdCloseBtn.addEventListener("click", function() {
+    cmdPanel.style.display = "none";
+});
+
+cmdMinBtn.addEventListener("click", function() {
+    setCmdCollapsed(!cmdPanel.classList.contains("minimized"));
+});
+
+cmdMaxBtn.addEventListener("click", function() {
+    toggleCmdMaximize();
+});

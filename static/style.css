@@ -106,34 +106,145 @@ td {
 .cmd-panel {
     width: 400px;
     height: 400px;
-    background: #111;
-    color: #eee;
-    font-family: Consolas, monospace;
-    padding: 10px;
+    background: #0b0f14;
+    color: #e5e7eb;
+    font-family: "SF Pro Text", "Inter", "Segoe UI", sans-serif;
     margin-left: 20px;
     display: none; /* 默认隐藏 */
     flex-direction: column;
-    border-radius: 5px;
+    border-radius: 10px;
+    border: 1px solid #1f2937;
 
     position: fixed;
     right: 100px;
     top: 30%;
     z-index: 999;
+    overflow: hidden;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
 }
-.cmd-input {
-    width: 85%;
-    background: #111;
+
+.cmd-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 34px;
+    padding: 0 12px;
+    background: #111827;
+    border-bottom: 1px solid #1f2937;
+    cursor: grab;
+    user-select: none;
+}
+
+.cmd-title {
+    font-size: 13px;
+    color: #9ca3af;
+    font-weight: 600;
+}
+
+.cmd-dots {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.cmd-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
     border: none;
-    outline: none;
-    color: #eee;
-    font-family: inherit;
-    font-size: 14px;
+    padding: 0;
+    cursor: pointer;
 }
+
+.cmd-dot-close {
+    background: #ef4444;
+}
+
+.cmd-dot-min {
+    background: #f59e0b;
+}
+
+.cmd-dot-max {
+    background: #22c55e;
+}
+
 .cmd-output {
     flex: 1;
     overflow-y: auto;
     white-space: pre-wrap;
-    padding-bottom: 10px;
+    padding: 10px;
+    font-family: "JetBrains Mono", "Consolas", monospace;
+    font-size: 13.5px;
+    line-height: 1.45;
+}
+
+.cmd-output-line {
+    margin-bottom: 4px;
+}
+
+.cmd-output-line.system {
+    font-style: italic;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.cmd-output-line.user {
+    color: #38bdf8;
+}
+
+.cmd-output-line.ai-minimax {
+    color: #60a5fa;
+}
+
+.cmd-output-line.ai-mcts {
+    color: #a78bfa;
+}
+
+.cmd-output-line.ai-monky {
+    color: #f97316;
+}
+
+.cmd-output-line.ai-generic {
+    color: #f9a8d4;
+}
+
+.cmd-input-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-top: 1px solid #1f2937;
+    padding: 8px 10px;
+}
+
+.cmd-input-prefix {
+    color: #22c55e;
+    font-family: "JetBrains Mono", "Consolas", monospace;
+}
+
+.cmd-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #e5e7eb;
+    font-family: "JetBrains Mono", "Consolas", monospace;
+    font-size: 13.5px;
+}
+
+.cmd-panel.minimized {
+    height: 34px;
+}
+
+.cmd-panel.minimized .cmd-output,
+.cmd-panel.minimized .cmd-input-row {
+    display: none;
+}
+
+.cmd-panel.maximized {
+    width: min(720px, 85vw);
+    height: min(520px, 70vh);
+    right: 20px;
+    top: 12%;
 }
 
 .config-panel {
