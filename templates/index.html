@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="/static/style.css" />
   </head>
   <body>
+    <button id="openConfig" class="config-toggle-btn" type="button">配置</button>
     <nav>
       <ul class="menus">
         <li class="menu_item">
@@ -65,6 +66,60 @@
         <span id="celestial">Celestial</span> Chess
       </h1>
       <table id="chessboard"></table>
+    </div>
+    <div id="configOverlay" class="config-overlay">
+      <div class="config-panel">
+        <div class="config-panel-header">
+          <div class="config-panel-title">配置中心</div>
+          <button id="closeConfig" class="config-close-btn" type="button">关闭</button>
+        </div>
+        <div class="config-section">
+          <div class="config-title">棋盘配置</div>
+          <div class="config-row">
+            <label for="configRowLen">行</label>
+            <input id="configRowLen" type="number" min="3" step="1" />
+            <label for="configColLen">列</label>
+            <input id="configColLen" type="number" min="3" step="1" />
+            <label for="configPower">Power</label>
+            <input id="configPower" type="number" min="2" step="1" />
+            <button id="applyConfig" type="button">应用配置</button>
+          </div>
+        </div>
+        <div class="config-section">
+          <div class="config-title">观战模式</div>
+          <div class="config-row">
+            <span id="spectatorStatus">对弈模式</span>
+          </div>
+          <div class="ai-config">
+            <div class="ai-config-title">蓝方 AI</div>
+            <div class="config-row">
+              <select id="spectatorBlueType">
+                <option value="minimax">Minimax</option>
+                <option value="mcts" selected>MCTS</option>
+                <option value="monky">Monky</option>
+              </select>
+              <input id="spectatorBlueDepth" type="number" min="1" step="1" value="2" />
+              <input id="spectatorBlueMcts" type="number" min="10" step="10" value="1000" />
+            </div>
+          </div>
+          <div class="ai-config">
+            <div class="ai-config-title">红方 AI</div>
+            <div class="config-row">
+              <select id="spectatorRedType">
+                <option value="minimax">Minimax</option>
+                <option value="mcts" selected>MCTS</option>
+                <option value="monky">Monky</option>
+              </select>
+              <input id="spectatorRedDepth" type="number" min="1" step="1" value="2" />
+              <input id="spectatorRedMcts" type="number" min="10" step="10" value="1000" />
+            </div>
+          </div>
+          <div class="config-actions">
+            <button id="startSpectator" type="button">开始观战</button>
+            <button id="stopSpectator" type="button">停止观战</button>
+          </div>
+        </div>
+      </div>
     </div>
     <div id="cmd-panel" class="cmd-panel" style="cursor: move; display: none;">
       <!-- 上方历史输出区 -->

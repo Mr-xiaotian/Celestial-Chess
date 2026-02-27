@@ -135,3 +135,110 @@ td {
     white-space: pre-wrap;
     padding-bottom: 10px;
 }
+
+.config-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    background: #ffffff;
+    width: min(720px, 92vw);
+    max-height: 85vh;
+    overflow: auto;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+}
+
+.config-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.config-title {
+    font-weight: 700;
+    color: #333;
+}
+
+.config-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.config-row input,
+.config-row select,
+.config-row button {
+    padding: 6px 8px;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.config-row button {
+    background: #ffffff;
+    cursor: pointer;
+}
+
+.ai-config {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ai-config-title {
+    font-weight: 600;
+    color: #555;
+}
+
+.config-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.config-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.config-overlay.active {
+    display: flex;
+}
+
+.config-toggle-btn {
+    position: fixed;
+    right: 24px;
+    top: 18px;
+    padding: 8px 14px;
+    border: 1px solid #d0d0d0;
+    border-radius: 999px;
+    background: #ffffff;
+    cursor: pointer;
+    z-index: 1001;
+}
+
+.config-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.config-panel-title {
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.config-close-btn {
+    padding: 6px 10px;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    background: #ffffff;
+    cursor: pointer;
+}

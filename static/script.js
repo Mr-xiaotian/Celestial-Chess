@@ -3,6 +3,7 @@
 // ==========================================================
 let currentColor; 
 let power;
+let spectatorMode = false;
 
 let socket = io.connect(
     window.location.protocol + '//' + window.location.host,
@@ -16,6 +17,7 @@ let socket = io.connect(
 document.addEventListener('DOMContentLoaded', function () {
 
     bindUIButtons();
+    bindConfigControls();
     initStateFromBackend();
     bindSocketEvents();
 
@@ -29,6 +31,7 @@ function bindUIButtons() {
     const clickBind = (id, eventName) =>
         document.getElementById(id).addEventListener("click", () => {
             if (uiLocked) return;
+            if (spectatorMode) return;
             socket.emit(eventName);
         });
 
@@ -50,6 +53,26 @@ function bindUIButtons() {
     document.getElementById("toggleCmd").addEventListener("click", toggleCmdPanel);
 }
 
+function bindConfigControls() {
+    document.getElementById("openConfig").addEventListener("click", () => setConfigOverlay(true));
+    document.getElementById("closeConfig").addEventListener("click", () => setConfigOverlay(false));
+    document.getElementById("configOverlay").addEventListener("click", (e) => {
+        if (e.target.id === "configOverlay") {
+            setConfigOverlay(false);
+        }
+    });
+
+    document.getElementById("applyConfig").addEventListener("click", applyConfig);
+    document.getElementById("startSpectator").addEventListener("click", startSpectator);
+    document.getElementById("stopSpectator").addEventListener("click", stopSpectator);
+
+    ["Blue", "Red"].forEach(side => {
+        const typeSelect = document.getElementById(`spectator${side}Type`);
+        typeSelect.addEventListener("change", () => updateAiConfigVisibility(side));
+        updateAiConfigVisibility(side);
+    });
+}
+
 
 // ==========================================================
 // 后端初始状态
@@ -64,6 +87,7 @@ function initStateFromBackend() {
             updateChessboard(data.board, data.move);
             updateTotalScore(0);
             toggleColor(0);
+            setConfigInputs(data.row_len, data.col_len, data.power);
         })
         .catch(error => console.error('InitError:', error));
 }
@@ -105,6 +129,12 @@ function bindSocketEvents() {
     // AI 思考中：锁定 / 解锁 UI
     socket.on("ai_thinking", data => {
         setUILocked(data && data.status === "start");
+    });
+
+    socket.on("spectator_status", data => {
+        const status = data && data.status ? data.status : "stop";
+        spectatorMode = status === "start";
+        updateSpectatorStatusText(status, data);
     });
 }
 
@@ -218,7 +248,7 @@ function updateTotalScore(score) {
 }
 
 function onCellClick(row, col) {
-    if (uiLocked) return;
+    if (uiLocked || spectatorMode) return;
     socket.emit('play_move', { row, col, color: currentColor });
 }
 
@@ -245,6 +275,91 @@ let uiLocked = false;
 function setUILocked(locked) {
     uiLocked = locked;
     document.body.style.cursor = locked ? "wait" : "default";
+}
+
+function setConfigInputs(rowLen, colLen, powerValue) {
+    document.getElementById("configRowLen").value = rowLen;
+    document.getElementById("configColLen").value = colLen;
+    document.getElementById("configPower").value = powerValue;
+}
+
+function setConfigOverlay(open) {
+    const overlay = document.getElementById("configOverlay");
+    if (open) {
+        overlay.classList.add("active");
+    } else {
+        overlay.classList.remove("active");
+    }
+}
+
+function applyConfig() {
+    if (uiLocked) return;
+    const rowLen = parseInt(document.getElementById("configRowLen").value, 10);
+    const colLen = parseInt(document.getElementById("configColLen").value, 10);
+    const powerValue = parseInt(document.getElementById("configPower").value, 10);
+
+    if (!Number.isInteger(rowLen) || !Number.isInteger(colLen) || !Number.isInteger(powerValue)) {
+        alert("配置参数无效");
+        return;
+    }
+
+    fetch('/configure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ row_len: rowLen, col_len: colLen, power: powerValue })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert("配置失败");
+                return;
+            }
+            power = data.power;
+            renderChessboard(data.row_len, data.col_len);
+            updateChessboard(data.board, data.move);
+            updateTotalScore(0);
+            toggleColor(0);
+            setConfigInputs(data.row_len, data.col_len, data.power);
+        })
+        .catch(() => alert("配置失败"));
+}
+
+function getSpectatorConfig(side) {
+    const type = document.getElementById(`spectator${side}Type`).value;
+    const minimaxDepth = parseInt(document.getElementById(`spectator${side}Depth`).value, 10);
+    const mctsIter = parseInt(document.getElementById(`spectator${side}Mcts`).value, 10);
+    return {
+        type,
+        minimax_depth: Number.isInteger(minimaxDepth) ? minimaxDepth : 2,
+        mcts_iter: Number.isInteger(mctsIter) ? mctsIter : 1000
+    };
+}
+
+function startSpectator() {
+    if (uiLocked) return;
+    const blue = getSpectatorConfig("Blue");
+    const red = getSpectatorConfig("Red");
+    socket.emit("start_spectator", { blue, red });
+}
+
+function stopSpectator() {
+    socket.emit("stop_spectator");
+}
+
+function updateSpectatorStatusText(status, data) {
+    const statusEl = document.getElementById("spectatorStatus");
+    statusEl.textContent = status === "start" ? "观战中" : "对弈模式";
+    if (status === "stop") {
+        spectatorMode = false;
+    }
+}
+
+function updateAiConfigVisibility(side) {
+    const type = document.getElementById(`spectator${side}Type`).value;
+    const depthInput = document.getElementById(`spectator${side}Depth`);
+    const mctsInput = document.getElementById(`spectator${side}Mcts`);
+    depthInput.style.display = type === "minimax" ? "inline-block" : "none";
+    mctsInput.style.display = type === "mcts" ? "inline-block" : "none";
 }
 
 cmdInput.addEventListener("keydown", function(e) {

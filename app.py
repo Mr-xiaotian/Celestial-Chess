@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request
 from flask_socketio import SocketIO
 from concurrent.futures import ThreadPoolExecutor
 
@@ -37,7 +37,21 @@ def create_app():
 
     @app.route("/init_state", methods=["GET"])
     def init_state():
-        return jsonify(session.get_init_state(row_len, col_len, power))
+        return jsonify(session.get_init_state())
+
+    @app.route("/configure", methods=["POST"])
+    def configure():
+        data = request.get_json(silent=True) or {}
+        try:
+            row_len = int(data.get("row_len"))
+            col_len = int(data.get("col_len"))
+            power = int(data.get("power"))
+            if row_len <= 0 or col_len <= 0 or power <= 1:
+                raise ValueError("invalid config")
+        except Exception:
+            return jsonify({"error": "invalid config"}), 400
+
+        return jsonify(session.configure_game(row_len, col_len, power))
 
     @socketio.on("play_move")
     def handle_play_move(data):
@@ -57,13 +71,17 @@ def create_app():
 
     def make_move_handler(ai_name):
         def handler():
-            session.handle_ai_move(ai_map[ai_name])
+            if not session.ensure_not_spectator():
+                return
+            session.handle_ai_move(session.ai_map[ai_name])
         return handler
 
     def make_auto_handler(ai_name):
         def handler():
+            if not session.ensure_not_spectator():
+                return
             session.set_auto_mode(ai_name)
-            session.handle_ai_auto(ai_map[ai_name])
+            session.handle_ai_auto(session.ai_map[ai_name])
         return handler
 
     for name in ai_map:
@@ -73,6 +91,15 @@ def create_app():
     @socketio.on("cmd_input")
     def handle_cmd_input(data):
         session.handle_cmd_input(data)
+
+    @socketio.on("start_spectator")
+    def handle_start_spectator(data):
+        data = data or {}
+        session.start_spectator(data.get("blue"), data.get("red"))
+
+    @socketio.on("stop_spectator")
+    def handle_stop_spectator():
+        session.stop_spectator()
 
     return app, socketio
 

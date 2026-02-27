@@ -4,7 +4,7 @@ from typing import List, Dict, Optional
 from flask_socketio import SocketIO
 from threading import Lock
 from concurrent.futures import ThreadPoolExecutor
-from celestialchess import ChessGame, BaseAI
+from celestialchess import ChessGame, BaseAI, MinimaxAI, MCTSAI, MonkyAI
 
 
 def parse_options(tokens: List[str]):
@@ -58,11 +58,14 @@ class GameSession:
         self.auto_mode: Optional[str] = None
         self.ai_thinking = False
         self.lock = Lock()
+        self.spectator_mode = False
 
     def set_auto_mode(self, mode: Optional[str] = None):
         self.auto_mode = mode
 
-    def get_init_state(self, row_len: int, col_len: int, power: int):
+    def get_init_state(self):
+        row_len, col_len = self.game.board_range
+        power = self.game.power
         prepared_board = prepare_board_for_json(self.game.chessboard)
         return {
             "power": power,
@@ -91,12 +94,110 @@ class GameSession:
     def cmd_print(self, msg: str):
         self.socketio.emit("cmd_log", {"msg": msg})
 
+    def emit_spectator_status(self, status: str, blue_config=None, red_config=None):
+        payload = {"status": status}
+        if blue_config is not None:
+            payload["blue"] = blue_config
+        if red_config is not None:
+            payload["red"] = red_config
+        self.socketio.emit("spectator_status", payload)
+
     def sendDataToBackend(self):
         try:
             response = self.get_update_board()
             self.socketio.emit("update_board", response)
         except AssertionError as e:
             self.socketio.emit("update_board", {"error": str(e)})
+
+    def ensure_not_spectator(self):
+        if self.spectator_mode:
+            self.cmd_print("观战中，无法执行该操作。")
+            return False
+        return True
+
+    def build_ai_map(self, chess_state, minimax_depth=2, mcts_iter=1000):
+        minimax_ai = MinimaxAI(minimax_depth, False)
+        minimax_ai.set_transposition_mode(chess_state, r"transposition_table/")
+        mcts_ai = MCTSAI(mcts_iter, complate_mode=True)
+        monky_ai = MonkyAI()
+        return {
+            "minimax": minimax_ai,
+            "mcts": mcts_ai,
+            "monky": monky_ai
+        }
+
+    def configure_game(self, row_len: int, col_len: int, power: int):
+        self.stop_spectator()
+        with self.lock:
+            self.game = ChessGame((row_len, col_len), power)
+            self.game.init_cfunc()
+            self.game.init_history()
+
+            chess_state = ((row_len, col_len), power)
+            self.ai_map = self.build_ai_map(chess_state)
+            self.auto_mode = None
+
+        self.sendDataToBackend()
+        return self.get_init_state()
+
+    def normalize_ai_config(self, config: Optional[Dict]):
+        ai_type = "mcts"
+        minimax_depth = 2
+        mcts_iter = 1000
+        if isinstance(config, dict):
+            if config.get("type"):
+                ai_type = str(config.get("type")).lower()
+            if config.get("minimax_depth") is not None:
+                minimax_depth = int(config.get("minimax_depth"))
+            if config.get("mcts_iter") is not None:
+                mcts_iter = int(config.get("mcts_iter"))
+        return {
+            "type": ai_type,
+            "minimax_depth": minimax_depth,
+            "mcts_iter": mcts_iter
+        }
+
+    def create_ai_from_config(self, config: Dict):
+        row_len, col_len = self.game.board_range
+        chess_state = ((row_len, col_len), self.game.power)
+        if config["type"] == "minimax":
+            ai = MinimaxAI(config["minimax_depth"], False)
+            ai.set_transposition_mode(chess_state, r"transposition_table/")
+            return ai
+        if config["type"] == "mcts":
+            return MCTSAI(config["mcts_iter"], complate_mode=True)
+        if config["type"] == "monky":
+            return MonkyAI()
+        return MCTSAI(config["mcts_iter"], complate_mode=True)
+
+    def run_spectator_loop(self, blue_config: Dict, red_config: Dict):
+        ai_blue = self.create_ai_from_config(blue_config)
+        ai_red = self.create_ai_from_config(red_config)
+
+        while self.spectator_mode and not self.game.is_game_over():
+            ai = ai_blue if self.game.get_color() == 1 else ai_red
+            self.handle_ai_move(ai)
+
+        if self.spectator_mode:
+            self.spectator_mode = False
+            self.emit_spectator_status("stop")
+
+    def start_spectator(self, blue_config: Optional[Dict], red_config: Optional[Dict]):
+        self.set_auto_mode()
+        self.spectator_mode = True
+        normalized_blue = self.normalize_ai_config(blue_config)
+        normalized_red = self.normalize_ai_config(red_config)
+
+        with self.lock:
+            self.game.restart()
+        self.sendDataToBackend()
+        self.emit_spectator_status("start", normalized_blue, normalized_red)
+        self.executor.submit(self.run_spectator_loop, normalized_blue, normalized_red)
+
+    def stop_spectator(self):
+        if self.spectator_mode:
+            self.spectator_mode = False
+            self.emit_spectator_status("stop")
 
     def apply_move_and_update(self, row: int, col: int, color: int):
         self.game.update_chessboard(row, col, color)
@@ -137,6 +238,8 @@ class GameSession:
         self.handle_ai_move(ai)
 
     def handle_play_move(self, data):
+        if not self.ensure_not_spectator():
+            return
         if self.ai_thinking:
             self.cmd_print("AI 思考中，棋盘已锁定，不能下子。")
             return
@@ -163,18 +266,24 @@ class GameSession:
             self.executor.submit(self.handle_ai_move, self.ai_map[self.auto_mode])
 
     def handle_undo_move(self):
+        if not self.ensure_not_spectator():
+            return
         with self.lock:
             self.game.undo()
         self.sendDataToBackend()
         self.cmd_print("已悔棋。")
 
     def handle_redo_move(self):
+        if not self.ensure_not_spectator():
+            return
         with self.lock:
             self.game.redo()
         self.sendDataToBackend()
         self.cmd_print("已重悔。")
 
     def handle_restart_game(self):
+        if not self.ensure_not_spectator():
+            return
         with self.lock:
             self.game.restart()
         self.sendDataToBackend()
