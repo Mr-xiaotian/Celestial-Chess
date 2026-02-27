@@ -373,7 +373,7 @@ function stopSpectator() {
 
 function updateSpectatorStatusText(status, data) {
     const statusEl = document.getElementById("spectatorStatus");
-    statusEl.textContent = status === "start" ? "观战中" : "对弈模式";
+    statusEl.textContent = status === "start" ? "观战模式" : "对弈模式";
     if (status === "stop") {
         spectatorMode = false;
     }

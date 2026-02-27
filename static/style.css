@@ -165,6 +165,10 @@ td {
     color: #1f2937;
 }
 
+.config-title-center {
+    text-align: center;
+}
+
 .config-row {
     display: flex;
     flex-wrap: wrap;
@@ -206,6 +210,42 @@ td {
 .config-actions {
     display: flex;
     gap: 10px;
+    justify-content: space-around;
+}
+
+.spectator-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+}
+
+.spectator-left {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.spectator-right {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-items: stretch;
+    justify-content: flex-start;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px;
+}
+
+.spectator-status {
+    font-weight: 700;
+    color: #0f172a;
+    text-align: center;
+    padding: 6px 0;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
 }
 
 .config-overlay {
@@ -259,15 +299,17 @@ td {
     cursor: pointer;
 }
 
+.config-primary-btn,
 #applyConfig,
-#startSpectator {
+#startSpectator,
+#stopSpectator {
     background: #3b82f6;
     border-color: #3b82f6;
     color: #ffffff;
+    cursor: pointer;
+    padding: 6px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
 }
 
-#stopSpectator {
-    background: #fef2f2;
-    border-color: #fecaca;
-    color: #b91c1c;
-}

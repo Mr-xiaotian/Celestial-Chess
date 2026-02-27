@@ -74,7 +74,7 @@
           <button id="closeConfig" class="config-close-btn" type="button">关闭</button>
         </div>
         <div class="config-section">
-          <div class="config-title">棋盘配置</div>
+          <div class="config-title config-title-center">棋盘配置</div>
           <div class="config-row">
             <label for="configRowLen">行</label>
             <input id="configRowLen" type="number" min="3" step="1" />
@@ -82,45 +82,51 @@
             <input id="configColLen" type="number" min="3" step="1" />
             <label for="configPower">Power</label>
             <input id="configPower" type="number" min="2" step="1" />
+          </div>
+          <div class="config-row config-actions">
             <button id="applyConfig" type="button">应用配置</button>
           </div>
         </div>
         <div class="config-section">
-          <div class="config-title">观战配置</div>
-          <div class="config-row">
-            <span id="spectatorStatus">对弈模式</span>
-          </div>
-          <div class="config-row">
-            <label for="spectatorSleep">等待(s)</label>
-            <input id="spectatorSleep" type="number" min="0" step="0.1" value="0" />
-          </div>
-          <div class="ai-config">
-            <div class="ai-config-title">蓝方 AI</div>
-            <div class="config-row">
-              <select id="spectatorBlueType">
-                <option value="minimax">Minimax</option>
-                <option value="mcts" selected>MCTS</option>
-                <option value="monky">Monky</option>
-              </select>
-              <input id="spectatorBlueDepth" type="number" min="1" step="1" value="2" />
-              <input id="spectatorBlueMcts" type="number" min="10" step="10" value="1000" />
+          <div class="config-title config-title-center">观战配置</div>
+          <div class="spectator-layout">
+            <div class="spectator-left">
+              <div class="config-row">
+                <label for="spectatorSleep">等待(s)</label>
+                <input id="spectatorSleep" type="number" min="0" step="0.1" value="0" />
+              </div>
+              <div class="ai-config">
+                <div class="ai-config-title">蓝方 AI</div>
+                <div class="config-row">
+                  <select id="spectatorBlueType">
+                    <option value="minimax">Minimax</option>
+                    <option value="mcts" selected>MCTS</option>
+                    <option value="monky">Monky</option>
+                  </select>
+                  <input id="spectatorBlueDepth" type="number" min="1" step="1" value="2" />
+                  <input id="spectatorBlueMcts" type="number" min="10" step="10" value="1000" />
+                </div>
+              </div>
+              <div class="ai-config">
+                <div class="ai-config-title">红方 AI</div>
+                <div class="config-row">
+                  <select id="spectatorRedType">
+                    <option value="minimax">Minimax</option>
+                    <option value="mcts" selected>MCTS</option>
+                    <option value="monky">Monky</option>
+                  </select>
+                  <input id="spectatorRedDepth" type="number" min="1" step="1" value="2" />
+                  <input id="spectatorRedMcts" type="number" min="10" step="10" value="1000" />
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="ai-config">
-            <div class="ai-config-title">红方 AI</div>
-            <div class="config-row">
-              <select id="spectatorRedType">
-                <option value="minimax">Minimax</option>
-                <option value="mcts" selected>MCTS</option>
-                <option value="monky">Monky</option>
-              </select>
-              <input id="spectatorRedDepth" type="number" min="1" step="1" value="2" />
-              <input id="spectatorRedMcts" type="number" min="10" step="10" value="1000" />
+            <div class="spectator-right">
+              <div class="spectator-status" id="spectatorStatus">对弈模式</div>
+              <div class="config-actions">
+                <button id="startSpectator" type="button" class="config-primary-btn">开始观战</button>
+                <button id="stopSpectator" type="button" class="config-primary-btn">停止观战</button>
+              </div>
             </div>
-          </div>
-          <div class="config-actions">
-            <button id="startSpectator" type="button">开始观战</button>
-            <button id="stopSpectator" type="button">停止观战</button>
           </div>
         </div>
       </div>
