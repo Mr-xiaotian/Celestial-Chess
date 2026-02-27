@@ -137,7 +137,7 @@ class DeepLearningAI(BaseAI):
             self.trans_softmax(masked_outputs)
             game.set_current_win_rate()
 
-        self._msg = self._build_dl_msg(masked_outputs)
+        self._build_dl_msg(masked_outputs)
         return move
     
     def _build_dl_msg(self, masked_outputs):
@@ -177,7 +177,7 @@ class DeepLearningAI(BaseAI):
             "别问理由，这是网络深处的幻觉在指引我。",
         ]
 
-        return (
+        self._msg = (
             f"最大激活：{max_val:.3f}，最小激活：{min_val:.3f}。\n"
             f"{np.random.choice(hallucinations)}"
             f"{np.random.choice(sensations)}\n"

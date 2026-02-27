@@ -141,4 +141,4 @@ backup/
 cache/
 output/
 
-examples/
+.env

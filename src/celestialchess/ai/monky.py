@@ -15,7 +15,7 @@ class MonkyAI(BaseAI):
         game.set_current_win_rate()
 
         # 随机生成一条猴子意识流
-        self._msg = self._build_monky_msg()
+        self._build_monky_msg()
 
         return move
 
@@ -46,7 +46,7 @@ class MonkyAI(BaseAI):
             "吱哇——啪叽——咕噜！",
         ]
 
-        return random.choice(chaos_sounds + attitudes + endings)
+        self._msg = random.choice(chaos_sounds + attitudes + endings)
 
 
     @property

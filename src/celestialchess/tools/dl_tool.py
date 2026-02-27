@@ -1,6 +1,10 @@
 import numpy as np
 
 
+from ..chess_game import ChessGame
+from ..ai import BaseAI
+
+
 def process_board(chess_board: np.ndarray, color: int) -> np.ndarray:
     """
     构造训练用棋盘输入张量（5×5×4）
@@ -32,3 +36,33 @@ def process_board(chess_board: np.ndarray, color: int) -> np.ndarray:
     )
 
     return processed_board
+
+def battle_for_training(ai_blue: BaseAI, ai_red: BaseAI, game: ChessGame, max_steps=None):
+    color = 1
+    steps = 0
+
+    while not game.is_game_over():
+        if max_steps and steps >= max_steps:
+            break
+
+        if color == 1:
+            move = ai_blue.find_best_move(game)
+        else:
+            move = ai_red.find_best_move(game)
+
+        game.update_chessboard(*move, color)
+        game.update_history(*move)
+
+        color *= -1
+        steps += 1
+
+    history_board = game.history_board
+    history_move = game.history_move
+
+    training_data = []
+    for step in range(game.max_step - 1):
+        color = 1 if step % 2 == 0 else -1
+        board = process_board(history_board[step], color)
+        training_data.append((board, history_move[step + 1]))
+    
+    return training_data
