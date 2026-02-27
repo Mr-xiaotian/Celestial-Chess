@@ -423,8 +423,8 @@ class GameSession:
                 self.set_auto_mode("mcts")
                 self.handle_ai_auto(self.ai_map["mcts"])
             elif ai_type == "monky":
-                self.set_auto_mode("minimax")
-                self.handle_ai_auto(self.ai_map["mcts"])
+                self.set_auto_mode("monky")
+                self.handle_ai_auto(self.ai_map["monky"])
             else:
                 self.cmd_print(f"未知 auto 类型: {ai_type}")
 

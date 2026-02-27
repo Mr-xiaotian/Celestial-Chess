@@ -53,6 +53,7 @@ def get_model_score_by_mcts(
     """
     score_dict = dict()
 
+    last_mcts_iter = None
     for mcts_iter in range(int(start_mcts_iter), int(end_mcts_iter), mcts_step):
         win = 0
         test_mcts = MCTSAI(mcts_iter, complate_mode=False)
@@ -71,11 +72,12 @@ def get_model_score_by_mcts(
         win = test_ai_manager.process_result_dict()
 
         score_dict[f"{mcts_iter}"] = win / simulate_num
+        last_mcts_iter = mcts_iter
         if sum(score_dict.values()) / len(score_dict) < 0.6:
             break
 
     test_model.end_model()
-    return mcts_iter - 10, score_dict
+    return last_mcts_iter or 0, score_dict
 
 
 def get_best_c_param(
