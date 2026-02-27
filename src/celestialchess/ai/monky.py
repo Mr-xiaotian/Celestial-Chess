@@ -2,6 +2,7 @@ import random
 from typing import Tuple
 from ..chess_game import ChessGame
 from .base_ai import BaseAI, logger
+from .dialogues import MONKY_ATTITUDES, MONKY_CHAOS_SOUNDS, MONKY_ENDINGS
 
 
 class MonkyAI(BaseAI):
@@ -20,33 +21,7 @@ class MonkyAI(BaseAI):
         return move
 
     def _build_monky_msg(self):
-        """生成一条混沌的、脑褪速式的猴子发言。"""
-
-        chaos_sounds = [
-            "ababa blop blop hrrrraa–waa!",
-            "wubba wubba flrrrrt—banana??",
-            "gagagaga skrrahh–pitatapita!",
-            "wobblob wobblob eeek eeek—BRRRRT!",
-            "grrraaa–tikitiki–blop–SKWAA!",
-        ]
-
-        attitudes = [
-            "我感觉这一步……挺顺眼！理由？我没理由！",
-            "我想了零秒钟，这就是天才猴的直觉！",
-            "要是这步输了，那肯定不是我的问题，是宇宙的。",
-            "哈哈哈下一步会怎样？我不知道我也不想知道！",
-            "别问我为什么落这里，我的大脑刚才在想香蕉。",
-        ]
-
-        endings = [
-            "噗噜噜噜噜噜——啪！",
-            "呼嘿嘿嘿——滑滑滑滑！",
-            "呜哇哇哇哇——啵叽！",
-            "嘶嘶嘶——叽里呱啦啪！",
-            "吱哇——啪叽——咕噜！",
-        ]
-
-        self._msg = random.choice(chaos_sounds + attitudes + endings)
+        self._msg = random.choice(MONKY_CHAOS_SOUNDS + MONKY_ATTITUDES + MONKY_ENDINGS)
 
 
     @property
