@@ -140,25 +140,29 @@ td {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    padding: 16px;
-    border: 1px solid #e5e5e5;
-    border-radius: 10px;
+    padding: 18px;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
     background: #ffffff;
     width: min(720px, 92vw);
     max-height: 85vh;
     overflow: auto;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.18);
 }
 
 .config-section {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 14px;
+    border-radius: 12px;
 }
 
 .config-title {
     font-weight: 700;
-    color: #333;
+    color: #1f2937;
 }
 
 .config-row {
@@ -168,17 +172,23 @@ td {
     gap: 10px;
 }
 
+.config-row label {
+    color: #6b7280;
+    font-size: 13px;
+}
+
 .config-row input,
 .config-row select,
 .config-row button {
     padding: 6px 8px;
-    border: 1px solid #d0d0d0;
-    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
     font-size: 14px;
+    background: #ffffff;
 }
 
 .config-row button {
-    background: #ffffff;
+    background: #f1f5f9;
     cursor: pointer;
 }
 
@@ -201,7 +211,8 @@ td {
 .config-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.35);
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(4px);
     display: none;
     align-items: center;
     justify-content: center;
@@ -216,29 +227,47 @@ td {
     position: fixed;
     right: 24px;
     top: 18px;
-    padding: 8px 14px;
-    border: 1px solid #d0d0d0;
+    padding: 9px 16px;
+    border: 1px solid #cbd5f5;
     border-radius: 999px;
-    background: #ffffff;
+    background: #eef2ff;
     cursor: pointer;
     z-index: 1001;
+    color: #1e3a8a;
+    font-weight: 600;
 }
 
 .config-panel-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e5e7eb;
 }
 
 .config-panel-title {
     font-weight: 700;
     font-size: 18px;
+    color: #0f172a;
 }
 
 .config-close-btn {
     padding: 6px 10px;
-    border: 1px solid #d0d0d0;
-    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
     background: #ffffff;
     cursor: pointer;
+}
+
+#applyConfig,
+#startSpectator {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: #ffffff;
+}
+
+#stopSpectator {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #b91c1c;
 }

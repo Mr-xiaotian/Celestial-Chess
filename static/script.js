@@ -136,6 +136,18 @@ function bindSocketEvents() {
         spectatorMode = status === "start";
         updateSpectatorStatusText(status, data);
     });
+
+    socket.on("config_changed", data => {
+        if (!data || data.source !== "cmd") {
+            return;
+        }
+        power = data.power;
+        renderChessboard(data.row_len, data.col_len);
+        updateChessboard(data.board, data.move);
+        updateTotalScore(data.score ?? 0);
+        toggleColor(data.step ?? 0);
+        setConfigInputs(data.row_len, data.col_len, data.power);
+    });
 }
 
 
@@ -283,6 +295,13 @@ function setConfigInputs(rowLen, colLen, powerValue) {
     document.getElementById("configPower").value = powerValue;
 }
 
+function setSpectatorSleepInput(value) {
+    const sleepInput = document.getElementById("spectatorSleep");
+    if (sleepInput) {
+        sleepInput.value = value;
+    }
+}
+
 function setConfigOverlay(open) {
     const overlay = document.getElementById("configOverlay");
     if (open) {
@@ -335,11 +354,17 @@ function getSpectatorConfig(side) {
     };
 }
 
+function getSpectatorSleep() {
+    const sleepValue = parseFloat(document.getElementById("spectatorSleep").value);
+    return Number.isFinite(sleepValue) && sleepValue >= 0 ? sleepValue : 0;
+}
+
 function startSpectator() {
     if (uiLocked) return;
     const blue = getSpectatorConfig("Blue");
     const red = getSpectatorConfig("Red");
-    socket.emit("start_spectator", { blue, red });
+    const sleep = getSpectatorSleep();
+    socket.emit("start_spectator", { blue, red, sleep });
 }
 
 function stopSpectator() {
@@ -352,6 +377,37 @@ function updateSpectatorStatusText(status, data) {
     if (status === "stop") {
         spectatorMode = false;
     }
+    if (data && data.sleep !== undefined && data.sleep !== null) {
+        setSpectatorSleepInput(data.sleep);
+    }
+    if (data && data.blue && data.red) {
+        setSpectatorConfigInputs(data.blue, data.red);
+    }
+}
+
+function setSpectatorConfigInputs(blue, red) {
+    const blueType = document.getElementById("spectatorBlueType");
+    const redType = document.getElementById("spectatorRedType");
+    if (blueType && blue && blue.type) {
+        blueType.value = blue.type;
+    }
+    if (redType && red && red.type) {
+        redType.value = red.type;
+    }
+    if (blue && blue.minimax_depth !== undefined) {
+        document.getElementById("spectatorBlueDepth").value = blue.minimax_depth;
+    }
+    if (red && red.minimax_depth !== undefined) {
+        document.getElementById("spectatorRedDepth").value = red.minimax_depth;
+    }
+    if (blue && blue.mcts_iter !== undefined) {
+        document.getElementById("spectatorBlueMcts").value = blue.mcts_iter;
+    }
+    if (red && red.mcts_iter !== undefined) {
+        document.getElementById("spectatorRedMcts").value = red.mcts_iter;
+    }
+    updateAiConfigVisibility("Blue");
+    updateAiConfigVisibility("Red");
 }
 
 function updateAiConfigVisibility(side) {

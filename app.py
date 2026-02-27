@@ -51,7 +51,7 @@ def create_app():
         except Exception:
             return jsonify({"error": "invalid config"}), 400
 
-        return jsonify(session.configure_game(row_len, col_len, power))
+        return jsonify(session.configure_game(row_len, col_len, power, "panel"))
 
     @socketio.on("play_move")
     def handle_play_move(data):
@@ -95,7 +95,7 @@ def create_app():
     @socketio.on("start_spectator")
     def handle_start_spectator(data):
         data = data or {}
-        session.start_spectator(data.get("blue"), data.get("red"))
+        session.start_spectator(data.get("blue"), data.get("red"), data.get("sleep"))
 
     @socketio.on("stop_spectator")
     def handle_stop_spectator():
