@@ -6,7 +6,7 @@ let power;
 
 let socket = io.connect(
     window.location.protocol + '//' + window.location.host,
-    { secure: true }
+    { secure: window.location.protocol === 'https:' }
 );
 
 
@@ -27,7 +27,10 @@ document.addEventListener('DOMContentLoaded', function () {
 // ==========================================================
 function bindUIButtons() {
     const clickBind = (id, eventName) =>
-        document.getElementById(id).addEventListener("click", () => socket.emit(eventName));
+        document.getElementById(id).addEventListener("click", () => {
+            if (uiLocked) return;
+            socket.emit(eventName);
+        });
 
     clickBind("undoButton", 'undo_move');
     clickBind("redoButton", 'redo_move');
@@ -97,6 +100,11 @@ function bindSocketEvents() {
     // 后端主动发送的 CMD 文本
     socket.on("cmd_log", data => {
         cmdPrint(data.msg);
+    });
+
+    // AI 思考中：锁定 / 解锁 UI
+    socket.on("ai_thinking", data => {
+        setUILocked(data && data.status === "start");
     });
 }
 
@@ -210,6 +218,7 @@ function updateTotalScore(score) {
 }
 
 function onCellClick(row, col) {
+    if (uiLocked) return;
     socket.emit('play_move', { row, col, color: currentColor });
 }
 
@@ -229,6 +238,13 @@ function toggleCmdPanel() {
 function cmdPrint(msg) {
     cmdOutput.textContent += msg + "\n";
     cmdOutput.scrollTop = cmdOutput.scrollHeight;
+}
+
+// UI 锁定管理
+let uiLocked = false;
+function setUILocked(locked) {
+    uiLocked = locked;
+    document.body.style.cursor = locked ? "wait" : "default";
 }
 
 cmdInput.addEventListener("keydown", function(e) {

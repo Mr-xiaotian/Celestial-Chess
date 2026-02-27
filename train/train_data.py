@@ -1,12 +1,12 @@
 import json
 from pathlib import Path
 from time import strftime, localtime
-from celestialflow import TaskManager
+from celestialflow import TaskExecutor
 
 from celestialchess import ChessGame, MCTSAI, ai_battle, process_board
 
 
-class TrainDataThread(TaskManager):
+class TrainDataThread(TaskExecutor):
     def set_ai(self, ai_0, ai_1):
         self.ai_0 = ai_0
         self.ai_1 = ai_1
@@ -42,7 +42,7 @@ def start_train_data(
         show_progress=True,
     )
 
-    mcts_ai = MCTSAI(mcts_iter, enable_cps=False)
+    mcts_ai = MCTSAI(mcts_iter)
     train_data_threader.set_ai(mcts_ai, mcts_ai)
 
     train_data_threader.start(range(train_num))

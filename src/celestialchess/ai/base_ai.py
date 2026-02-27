@@ -1,4 +1,5 @@
 from typing import Tuple
+import os
 from loguru import logger
 from time import strftime, localtime
 
@@ -8,6 +9,7 @@ from ..chess_game import ChessGame
 # Configure logging
 logger.remove()  # remove the default handler
 now_time = strftime("%Y-%m-%d", localtime())
+os.makedirs("logs", exist_ok=True)
 logger.add(
     f"logs/chess_manager({now_time}).log",
     format="{time:YYYY-MM-DD HH:mm:ss} {level} {message}",

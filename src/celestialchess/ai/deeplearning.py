@@ -103,7 +103,7 @@ class DeepLearningAI(BaseAI):
         return softmax_tensor
 
     def get_move_probs(self, game: ChessGame):
-        chessboard = process_board(game)              # (5,5,4)
+        chessboard = process_board(game.chessboard, game.get_color())              # (5,5,4)
 
         board_state = np.array(chessboard).reshape(1, 5, 5, 4)
         board_state = (

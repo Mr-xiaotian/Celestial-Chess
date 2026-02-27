@@ -1,14 +1,14 @@
 from time import time
 from tqdm import tqdm
 from typing import Tuple, Dict
-from celestialflow import TaskManager
+from celestialflow import TaskExecutor
 
 from ..chess_game import ChessGame
 from .base_ai import BaseAI
 from .mcts import MCTSAI
 
 
-class TestAIManager(TaskManager):
+class TestAIManager(TaskExecutor):
     def set_envirement(self, ai_0, ai_1, chess_state):
         self.ai_0 = ai_0
         self.ai_1 = ai_1

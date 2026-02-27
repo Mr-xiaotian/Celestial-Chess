@@ -2,14 +2,16 @@ import shlex
 from flask import Flask, jsonify, render_template
 from flask_socketio import SocketIO
 from concurrent.futures import ThreadPoolExecutor
+import threading
 
 from celestialchess import ChessGame, BaseAI, MinimaxAI, MCTSAI, MonkyAI #, DeepLearningAI
 
 app = Flask(__name__)
 socketio = SocketIO(app, async_mode="threading")
 
-# 创建线程池
-executor = ThreadPoolExecutor(max_workers=3)
+# 创建线程池（串行执行，避免并发写入游戏状态）
+executor = ThreadPoolExecutor(max_workers=1)
+ai_lock = threading.Lock()
 
 chess_state = ((11, 11), 3)
 (row_len, col_len), power = chess_state  # 棋盘大小，power
@@ -45,14 +47,18 @@ def set_auto_mode(mode=None):
 def handle_ai_move(ai: BaseAI, game: ChessGame):
     # MCTSAI执棋
     cmd_print(f"({ai.name} thinking...)")
+    socketio.emit("ai_thinking", {"status": "start"})
 
-    color = game.get_color()
-    move = ai.find_best_move(game)
-    cmd_print(f"{ai.name}: {ai.msg}")
+    with ai_lock:
+        color = game.get_color()
+        move = ai.find_best_move(game)
+        cmd_print(f"{ai.name}: {ai.msg}")
 
-    game.update_chessboard(*move, color)
-    game.update_history(*move)
-    sendDataToBackend(game)
+        game.update_chessboard(*move, color)
+        game.update_history(*move)
+        sendDataToBackend(game)
+    
+    socketio.emit("ai_thinking", {"status": "stop"})
 
 
 def convert_inf_to_string(value):

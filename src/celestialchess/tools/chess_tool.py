@@ -1,4 +1,3 @@
-import random
 import numpy as np
 from numba import njit, types
 
@@ -46,7 +45,7 @@ def get_random_zero_index(chessboard, board_range):
         for col_idx in range(col_len):
             if chessboard[row_idx, col_idx, 0] == 0.0:
                 count += 1
-                if random.randint(0, count - 1) == 0:
+                if np.random.randint(0, count) == 0:
                     chosen_row, chosen_col = row_idx, col_idx
 
     return chosen_row, chosen_col
@@ -186,7 +185,7 @@ def go_random_simulate(
         for col_idx in range(col_len):
             if chessboard[row_idx, col_idx, 0] == 0.0:
                 count += 1
-                if random.randint(0, count - 1) == 0:
+                if np.random.randint(0, count) == 0:
                     chosen_row, chosen_col = row_idx, col_idx
     while count != 0:
         # 第一层存储power_expand的visit信息, 第二层存储threshold_expand的visit信息
@@ -272,7 +271,7 @@ def go_random_simulate(
             for col_idx in range(col_len):
                 if chessboard[row_idx, col_idx, 0] == 0.0:
                     count += 1
-                    if random.randint(0, count - 1) == 0:
+                    if np.random.randint(0, count) == 0:
                         chosen_row, chosen_col = row_idx, col_idx
 
     comparison_score = current_color * balance_num - balance_num

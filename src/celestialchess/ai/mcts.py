@@ -43,7 +43,7 @@ class MCTSNode:
 
     def get_win_rate(self) -> float:
         """计算节点的胜率"""
-        return self.wins / self.visits
+        return 0.0 if self.visits == 0 else (self.wins / self.visits)
 
     def get_current_move(self) -> Tuple[int, int]:
         """获取当前节点的移动"""
