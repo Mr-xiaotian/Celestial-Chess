@@ -1,3 +1,6 @@
+/**
+ * 初始化配置面板内的原生 select，替换为自定义下拉组件。
+ */
 function initCustomSelects() {
     const selects = document.querySelectorAll(".config-panel select");
     if (!selects.length) return;
@@ -58,6 +61,11 @@ function initCustomSelects() {
     window.addEventListener("resize", () => closeAllCustomSelects());
 }
 
+/**
+ * 关闭所有已打开的自定义下拉。
+ * 
+ * @param {HTMLElement} [except] - 需要保留打开状态的容器
+ */
 function closeAllCustomSelects(except) {
     document.querySelectorAll(".custom-select-wrapper.open").forEach(wrapper => {
         if (except && wrapper === except) return;
@@ -67,6 +75,11 @@ function closeAllCustomSelects(except) {
     });
 }
 
+/**
+ * 根据视口空间决定下拉向上或向下展开，并设置浮层位置。
+ * 
+ * @param {HTMLElement} wrapper - 自定义下拉容器
+ */
 function setCustomSelectDirection(wrapper) {
     const trigger = wrapper.querySelector(".custom-select-trigger");
     const options = wrapper.querySelector(".custom-select-options");
@@ -92,6 +105,11 @@ function setCustomSelectDirection(wrapper) {
     }
 }
 
+/**
+ * 清理自定义下拉浮层定位样式。
+ * 
+ * @param {HTMLElement} wrapper - 自定义下拉容器
+ */
 function clearCustomSelectPosition(wrapper) {
     const options = wrapper.querySelector(".custom-select-options");
     if (!options) return;
@@ -100,6 +118,12 @@ function clearCustomSelectPosition(wrapper) {
     options.style.top = "";
 }
 
+/**
+ * 根据原生 select 构建自定义选项列表。
+ * 
+ * @param {HTMLSelectElement} select - 原生 select
+ * @param {HTMLElement} wrapper - 自定义下拉容器
+ */
 function rebuildCustomOptions(select, wrapper) {
     const options = wrapper.querySelector(".custom-select-options");
     options.innerHTML = "";
@@ -115,6 +139,11 @@ function rebuildCustomOptions(select, wrapper) {
     });
 }
 
+/**
+ * 同步自定义下拉显示与原生 select 状态。
+ * 
+ * @param {HTMLSelectElement} select - 原生 select
+ */
 function syncCustomSelect(select) {
     const wrapper = select.closest(".custom-select-wrapper");
     if (!wrapper) return;

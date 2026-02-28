@@ -408,10 +408,6 @@ td {
     z-index: 1105;
 }
 
-.custom-select-wrapper.open-up .custom-select-options {
-    top: 0;
-}
-
 .custom-select-wrapper.open .custom-select-options {
     display: block;
 }

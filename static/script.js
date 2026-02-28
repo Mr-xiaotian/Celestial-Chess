@@ -130,13 +130,7 @@ function initStateFromBackend() {
     fetch('/init_state')
         .then(response => response.json())
         .then(data => {
-            power = data.power;
-
-            renderChessboard(data.row_len, data.col_len);
-            updateChessboard(data.board, data.move);
-            updateTotalScore(data.score ?? 0);
-            toggleColor(data.step ?? 0);
-            setConfigInputs(data.row_len, data.col_len, data.power);
+            applyBackendState(data);
         })
         .catch(error => console.error('InitError:', error));
 }
@@ -195,13 +189,22 @@ function bindSocketEvents() {
         if (!data || data.source !== "cmd") {
             return;
         }
-        power = data.power;
-        renderChessboard(data.row_len, data.col_len);
-        updateChessboard(data.board, data.move);
-        updateTotalScore(data.score ?? 0);
-        toggleColor(data.step ?? 0);
-        setConfigInputs(data.row_len, data.col_len, data.power);
+        applyBackendState(data);
     });
+}
+
+/**
+ * 统一应用后端返回的棋盘与配置状态。
+ * 
+ * @param {object} data - 后端状态数据
+ */
+function applyBackendState(data) {
+    power = data.power;
+    renderChessboard(data.row_len, data.col_len);
+    updateChessboard(data.board, data.move);
+    updateTotalScore(data.score ?? 0);
+    toggleColor(data.step ?? 0);
+    setConfigInputs(data.row_len, data.col_len, data.power);
 }
 
 
