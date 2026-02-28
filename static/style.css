@@ -26,6 +26,7 @@ body {
     z-index: -1;
     background-color: #ffffff;
     will-change: background-color;
+    transition: background-color 0.35s ease;
 }
 
 /* nav */

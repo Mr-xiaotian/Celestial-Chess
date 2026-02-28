@@ -7,6 +7,8 @@ let spectatorMode = false;
 let cellRefs = [];
 let valueRefs = [];
 let diamondRefs = [];
+let currentDisplayMode = "no-zero"; // 默认显示模式：归一
+let lastBoardData = null;
 
 let socket = io.connect(
     window.location.protocol + '//' + window.location.host,
@@ -97,6 +99,13 @@ function bindConfigControls() {
     document.getElementById("applyConfig").addEventListener("click", applyConfig);
     document.getElementById("startSpectator").addEventListener("click", startSpectator);
     document.getElementById("stopSpectator").addEventListener("click", stopSpectator);
+
+    document.getElementById("displayMode").addEventListener("change", (e) => {
+        currentDisplayMode = e.target.value;
+        if (lastBoardData) {
+            updateChessboard(lastBoardData.board, lastBoardData.move);
+        }
+    });
 
     ["Blue", "Red"].forEach(side => {
         const typeSelect = document.getElementById(`spectator${side}Type`);
@@ -244,6 +253,8 @@ function renderChessboard(row_len, col_len) {
  * @param {Array<number>|null} move - 当前落子位置 [row, col]，用于显示高亮标记
  */
 function updateChessboard(board, move) {
+    lastBoardData = { board, move };
+
     for (let i = 0; i < board.length; i++) {
         for (let j = 0; j < board[i].length; j++) {
 
@@ -256,7 +267,28 @@ function updateChessboard(board, move) {
             const load = board[i][j][1];
 
             cell.style.backgroundColor = getColor(value);
-            numberSpan.textContent = (value === "inf") ? '∞' : load;
+            
+            let displayText = "";
+            
+            if (currentDisplayMode === "all") {
+                // 万象：显示所有数字
+                displayText = load;
+                if (value === "inf") {
+                    displayText = "∞";
+                } 
+            } else if (currentDisplayMode === "no-zero") {
+                // 归一：隐藏零值
+                displayText = (load === 0 ? "" : load);
+                if (value === "inf") {
+                    displayText = "";
+                } 
+            } else if (currentDisplayMode === "none") {
+                // 无为：不显示任何数字
+                displayText = "";
+            }
+            
+            numberSpan.textContent = displayText;
+            
             diamond.style.display = move && move[0] === i && move[1] === j ? 'block' : 'none';
         }
     }

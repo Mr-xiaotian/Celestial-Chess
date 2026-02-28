@@ -85,7 +85,18 @@
             <input id="configPower" type="number" min="2" step="1" />
           </div>
           <div class="config-row config-actions">
-            <button id="applyConfig" type="button">应用配置</button>
+            <button id="applyConfig" type="button">应用</button>
+          </div>
+        </div>
+        <div class="config-section">
+          <div class="config-title config-title-center">显示配置</div>
+          <div class="config-row">
+            <label for="displayMode">数字模式</label>
+            <select id="displayMode">
+              <option value="all">万象 (all)</option>
+              <option value="no-zero" selected>归一 (no-zero)</option>
+              <option value="none">无为 (none)</option>
+            </select>
           </div>
         </div>
         <div class="config-section">
