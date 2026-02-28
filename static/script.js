@@ -307,7 +307,7 @@ function updatePlayerIndicator() {
 }
 
 /**
- * 更新总分显示。
+ * 更新总分显示及动态背景。
  * 
  * @param {number} score - 当前总分
  */
@@ -316,6 +316,59 @@ function updateTotalScore(score) {
     scoreEl.style.color =
         score > 0 ? "lightblue" :
         score < 0 ? "lightcoral" : "black";
+
+    updateDynamicBackground(score);
+}
+
+/**
+ * 更新动态背景颜色
+ * 
+ * @param {number} score - 当前总分
+ */
+function updateDynamicBackground(score) {
+    const bgElement = document.getElementById("dynamic-background");
+    if (!bgElement) return;
+
+    // 基础纯白色 (R, G, B)
+    const WHITE = [255, 255, 255];
+    
+    // 目标深色 (R, G, B) -> 改为极浅的 Pastel 色
+    // 使得前期变化感知不明显，整体氛围很淡
+    const BLUE_LIGHT = [129, 212, 250]; // #81D4FA
+    const RED_LIGHT  = [229, 115, 115]; // #E57373
+
+    let targetColor;
+    let factor = 0;
+
+    if (score === 0) {
+        bgElement.style.backgroundColor = "#FFFFFF";
+        return;
+    }
+
+    // 恢复线性映射算法，但目标颜色非常浅，配合较大分母
+    // 即使是线性，由于目标色本身接近白色，前期差异也会很小
+    const MAX_SCORE = 100;
+    factor = Math.min(Math.abs(score) / MAX_SCORE, 1);
+
+    if (score > 0) {
+        targetColor = BLUE_LIGHT;
+    } else {
+        targetColor = RED_LIGHT;
+    }
+
+    // 混合白色与目标色
+    const finalColor = interpolateColor(WHITE, targetColor, factor);
+    bgElement.style.backgroundColor = `rgb(${finalColor.join(",")})`;
+}
+
+/**
+ * 颜色插值辅助函数
+ */
+function interpolateColor(color1, color2, factor) {
+    const r = Math.round(color1[0] + (color2[0] - color1[0]) * factor);
+    const g = Math.round(color1[1] + (color2[1] - color1[1]) * factor);
+    const b = Math.round(color1[2] + (color2[2] - color1[2]) * factor);
+    return [r, g, b];
 }
 
 /**
