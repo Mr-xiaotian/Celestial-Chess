@@ -131,8 +131,8 @@ function initStateFromBackend() {
 
             renderChessboard(data.row_len, data.col_len);
             updateChessboard(data.board, data.move);
-            updateTotalScore(0);
-            toggleColor(0);
+            updateTotalScore(data.score ?? 0);
+            toggleColor(data.step ?? 0);
             setConfigInputs(data.row_len, data.col_len, data.power);
         })
         .catch(error => console.error('InitError:', error));
@@ -268,18 +268,16 @@ function updateChessboard(board, move) {
 
             cell.style.backgroundColor = getColor(value);
             
-            let displayText = "";
+            let displayText = load;
             
             if (currentDisplayMode === "all") {
                 // 万象：显示所有数字
-                displayText = load;
                 if (value === "inf") {
                     displayText = "∞";
                 } 
             } else if (currentDisplayMode === "no-zero") {
                 // 归一：隐藏零值
-                displayText = (load === 0 ? "" : load);
-                if (value === "inf") {
+                if (value === "inf" || load === 0) {
                     displayText = "";
                 } 
             } else if (currentDisplayMode === "none") {
@@ -597,8 +595,8 @@ function applyConfig() {
             power = data.power;
             renderChessboard(data.row_len, data.col_len);
             updateChessboard(data.board, data.move);
-            updateTotalScore(0);
-            toggleColor(0);
+            updateTotalScore(data.score ?? 0);
+            toggleColor(data.step ?? 0);
             setConfigInputs(data.row_len, data.col_len, data.power);
         })
         .catch(() => alert("配置失败"));
