@@ -4,11 +4,17 @@
 let currentColor; 
 let power;
 let spectatorMode = false;
+let cellRefs = [];
+let valueRefs = [];
+let diamondRefs = [];
 
 let socket = io.connect(
     window.location.protocol + '//' + window.location.host,
     { secure: window.location.protocol === 'https:' }
 );
+const chessboardEl = document.getElementById('chessboard');
+const celestialText = document.getElementById("celestial");
+const scoreEl = document.getElementById("Score");
 
 
 // ==========================================================
@@ -18,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     bindUIButtons();
     bindConfigControls();
+    bindChessboardClick();
     initStateFromBackend();
     bindSocketEvents();
 
@@ -51,6 +58,17 @@ function bindUIButtons() {
 
     // CMD 开关
     document.getElementById("toggleCmd").addEventListener("click", toggleCmdPanel);
+}
+
+function bindChessboardClick() {
+    chessboardEl.addEventListener('click', (event) => {
+        const cell = event.target.closest('td');
+        if (!cell || !chessboardEl.contains(cell)) return;
+        const row = Number(cell.dataset.row);
+        const col = Number(cell.dataset.col);
+        if (!Number.isInteger(row) || !Number.isInteger(col)) return;
+        onCellClick(row, col);
+    });
 }
 
 function bindConfigControls() {
@@ -155,46 +173,52 @@ function bindSocketEvents() {
 // 棋盘渲染相关函数
 // ==========================================================
 function renderChessboard(row_len, col_len) {
-    const chessboard = document.getElementById('chessboard');
-    chessboard.innerHTML = '';
+    chessboardEl.innerHTML = '';
+    cellRefs = Array.from({ length: row_len }, () => new Array(col_len));
+    valueRefs = Array.from({ length: row_len }, () => new Array(col_len));
+    diamondRefs = Array.from({ length: row_len }, () => new Array(col_len));
 
+    const fragment = document.createDocumentFragment();
     for (let i = 0; i < row_len; i++) {
-        let row = chessboard.insertRow();
+        const row = document.createElement('tr');
         for (let j = 0; j < col_len; j++) {
-            let cell = row.insertCell();
-            cell.addEventListener('click', () => onCellClick(i, j));
+            const cell = document.createElement('td');
+            cell.dataset.row = String(i);
+            cell.dataset.col = String(j);
+
+            const numberSpan = document.createElement('span');
+            numberSpan.className = 'cell-value';
+
+            const diamond = document.createElement('div');
+            diamond.className = 'cell-diamond';
+
+            cell.appendChild(numberSpan);
+            cell.appendChild(diamond);
+            row.appendChild(cell);
+            cellRefs[i][j] = cell;
+            valueRefs[i][j] = numberSpan;
+            diamondRefs[i][j] = diamond;
         }
+        fragment.appendChild(row);
     }
+    chessboardEl.appendChild(fragment);
 }
 
 function updateChessboard(board, move) {
-    const chessboard = document.getElementById('chessboard');
-
     for (let i = 0; i < board.length; i++) {
         for (let j = 0; j < board[i].length; j++) {
 
-            let cell = chessboard.rows[i].cells[j];
-            let value = board[i][j][0];
-            let load = board[i][j][1];
+            const cell = cellRefs[i]?.[j];
+            const numberSpan = valueRefs[i]?.[j];
+            const diamond = diamondRefs[i]?.[j];
+            if (!cell || !numberSpan || !diamond) continue;
 
-            cell.innerHTML = '';
+            const value = board[i][j][0];
+            const load = board[i][j][1];
+
             cell.style.backgroundColor = getColor(value);
-
-            let numberSpan = document.createElement('span');
-            numberSpan.style.position = 'absolute';
-            numberSpan.style.top = '50%';
-            numberSpan.style.left = '50%';
-            numberSpan.style.transform = 'translate(-50%, -50%)';
-            numberSpan.style.zIndex = '1';
-
-            numberSpan.textContent = (value === "inf") ? '∞'
-                                 : load;
-
-            cell.appendChild(numberSpan);
-
-            if (move && arraysEqual(move, [i, j])) {
-                drawDiamond(cell);
-            }
+            numberSpan.textContent = (value === "inf") ? '∞' : load;
+            diamond.style.display = move && move[0] === i && move[1] === j ? 'block' : 'none';
         }
     }
 }
@@ -215,29 +239,6 @@ function getColor(value) {
          : '';
 }
 
-function arraysEqual(a, b) {
-    return a.length === b.length && a.every((v, i) => v === b[i]);
-}
-
-
-// ==========================================================
-// 特效：落子菱形标记
-// ==========================================================
-function drawDiamond(cell) {
-    let diamond = document.createElement('div');
-    diamond.style.position = 'absolute';
-    diamond.style.width = '70%';
-    diamond.style.height = '70%';
-    diamond.style.border = '2px solid #FAFAD2';
-    diamond.style.boxSizing = 'border-box';
-    diamond.style.transform = 'translate(-50%, -50%) rotate(45deg)';
-    diamond.style.top = '50%';
-    diamond.style.left = '50%';
-
-    cell.appendChild(diamond);
-}
-
-
 // ==========================================================
 // UI 状态：颜色、分数
 // ==========================================================
@@ -247,12 +248,10 @@ function toggleColor(step) {
 }
 
 function updatePlayerIndicator() {
-    const celestialText = document.getElementById("celestial");
     celestialText.style.color = (currentColor === 1) ? "#6495ED" : "lightcoral";
 }
 
 function updateTotalScore(score) {
-    const scoreEl = document.getElementById("Score");
     scoreEl.textContent = score;
     scoreEl.style.color =
         score > 0 ? "lightblue" :
@@ -275,6 +274,9 @@ const cmdHeader = document.getElementById("cmd-header");
 const cmdCloseBtn = document.getElementById("cmd-close");
 const cmdMinBtn = document.getElementById("cmd-minimize");
 const cmdMaxBtn = document.getElementById("cmd-maximize");
+const cmdHistory = [];
+let cmdHistoryIndex = -1;
+let cmdDraft = "";
 
 function toggleCmdPanel() {
     cmdPanel.style.display =
@@ -290,6 +292,16 @@ function cmdPrint(msg, options = {}) {
     cmdOutput.scrollTop = cmdOutput.scrollHeight;
 }
 
+function setCmdInputValue(value) {
+    cmdInput.value = value;
+    cmdInput.setSelectionRange(value.length, value.length);
+}
+
+function resetCmdHistoryNav() {
+    cmdHistoryIndex = -1;
+    cmdDraft = "";
+}
+
 // UI 锁定管理
 let uiLocked = false;
 function setUILocked(locked) {
@@ -298,7 +310,7 @@ function setUILocked(locked) {
 }
 
 function detectCmdType(msg) {
-    if (msg.startsWith("I: ")) {
+    if (msg.startsWith("User: ")) {
         return "user";
     }
     if (msg.startsWith("(") || msg.includes("thinking") || msg.includes("配置已更新") || msg.includes("观战已开始") || msg.includes("观战已停止")) {
@@ -457,16 +469,56 @@ function updateAiConfigVisibility(side) {
 }
 
 cmdInput.addEventListener("keydown", function(e) {
+    if (e.key === "ArrowUp") {
+        if (!cmdHistory.length) return;
+        e.preventDefault();
+        if (cmdHistoryIndex === -1) {
+            cmdDraft = cmdInput.value;
+            cmdHistoryIndex = cmdHistory.length - 1;
+        } else if (cmdHistoryIndex > 0) {
+            cmdHistoryIndex -= 1;
+        }
+        setCmdInputValue(cmdHistory[cmdHistoryIndex]);
+        return;
+    }
+
+    if (e.key === "ArrowDown") {
+        if (cmdHistoryIndex === -1) return;
+        e.preventDefault();
+        if (cmdHistoryIndex < cmdHistory.length - 1) {
+            cmdHistoryIndex += 1;
+            setCmdInputValue(cmdHistory[cmdHistoryIndex]);
+        } else {
+            resetCmdHistoryNav();
+            setCmdInputValue(cmdDraft);
+        }
+        return;
+    }
+
+    if (e.key.toLowerCase() === "l" && e.ctrlKey) {
+        e.preventDefault();
+        cmdOutput.innerHTML = "";
+        return;
+    }
+
+    if (e.key === "Escape") {
+        cmdInput.value = "";
+        resetCmdHistoryNav();
+        return;
+    }
+
     if (e.key === "Enter") {
         let text = cmdInput.value.trim();
         if (text.length > 0) {
             // 本地显示
-            cmdPrint("I: " + text, { type: "user" });
+            cmdPrint("User: " + text, { type: "user" });
 
             // 发送给后端
             socket.emit("cmd_input", { text });
+            cmdHistory.push(text);
         }
         cmdInput.value = "";
+        resetCmdHistoryNav();
     }
 });
 

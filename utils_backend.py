@@ -474,6 +474,21 @@ class GameSession:
             self.cmd_print("config 用法: config board --row N --col N --power N | config spectator --start/--stop")
             return
 
+        elif cmd == 'help':
+            self.cmd_print(
+                """可用命令:
+play --row N --col N --color C  播放移动 (N: 行/列索引, C: 颜色 0/1)
+undo  撤销上一步
+redo  重做上一步
+restart  重新开始游戏
+ai minimax/mcts/monky  执行指定 AI 类型的移动
+auto minimax/mcts/monky  自动执行指定 AI 类型的移动
+config board --row N --col N --power N  配置游戏板 (N: 行/列数, P: 棋力)
+config spectator --start/--stop  启动/停止观众模式
+help  显示帮助信息"""
+            )
+            return
+
         else:
-            self.cmd_print(f"未知命令: {cmd}")
+            self.cmd_print(f"未知命令: {cmd}, 请输入 'help' 查看可用命令")
             return
