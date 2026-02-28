@@ -34,6 +34,12 @@ document.addEventListener('DOMContentLoaded', function () {
 // ==========================================================
 // 初始化 & UI 按钮绑定
 // ==========================================================
+
+/**
+ * 绑定 UI 按钮的点击事件。
+ * 包括悔棋、重悔、重开游戏、AI 执棋和 AI 对弈等功能按钮。
+ * 同时绑定 CMD 面板的开关按钮。
+ */
 function bindUIButtons() {
     const clickBind = (id, eventName) =>
         document.getElementById(id).addEventListener("click", () => {
@@ -60,6 +66,10 @@ function bindUIButtons() {
     document.getElementById("toggleCmd").addEventListener("click", toggleCmdPanel);
 }
 
+/**
+ * 绑定棋盘点击事件（使用事件委托）。
+ * 监听棋盘元素的点击，根据点击的目标单元格触发落子逻辑。
+ */
 function bindChessboardClick() {
     chessboardEl.addEventListener('click', (event) => {
         const cell = event.target.closest('td');
@@ -71,6 +81,10 @@ function bindChessboardClick() {
     });
 }
 
+/**
+ * 绑定配置面板相关的控件事件。
+ * 包括打开/关闭配置面板、应用配置、观战模式控制以及 AI 配置可见性切换。
+ */
 function bindConfigControls() {
     document.getElementById("openConfig").addEventListener("click", () => setConfigOverlay(true));
     document.getElementById("closeConfig").addEventListener("click", () => setConfigOverlay(false));
@@ -95,6 +109,11 @@ function bindConfigControls() {
 // ==========================================================
 // 后端初始状态
 // ==========================================================
+
+/**
+ * 从后端获取初始游戏状态并初始化前端界面。
+ * 发送 GET 请求到 /init_state，获取棋盘大小、棋子布局、分数等信息。
+ */
 function initStateFromBackend() {
     fetch('/init_state')
         .then(response => response.json())
@@ -114,6 +133,11 @@ function initStateFromBackend() {
 // ==========================================================
 // Socket 事件绑定（主要：update_board + cmd_log）
 // ==========================================================
+
+/**
+ * 绑定 Socket.IO 事件监听器。
+ * 处理后端推送的棋盘更新、CMD 日志、AI 思考状态、观战状态及配置变更。
+ */
 function bindSocketEvents() {
 
     socket.on('update_board', function (data) {
@@ -172,6 +196,14 @@ function bindSocketEvents() {
 // ==========================================================
 // 棋盘渲染相关函数
 // ==========================================================
+
+/**
+ * 渲染棋盘网格结构。
+ * 根据指定的行数和列数创建表格行和单元格，并初始化 DOM 引用缓存。
+ * 
+ * @param {number} row_len - 棋盘行数
+ * @param {number} col_len - 棋盘列数
+ */
 function renderChessboard(row_len, col_len) {
     chessboardEl.innerHTML = '';
     cellRefs = Array.from({ length: row_len }, () => new Array(col_len));
@@ -204,6 +236,13 @@ function renderChessboard(row_len, col_len) {
     chessboardEl.appendChild(fragment);
 }
 
+/**
+ * 更新棋盘状态。
+ * 根据传入的棋盘数据更新每个单元格的数值、背景颜色和高亮标记。
+ * 
+ * @param {Array<Array<Array<number|string>>>} board - 棋盘数据，每个元素包含 [value, load]
+ * @param {Array<number>|null} move - 当前落子位置 [row, col]，用于显示高亮标记
+ */
 function updateChessboard(board, move) {
     for (let i = 0; i < board.length; i++) {
         for (let j = 0; j < board[i].length; j++) {
@@ -227,6 +266,13 @@ function updateChessboard(board, move) {
 // ==========================================================
 // 落子颜色、背景计算
 // ==========================================================
+
+/**
+ * 根据棋盘格子的值计算背景颜色。
+ * 
+ * @param {number|string} value - 格子的值
+ * @returns {string} CSS 颜色字符串
+ */
 function getColor(value) {
     if (value === "inf") {
         return 'lightgrey';
@@ -242,15 +288,29 @@ function getColor(value) {
 // ==========================================================
 // UI 状态：颜色、分数
 // ==========================================================
+
+/**
+ * 切换当前执棋方颜色指示。
+ * 
+ * @param {number} step - 当前步数，偶数为蓝方，奇数为红方
+ */
 function toggleColor(step) {
     currentColor = (step % 2 === 0) ? 1 : -1;
     updatePlayerIndicator();
 }
 
+/**
+ * 更新界面上的执棋方文字颜色。
+ */
 function updatePlayerIndicator() {
     celestialText.style.color = (currentColor === 1) ? "#6495ED" : "lightcoral";
 }
 
+/**
+ * 更新总分显示。
+ * 
+ * @param {number} score - 当前总分
+ */
 function updateTotalScore(score) {
     scoreEl.textContent = score;
     scoreEl.style.color =
@@ -258,6 +318,13 @@ function updateTotalScore(score) {
         score < 0 ? "lightcoral" : "black";
 }
 
+/**
+ * 处理单元格点击逻辑。
+ * 如果 UI 未锁定且非观战模式，则发送落子指令。
+ * 
+ * @param {number} row - 行索引
+ * @param {number} col - 列索引
+ */
 function onCellClick(row, col) {
     if (uiLocked || spectatorMode) return;
     socket.emit('play_move', { row, col, color: currentColor });
@@ -278,11 +345,20 @@ const cmdHistory = [];
 let cmdHistoryIndex = -1;
 let cmdDraft = "";
 
+/**
+ * 切换 CMD 面板的显示/隐藏状态。
+ */
 function toggleCmdPanel() {
     cmdPanel.style.display =
         (cmdPanel.style.display === "none") ? "flex" : "none";
 }
 
+/**
+ * 在 CMD 面板中打印消息。
+ * 
+ * @param {string} msg - 消息内容
+ * @param {object} options - 配置项，如消息类型
+ */
 function cmdPrint(msg, options = {}) {
     const line = document.createElement("div");
     const type = options.type || detectCmdType(msg);
@@ -292,11 +368,19 @@ function cmdPrint(msg, options = {}) {
     cmdOutput.scrollTop = cmdOutput.scrollHeight;
 }
 
+/**
+ * 设置 CMD 输入框的值并移动光标到末尾。
+ * 
+ * @param {string} value - 输入框的新值
+ */
 function setCmdInputValue(value) {
     cmdInput.value = value;
     cmdInput.setSelectionRange(value.length, value.length);
 }
 
+/**
+ * 重置 CMD 历史导航状态。
+ */
 function resetCmdHistoryNav() {
     cmdHistoryIndex = -1;
     cmdDraft = "";
@@ -304,11 +388,24 @@ function resetCmdHistoryNav() {
 
 // UI 锁定管理
 let uiLocked = false;
+
+/**
+ * 设置 UI 锁定状态。
+ * 锁定期间鼠标变为等待样式。
+ * 
+ * @param {boolean} locked - 是否锁定
+ */
 function setUILocked(locked) {
     uiLocked = locked;
     document.body.style.cursor = locked ? "wait" : "default";
 }
 
+/**
+ * 根据消息内容检测 CMD 消息类型。
+ * 
+ * @param {string} msg - 消息内容
+ * @returns {string} 消息类型 class 名称
+ */
 function detectCmdType(msg) {
     if (msg.startsWith("User: ")) {
         return "user";
@@ -327,6 +424,11 @@ function detectCmdType(msg) {
     return "system";
 }
 
+/**
+ * 设置 CMD 面板的折叠状态。
+ * 
+ * @param {boolean} collapsed - 是否折叠
+ */
 function setCmdCollapsed(collapsed) {
     if (collapsed) {
         cmdPanel.classList.add("minimized");
@@ -335,16 +437,31 @@ function setCmdCollapsed(collapsed) {
     }
 }
 
+/**
+ * 切换 CMD 面板的最大化/还原状态。
+ */
 function toggleCmdMaximize() {
     cmdPanel.classList.toggle("maximized");
 }
 
+/**
+ * 设置配置面板中的输入框值。
+ * 
+ * @param {number} rowLen - 棋盘行数
+ * @param {number} colLen - 棋盘列数
+ * @param {number} powerValue - 棋力值
+ */
 function setConfigInputs(rowLen, colLen, powerValue) {
     document.getElementById("configRowLen").value = rowLen;
     document.getElementById("configColLen").value = colLen;
     document.getElementById("configPower").value = powerValue;
 }
 
+/**
+ * 设置观战模式的休眠时间输入框值。
+ * 
+ * @param {number} value - 休眠时间（秒）
+ */
 function setSpectatorSleepInput(value) {
     const sleepInput = document.getElementById("spectatorSleep");
     if (sleepInput) {
@@ -352,6 +469,11 @@ function setSpectatorSleepInput(value) {
     }
 }
 
+/**
+ * 设置配置面板的显示/隐藏状态。
+ * 
+ * @param {boolean} open - 是否显示
+ */
 function setConfigOverlay(open) {
     const overlay = document.getElementById("configOverlay");
     if (open) {
@@ -361,6 +483,10 @@ function setConfigOverlay(open) {
     }
 }
 
+/**
+ * 应用新的游戏配置。
+ * 获取用户输入的配置参数并发送到后端。
+ */
 function applyConfig() {
     if (uiLocked) return;
     const rowLen = parseInt(document.getElementById("configRowLen").value, 10);
@@ -393,6 +519,12 @@ function applyConfig() {
         .catch(() => alert("配置失败"));
 }
 
+/**
+ * 获取指定方的观战配置。
+ * 
+ * @param {string} side - "Blue" 或 "Red"
+ * @returns {object} AI 配置对象
+ */
 function getSpectatorConfig(side) {
     const type = document.getElementById(`spectator${side}Type`).value;
     const minimaxDepth = parseInt(document.getElementById(`spectator${side}Depth`).value, 10);
@@ -404,11 +536,20 @@ function getSpectatorConfig(side) {
     };
 }
 
+/**
+ * 获取观战模式的休眠时间配置。
+ * 
+ * @returns {number} 休眠时间（秒）
+ */
 function getSpectatorSleep() {
     const sleepValue = parseFloat(document.getElementById("spectatorSleep").value);
     return Number.isFinite(sleepValue) && sleepValue >= 0 ? sleepValue : 0;
 }
 
+/**
+ * 开始观战模式。
+ * 收集配置并发送 start_spectator 事件。
+ */
 function startSpectator() {
     if (uiLocked) return;
     const blue = getSpectatorConfig("Blue");
@@ -417,10 +558,20 @@ function startSpectator() {
     socket.emit("start_spectator", { blue, red, sleep });
 }
 
+/**
+ * 停止观战模式。
+ * 发送 stop_spectator 事件。
+ */
 function stopSpectator() {
     socket.emit("stop_spectator");
 }
 
+/**
+ * 更新观战状态文本和配置回显。
+ * 
+ * @param {string} status - 状态 ("start" 或 "stop")
+ * @param {object} data - 配置数据
+ */
 function updateSpectatorStatusText(status, data) {
     const statusEl = document.getElementById("spectatorStatus");
     statusEl.textContent = status === "start" ? "观战模式" : "对弈模式";
@@ -435,6 +586,12 @@ function updateSpectatorStatusText(status, data) {
     }
 }
 
+/**
+ * 设置观战配置输入框的值。
+ * 
+ * @param {object} blue - 蓝方配置
+ * @param {object} red - 红方配置
+ */
 function setSpectatorConfigInputs(blue, red) {
     const blueType = document.getElementById("spectatorBlueType");
     const redType = document.getElementById("spectatorRedType");
@@ -460,6 +617,12 @@ function setSpectatorConfigInputs(blue, red) {
     updateAiConfigVisibility("Red");
 }
 
+/**
+ * 更新 AI 配置选项的可见性。
+ * 根据选择的 AI 类型显示或隐藏特定的参数输入框。
+ * 
+ * @param {string} side - "Blue" 或 "Red"
+ */
 function updateAiConfigVisibility(side) {
     const type = document.getElementById(`spectator${side}Type`).value;
     const depthInput = document.getElementById(`spectator${side}Depth`);
@@ -526,6 +689,10 @@ cmdInput.addEventListener("keydown", function(e) {
 // ==========================================================
 // CMD 可拖拽
 // ==========================================================
+
+/**
+ * 启用 CMD 面板的拖拽功能（IIFE）。
+ */
 (function enableCmdDrag() {
     const panel = cmdPanel;
     let offsetX = 0, offsetY = 0;

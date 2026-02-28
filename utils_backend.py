@@ -476,7 +476,7 @@ class GameSession:
 
         elif cmd == 'help':
             self.cmd_print(
-                """可用命令:
+"""可用命令:
 play --row N --col N --color C  播放移动 (N: 行/列索引, C: 颜色 0/1)
 undo  撤销上一步
 redo  重做上一步
