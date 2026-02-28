@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     bindUIButtons();
     bindConfigControls();
+    initCustomSelects();
     bindChessboardClick();
     initStateFromBackend();
     bindSocketEvents();
@@ -113,6 +114,8 @@ function bindConfigControls() {
         updateAiConfigVisibility(side);
     });
 }
+
+ 
 
 
 // ==========================================================
@@ -698,6 +701,8 @@ function setSpectatorConfigInputs(blue, red) {
     }
     updateAiConfigVisibility("Blue");
     updateAiConfigVisibility("Red");
+    syncCustomSelect(blueType);
+    syncCustomSelect(redType);
 }
 
 /**
