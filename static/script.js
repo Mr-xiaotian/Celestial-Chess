@@ -9,6 +9,15 @@ let valueRefs = [];
 let diamondRefs = [];
 let currentDisplayMode = "no-zero"; // 默认显示模式：归一
 let lastBoardData = null;
+let bluePastelMaxLevel = 50;
+let redPastelMaxLevel = 50;
+
+const COLOR_RANGE_MAX = 100;
+const WHITE_RGB = [255, 255, 255];
+const BLUE_PASTEL_MIN = [235, 245, 255]; // #ebf5ff
+const BLUE_PASTEL_MAX = [129, 212, 250]; // #81d4fa
+const RED_PASTEL_MIN = [255, 238, 238];  // #ffeeee
+const RED_PASTEL_MAX = [229, 115, 115];  // #e57373
 
 let socket = io.connect(
     window.location.protocol + '//' + window.location.host,
@@ -107,6 +116,17 @@ function bindConfigControls() {
             updateChessboard(lastBoardData.board, lastBoardData.move);
         }
     });
+
+    const blueRange = document.getElementById("bluePastelMax");
+    const redRange = document.getElementById("redPastelMax");
+    if (blueRange) {
+        blueRange.addEventListener("input", (e) => setPastelMaxLevel("blue", e.target.value));
+    }
+    if (redRange) {
+        redRange.addEventListener("input", (e) => setPastelMaxLevel("red", e.target.value));
+    }
+    setPastelMaxLevel("blue", blueRange ? blueRange.value : bluePastelMaxLevel);
+    setPastelMaxLevel("red", redRange ? redRange.value : redPastelMaxLevel);
 
     ["Blue", "Red"].forEach(side => {
         const typeSelect = document.getElementById(`spectator${side}Type`);
@@ -313,12 +333,15 @@ function getColor(value) {
     if (value === "inf") {
         return 'lightgrey';
     }
-
-    let alpha = Math.min(Math.abs(value) / 5, 1);
-
-    return value > 0 ? `rgba(173, 216, 230, ${alpha})`
-         : value < 0 ? `rgba(240, 128, 128, ${alpha})`
-         : '';
+    const numericValue = Number(value);
+    if (!Number.isFinite(numericValue) || numericValue === 0) {
+        return '';
+    }
+    const cellColorMaxValue = Math.max((Number.isFinite(power) ? power : 0) * 2, 1);
+    const factor = Math.min(Math.abs(numericValue) / cellColorMaxValue, 1);
+    const targetColor = getTargetPastelColor(numericValue > 0 ? "blue" : "red");
+    const finalColor = interpolateColor(WHITE_RGB, targetColor, factor);
+    return `rgb(${finalColor.join(",")})`;
 }
 
 // ==========================================================
@@ -365,35 +388,13 @@ function updateDynamicBackground(score) {
     const bgElement = document.getElementById("dynamic-background");
     if (!bgElement) return;
 
-    // 基础纯白色 (R, G, B)
-    const WHITE = [255, 255, 255];
-    
-    // 目标深色 (R, G, B) -> 改为极浅的 Pastel 色
-    // 使得前期变化感知不明显，整体氛围很淡
-    const BLUE_LIGHT = [129, 212, 250]; // #81D4FA
-    const RED_LIGHT  = [229, 115, 115]; // #E57373
-
-    let targetColor;
-    let factor = 0;
-
     if (score === 0) {
         bgElement.style.backgroundColor = "#FFFFFF";
         return;
     }
-
-    // 恢复线性映射算法，但目标颜色非常浅，配合较大分母
-    // 即使是线性，由于目标色本身接近白色，前期差异也会很小
-    const MAX_SCORE = 100;
-    factor = Math.min(Math.abs(score) / MAX_SCORE, 1);
-
-    if (score > 0) {
-        targetColor = BLUE_LIGHT;
-    } else {
-        targetColor = RED_LIGHT;
-    }
-
-    // 混合白色与目标色
-    const finalColor = interpolateColor(WHITE, targetColor, factor);
+    const factor = Math.min(Math.abs(score) / COLOR_RANGE_MAX, 1);
+    const targetColor = getTargetPastelColor(score > 0 ? "blue" : "red");
+    const finalColor = interpolateColor(WHITE_RGB, targetColor, factor);
     bgElement.style.backgroundColor = `rgb(${finalColor.join(",")})`;
 }
 
@@ -546,6 +547,32 @@ function setConfigInputs(rowLen, colLen, powerValue) {
     document.getElementById("configPower").value = powerValue;
 }
 
+function getTargetPastelColor(side) {
+    const level = side === "blue" ? bluePastelMaxLevel : redPastelMaxLevel;
+    const from = side === "blue" ? BLUE_PASTEL_MIN : RED_PASTEL_MIN;
+    const to = side === "blue" ? BLUE_PASTEL_MAX : RED_PASTEL_MAX;
+    return interpolateColor(from, to, Math.min(Math.max(level, 0), 100) / 100);
+}
+
+function setPastelMaxLevel(side, value) {
+    const parsed = Number(value);
+    const normalized = Number.isFinite(parsed) ? Math.min(Math.max(parsed, 0), 100) : 100;
+    if (side === "blue") {
+        bluePastelMaxLevel = normalized;
+    } else {
+        redPastelMaxLevel = normalized;
+    }
+    const valueEl = document.getElementById(side === "blue" ? "bluePastelMaxValue" : "redPastelMaxValue");
+    if (valueEl) {
+        valueEl.textContent = `${normalized}%`;
+    }
+    if (lastBoardData) {
+        updateChessboard(lastBoardData.board, lastBoardData.move);
+    }
+    const score = Number(scoreEl.textContent);
+    updateDynamicBackground(Number.isFinite(score) ? score : 0);
+}
+
 /**
  * 设置观战模式的休眠时间输入框值。
  * 
@@ -598,12 +625,7 @@ function applyConfig() {
                 alert("配置失败");
                 return;
             }
-            power = data.power;
-            renderChessboard(data.row_len, data.col_len);
-            updateChessboard(data.board, data.move);
-            updateTotalScore(data.score ?? 0);
-            toggleColor(data.step ?? 0);
-            setConfigInputs(data.row_len, data.col_len, data.power);
+            applyBackendState(data);
         })
         .catch(() => alert("配置失败"));
 }
