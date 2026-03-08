@@ -99,8 +99,21 @@ class GameSession:
             "winner": winner,
         }
 
-    def cmd_print(self, msg: str):
-        self.socketio.emit("cmd_log", {"msg": msg})
+    def cmd_print(self, msg: str, msg_type: str = "system"):
+        self.socketio.emit("cmd_log", {"msg": msg, "type": msg_type})
+
+    def resolve_ai_msg_type(self, ai: BaseAI, color: int):
+        side = "blue" if color == 1 else "red"
+        ai_name = ai.name.lower()
+        if "minimax" in ai_name:
+            return f"ai-minimax-{side}"
+        if "mcts" in ai_name:
+            return f"ai-mcts-{side}"
+        if "monky" in ai_name:
+            return f"ai-monky-{side}"
+        if "deep" in ai_name or "learning" in ai_name:
+            return f"ai-deeplearning-{side}"
+        return f"ai-generic-{side}"
 
     def emit_config_changed(self, source: str):
         payload = self.get_init_state()
@@ -252,10 +265,12 @@ class GameSession:
 
         self.ai_thinking = True
         try:
-            self.cmd_print(f"({ai.name} thinking...)")
+            color = self.game.get_color()
+            ai_msg_type = self.resolve_ai_msg_type(ai, color)
+            self.cmd_print(f"({ai.name} thinking...)", ai_msg_type)
             start_time = time.perf_counter()
             move = ai.find_best_move(self.game)
-            self.cmd_print(f"{ai.name}: {ai.msg}")
+            self.cmd_print(f"{ai.name}: {ai.msg}", ai_msg_type)
 
             if self.spectator_mode and self.spectator_sleep > 0:
                 elapsed = time.perf_counter() - start_time
@@ -265,7 +280,6 @@ class GameSession:
                 if not self.spectator_mode:
                     return
 
-            color = self.game.get_color()
             with self.lock:
                 finished = self.apply_move_and_update(move[0], move[1], color)
 

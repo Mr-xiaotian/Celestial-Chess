@@ -12,7 +12,6 @@ def create_app():
     executor = ThreadPoolExecutor(max_workers=3)
 
     chess_state = ((11, 11), 3)
-    (row_len, col_len), power = chess_state
 
     game = ChessGame(*chess_state)
     game.init_cfunc()

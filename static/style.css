@@ -235,20 +235,44 @@ td {
     color: #38bdf8;
 }
 
-.cmd-output-line.ai-minimax {
+.cmd-output-line.ai-minimax-blue {
     color: #60a5fa;
 }
 
-.cmd-output-line.ai-mcts {
-    color: #a78bfa;
+.cmd-output-line.ai-minimax-red {
+    color: #f87171;
 }
 
-.cmd-output-line.ai-monky {
-    color: #f97316;
+.cmd-output-line.ai-mcts-blue {
+    color: #818cf8;
 }
 
-.cmd-output-line.ai-generic {
-    color: #f9a8d4;
+.cmd-output-line.ai-mcts-red {
+    color: #fb7185;
+}
+
+.cmd-output-line.ai-monky-blue {
+    color: #22d3ee;
+}
+
+.cmd-output-line.ai-monky-red {
+    color: #fb923c;
+}
+
+.cmd-output-line.ai-deeplearning-blue {
+    color: #2dd4bf;
+}
+
+.cmd-output-line.ai-deeplearning-red {
+    color: #f43f5e;
+}
+
+.cmd-output-line.ai-generic-blue {
+    color: #93c5fd;
+}
+
+.cmd-output-line.ai-generic-red {
+    color: #fca5a5;
 }
 
 .cmd-input-row {

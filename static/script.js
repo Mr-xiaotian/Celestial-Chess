@@ -191,7 +191,7 @@ function bindSocketEvents() {
 
     // 后端主动发送的 CMD 文本
     socket.on("cmd_log", data => {
-        cmdPrint(data.msg);
+        cmdPrint(data.msg, { type: data && data.type ? data.type : "system" });
     });
 
     // AI 思考中：锁定 / 解锁 UI
@@ -451,7 +451,7 @@ function toggleCmdPanel() {
  */
 function cmdPrint(msg, options = {}) {
     const line = document.createElement("div");
-    const type = options.type || detectCmdType(msg);
+    const type = options.type || "system";
     line.classList.add("cmd-output-line", type);
     line.textContent = msg;
     cmdOutput.appendChild(line);
@@ -488,30 +488,6 @@ let uiLocked = false;
 function setUILocked(locked) {
     uiLocked = locked;
     document.body.style.cursor = locked ? "wait" : "default";
-}
-
-/**
- * 根据消息内容检测 CMD 消息类型。
- * 
- * @param {string} msg - 消息内容
- * @returns {string} 消息类型 class 名称
- */
-function detectCmdType(msg) {
-    if (msg.startsWith("User: ")) {
-        return "user";
-    }
-    if (msg.startsWith("(") || msg.includes("thinking") || msg.includes("配置已更新") || msg.includes("观战已开始") || msg.includes("观战已停止")) {
-        return "system";
-    }
-    const aiMatch = msg.match(/^([A-Za-z]+AI|MCTSAI|MinimaxAI|MonkyAI|MCTS|Minimax|Monky)\s*:/);
-    if (aiMatch) {
-        const name = aiMatch[1].toLowerCase();
-        if (name.includes("minimax")) return "ai-minimax";
-        if (name.includes("mcts")) return "ai-mcts";
-        if (name.includes("monky")) return "ai-monky";
-        return "ai-generic";
-    }
-    return "system";
 }
 
 /**
