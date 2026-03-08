@@ -370,10 +370,6 @@ td {
     cursor: pointer;
 }
 
-.color-range-row {
-    align-items: center;
-}
-
 .color-range {
     -webkit-appearance: none;
     appearance: none;
@@ -527,6 +523,28 @@ td {
     color: #555;
 }
 
+.param-input-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.param-hint {
+    display: inline-flex;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    cursor: help;
+    user-select: none;
+}
+
 .config-actions {
     display: flex;
     gap: 10px;
@@ -620,9 +638,7 @@ td {
 }
 
 .config-primary-btn,
-#applyConfig,
-#startSpectator,
-#stopSpectator {
+#applyConfig {
     background: #3b82f6;
     border-color: #3b82f6;
     color: #ffffff;

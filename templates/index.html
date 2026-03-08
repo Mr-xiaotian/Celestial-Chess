@@ -89,28 +89,40 @@
           </div>
         </div>
         <div class="config-section">
-          <div class="config-title config-title-center">显示配置</div>
+          <div class="config-title config-title-center">颜色配置</div>
           <div class="config-row">
-            <label for="displayMode">数字模式</label>
-            <select id="displayMode">
-              <option value="all">万象 (all)</option>
-              <option value="no-zero" selected>归一 (no-zero)</option>
-              <option value="none">无为 (none)</option>
-            </select>
-          </div>
-          <div class="config-row color-range-row">
             <label for="bluePastelMax">蓝色最大值</label>
             <input id="bluePastelMax" class="color-range color-range-blue" type="range" min="0" max="100" step="1" value="50" />
             <span id="bluePastelMaxValue" class="color-range-value">50%</span>
           </div>
-          <div class="config-row color-range-row">
+          <div class="config-row">
             <label for="redPastelMax">红色最大值</label>
             <input id="redPastelMax" class="color-range color-range-red" type="range" min="0" max="100" step="1" value="50" />
             <span id="redPastelMaxValue" class="color-range-value">50%</span>
           </div>
         </div>
         <div class="config-section">
-          <div class="config-title config-title-center">观战配置</div>
+          <div class="config-title config-title-center">显示配置</div>
+          <div class="config-row" style="justify-content: space-around;">
+            <div class="config-row">
+              <label for="configCmdVisible">CMD 面板</label>
+              <select id="configCmdVisible">
+                <option value="show">显示</option>
+                <option value="hide" selected>隐藏</option>
+              </select>
+            </div>
+            <div class="config-row">
+              <label for="displayMode">数字模式</label>
+              <select id="displayMode">
+                <option value="all">万象 (all)</option>
+                <option value="no-zero" selected>归一 (no-zero)</option>
+                <option value="none">无为 (none)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="config-section">
+          <div class="config-title config-title-center">角色配置</div>
           <div class="spectator-layout">
             <div class="spectator-left">
               <div class="config-row">
@@ -118,35 +130,48 @@
                 <input id="spectatorSleep" type="number" min="0" step="0.1" value="0" />
               </div>
               <div class="ai-config">
-                <div class="ai-config-title">蓝方 AI</div>
+                <div class="ai-config-title">蓝方角色</div>
                 <div class="config-row">
-                  <select id="spectatorBlueType">
+                  <select id="spectatorBlueRole">
+                    <option value="human" selected>Human</option>
                     <option value="minimax">Minimax</option>
-                    <option value="mcts" selected>MCTS</option>
+                    <option value="mcts">MCTS</option>
                     <option value="monky">Monky</option>
                   </select>
-                  <input id="spectatorBlueDepth" type="number" min="1" step="1" value="2" />
-                  <input id="spectatorBlueMcts" type="number" min="10" step="10" value="1000" />
+                  <div class="param-input-wrap">
+                    <input id="spectatorBlueDepth" type="number" min="1" step="1" value="2" />
+                    <span class="param-hint" title="Minimax 搜索深度，越大越慢但通常更强">!</span>
+                  </div>
+                  <div class="param-input-wrap">
+                    <input id="spectatorBlueMcts" type="number" min="10" step="10" value="1000" />
+                    <span class="param-hint" title="MCTS 迭代次数，越大越慢但通常更强">!</span>
+                  </div>
                 </div>
               </div>
               <div class="ai-config">
-                <div class="ai-config-title">红方 AI</div>
+                <div class="ai-config-title">红方角色</div>
                 <div class="config-row">
-                  <select id="spectatorRedType">
+                  <select id="spectatorRedRole">
+                    <option value="human" selected>Human</option>
                     <option value="minimax">Minimax</option>
-                    <option value="mcts" selected>MCTS</option>
+                    <option value="mcts">MCTS</option>
                     <option value="monky">Monky</option>
                   </select>
-                  <input id="spectatorRedDepth" type="number" min="1" step="1" value="2" />
-                  <input id="spectatorRedMcts" type="number" min="10" step="10" value="1000" />
+                  <div class="param-input-wrap">
+                    <input id="spectatorRedDepth" type="number" min="1" step="1" value="2" />
+                    <span class="param-hint" title="Minimax 搜索深度，越大越慢但通常更强">!</span>
+                  </div>
+                  <div class="param-input-wrap">
+                    <input id="spectatorRedMcts" type="number" min="10" step="10" value="1000" />
+                    <span class="param-hint" title="MCTS 迭代次数，越大越慢但通常更强">!</span>
+                  </div>
                 </div>
               </div>
             </div>
             <div class="spectator-right">
-              <div class="spectator-status" id="spectatorStatus">对弈模式</div>
+              <div class="spectator-status" id="spectatorStatus">PVP 模式</div>
               <div class="config-actions">
-                <button id="startSpectator" type="button" class="config-primary-btn">开始观战</button>
-                <button id="stopSpectator" type="button" class="config-primary-btn">停止观战</button>
+                <button id="applyRoleConfig" type="button" class="config-primary-btn">应用角色配置</button>
               </div>
             </div>
           </div>

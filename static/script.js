@@ -11,6 +11,7 @@ let currentDisplayMode = "no-zero"; // 默认显示模式：归一
 let lastBoardData = null;
 let bluePastelMaxLevel = 50;
 let redPastelMaxLevel = 50;
+let playerMode = "pvp";
 
 const COLOR_RANGE_MAX = 100;
 const WHITE_RGB = [255, 255, 255];
@@ -107,8 +108,11 @@ function bindConfigControls() {
     });
 
     document.getElementById("applyConfig").addEventListener("click", applyConfig);
-    document.getElementById("startSpectator").addEventListener("click", startSpectator);
-    document.getElementById("stopSpectator").addEventListener("click", stopSpectator);
+    document.getElementById("applyRoleConfig").addEventListener("click", applyRoleConfig);
+    document.getElementById("configCmdVisible").addEventListener("change", (e) => {
+        setCmdPanelVisible(e.target.value === "show");
+    });
+    setCmdPanelVisible(document.getElementById("configCmdVisible").value === "show");
 
     document.getElementById("displayMode").addEventListener("change", (e) => {
         currentDisplayMode = e.target.value;
@@ -129,8 +133,8 @@ function bindConfigControls() {
     setPastelMaxLevel("red", redRange ? redRange.value : redPastelMaxLevel);
 
     ["Blue", "Red"].forEach(side => {
-        const typeSelect = document.getElementById(`spectator${side}Type`);
-        typeSelect.addEventListener("change", () => updateAiConfigVisibility(side));
+        const roleSelect = document.getElementById(`spectator${side}Role`);
+        roleSelect.addEventListener("change", () => updateAiConfigVisibility(side));
         updateAiConfigVisibility(side);
     });
 }
@@ -205,6 +209,10 @@ function bindSocketEvents() {
         updateSpectatorStatusText(status, data);
     });
 
+    socket.on("role_status", data => {
+        applyRoleStatus(data || {});
+    });
+
     socket.on("config_changed", data => {
         if (!data || data.source !== "cmd") {
             return;
@@ -225,6 +233,14 @@ function applyBackendState(data) {
     updateTotalScore(data.score ?? 0);
     toggleColor(data.step ?? 0);
     setConfigInputs(data.row_len, data.col_len, data.power);
+    if (data && data.mode && data.blue && data.red) {
+        applyRoleStatus({
+            mode: data.mode,
+            sleep: data.sleep,
+            blue: data.blue,
+            red: data.red
+        });
+    }
 }
 
 
@@ -439,8 +455,16 @@ let cmdDraft = "";
  * 切换 CMD 面板的显示/隐藏状态。
  */
 function toggleCmdPanel() {
-    cmdPanel.style.display =
-        (cmdPanel.style.display === "none") ? "flex" : "none";
+    setCmdPanelVisible(cmdPanel.style.display === "none");
+}
+
+function setCmdPanelVisible(visible) {
+    cmdPanel.style.display = visible ? "flex" : "none";
+    const select = document.getElementById("configCmdVisible");
+    if (select) {
+        select.value = visible ? "show" : "hide";
+        syncCustomSelect(select);
+    }
 }
 
 /**
@@ -613,7 +637,7 @@ function applyConfig() {
  * @returns {object} AI 配置对象
  */
 function getSpectatorConfig(side) {
-    const type = document.getElementById(`spectator${side}Type`).value;
+    const type = document.getElementById(`spectator${side}Role`).value;
     const minimaxDepth = parseInt(document.getElementById(`spectator${side}Depth`).value, 10);
     const mctsIter = parseInt(document.getElementById(`spectator${side}Mcts`).value, 10);
     return {
@@ -621,6 +645,14 @@ function getSpectatorConfig(side) {
         minimax_depth: Number.isInteger(minimaxDepth) ? minimaxDepth : 2,
         mcts_iter: Number.isInteger(mctsIter) ? mctsIter : 1000
     };
+}
+
+function getRoleConfig(side) {
+    const role = document.getElementById(`spectator${side}Role`).value;
+    if (role === "human") {
+        return { role: "human" };
+    }
+    return { role, ai: getSpectatorConfig(side) };
 }
 
 /**
@@ -637,20 +669,12 @@ function getSpectatorSleep() {
  * 开始观战模式。
  * 收集配置并发送 start_spectator 事件。
  */
-function startSpectator() {
+function applyRoleConfig() {
     if (uiLocked) return;
-    const blue = getSpectatorConfig("Blue");
-    const red = getSpectatorConfig("Red");
+    const blue = getRoleConfig("Blue");
+    const red = getRoleConfig("Red");
     const sleep = getSpectatorSleep();
-    socket.emit("start_spectator", { blue, red, sleep });
-}
-
-/**
- * 停止观战模式。
- * 发送 stop_spectator 事件。
- */
-function stopSpectator() {
-    socket.emit("stop_spectator");
+    socket.emit("apply_roles", { blue, red, sleep });
 }
 
 /**
@@ -660,17 +684,8 @@ function stopSpectator() {
  * @param {object} data - 配置数据
  */
 function updateSpectatorStatusText(status, data) {
-    const statusEl = document.getElementById("spectatorStatus");
-    statusEl.textContent = status === "start" ? "观战模式" : "对弈模式";
-    if (status === "stop") {
-        spectatorMode = false;
-    }
-    if (data && data.sleep !== undefined && data.sleep !== null) {
-        setSpectatorSleepInput(data.sleep);
-    }
-    if (data && data.blue && data.red) {
-        setSpectatorConfigInputs(data.blue, data.red);
-    }
+    const mode = status === "start" ? "spectator" : "pvp";
+    applyRoleStatus({ mode, sleep: data ? data.sleep : 0, blue: data ? data.blue : null, red: data ? data.red : null });
 }
 
 /**
@@ -680,30 +695,30 @@ function updateSpectatorStatusText(status, data) {
  * @param {object} red - 红方配置
  */
 function setSpectatorConfigInputs(blue, red) {
-    const blueType = document.getElementById("spectatorBlueType");
-    const redType = document.getElementById("spectatorRedType");
-    if (blueType && blue && blue.type) {
-        blueType.value = blue.type;
+    const blueRole = document.getElementById("spectatorBlueRole");
+    const redRole = document.getElementById("spectatorRedRole");
+    if (blueRole && blue && blue.role) {
+        blueRole.value = blue.role;
     }
-    if (redType && red && red.type) {
-        redType.value = red.type;
+    if (redRole && red && red.role) {
+        redRole.value = red.role;
     }
-    if (blue && blue.minimax_depth !== undefined) {
-        document.getElementById("spectatorBlueDepth").value = blue.minimax_depth;
+    if (blue && blue.ai && blue.ai.minimax_depth !== undefined) {
+        document.getElementById("spectatorBlueDepth").value = blue.ai.minimax_depth;
     }
-    if (red && red.minimax_depth !== undefined) {
-        document.getElementById("spectatorRedDepth").value = red.minimax_depth;
+    if (red && red.ai && red.ai.minimax_depth !== undefined) {
+        document.getElementById("spectatorRedDepth").value = red.ai.minimax_depth;
     }
-    if (blue && blue.mcts_iter !== undefined) {
-        document.getElementById("spectatorBlueMcts").value = blue.mcts_iter;
+    if (blue && blue.ai && blue.ai.mcts_iter !== undefined) {
+        document.getElementById("spectatorBlueMcts").value = blue.ai.mcts_iter;
     }
-    if (red && red.mcts_iter !== undefined) {
-        document.getElementById("spectatorRedMcts").value = red.mcts_iter;
+    if (red && red.ai && red.ai.mcts_iter !== undefined) {
+        document.getElementById("spectatorRedMcts").value = red.ai.mcts_iter;
     }
     updateAiConfigVisibility("Blue");
     updateAiConfigVisibility("Red");
-    syncCustomSelect(blueType);
-    syncCustomSelect(redType);
+    syncCustomSelect(blueRole);
+    syncCustomSelect(redRole);
 }
 
 /**
@@ -713,11 +728,29 @@ function setSpectatorConfigInputs(blue, red) {
  * @param {string} side - "Blue" 或 "Red"
  */
 function updateAiConfigVisibility(side) {
-    const type = document.getElementById(`spectator${side}Type`).value;
+    const role = document.getElementById(`spectator${side}Role`).value;
     const depthInput = document.getElementById(`spectator${side}Depth`);
     const mctsInput = document.getElementById(`spectator${side}Mcts`);
-    depthInput.style.display = type === "minimax" ? "inline-block" : "none";
-    mctsInput.style.display = type === "mcts" ? "inline-block" : "none";
+    const depthWrap = depthInput.parentElement;
+    const mctsWrap = mctsInput.parentElement;
+    depthWrap.style.display = role === "minimax" ? "inline-flex" : "none";
+    mctsWrap.style.display = role === "mcts" ? "inline-flex" : "none";
+}
+
+function applyRoleStatus(data) {
+    const mode = data && data.mode ? data.mode : "pvp";
+    playerMode = mode;
+    spectatorMode = mode === "spectator";
+    const statusEl = document.getElementById("spectatorStatus");
+    if (statusEl) {
+        statusEl.textContent = mode === "spectator" ? "AI 对战模式" : mode === "pve" ? "PVE 模式" : "PVP 模式";
+    }
+    if (data && data.sleep !== undefined && data.sleep !== null) {
+        setSpectatorSleepInput(data.sleep);
+    }
+    if (data && data.blue && data.red) {
+        setSpectatorConfigInputs(data.blue, data.red);
+    }
 }
 
 cmdInput.addEventListener("keydown", function(e) {
@@ -813,7 +846,7 @@ cmdHeader.addEventListener("dblclick", function() {
 });
 
 cmdCloseBtn.addEventListener("click", function() {
-    cmdPanel.style.display = "none";
+    setCmdPanelVisible(false);
 });
 
 cmdMinBtn.addEventListener("click", function() {

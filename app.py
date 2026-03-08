@@ -161,6 +161,17 @@ def create_app():
         """处理停止观战事件。"""
         session.stop_spectator()
 
+    @socketio.on("apply_roles")
+    def handle_apply_roles(data):
+        """
+        应用红蓝方角色配置（PVP / PVE / AI 对战）。
+
+        参数:
+            data (dict): 包含 blue/red 角色配置与 sleep。
+        """
+        data = data or {}
+        session.apply_role_config(data.get("blue"), data.get("red"), data.get("sleep"), "panel")
+
     return app, socketio
 
 

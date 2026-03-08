@@ -114,6 +114,11 @@ class GameSession:
         self.lock = Lock()
         self.spectator_mode = False
         self.spectator_sleep = 0.0
+        self.side_role_config = {
+            "Blue": self.normalize_role_side_config({"role": "human"}),
+            "Red": self.normalize_role_side_config({"role": "human"}),
+        }
+        self.side_ai_map: Dict[str, Optional[BaseAI]] = {"Blue": None, "Red": None}
 
     def set_auto_mode(self, mode: Optional[str] = None):
         """
@@ -123,6 +128,85 @@ class GameSession:
             mode: 目标 AI 名称；传 None 表示关闭自动模式。
         """
         self.auto_mode = mode
+
+    def normalize_role_side_config(self, config: Optional[Dict]):
+        role = "human"
+        ai_config = self.normalize_ai_config(None)
+        ai_types = {"minimax", "mcts", "monky"}
+        if isinstance(config, dict):
+            raw_role = str(config.get("role") or "human").lower()
+            if raw_role in ai_types:
+                role = raw_role
+            elif raw_role == "ai":
+                role = "mcts"
+            elif raw_role == "human":
+                role = "human"
+            raw_ai_config = config.get("ai") if isinstance(config.get("ai"), dict) else config
+            ai_config = self.normalize_ai_config(raw_ai_config)
+            if role != "human":
+                ai_config["type"] = role
+        return {"role": role, "ai": ai_config}
+
+    def detect_mode(self):
+        blue_ai = self.side_role_config["Blue"]["role"] != "human"
+        red_ai = self.side_role_config["Red"]["role"] != "human"
+        if blue_ai and red_ai:
+            return "spectator"
+        if blue_ai or red_ai:
+            return "pve"
+        return "pvp"
+
+    def get_role_status_payload(self):
+        return {
+            "mode": self.detect_mode(),
+            "blue": self.side_role_config["Blue"],
+            "red": self.side_role_config["Red"],
+            "sleep": self.spectator_sleep,
+        }
+
+    def emit_role_status(self):
+        self.socketio.emit("role_status", self.get_role_status_payload())
+
+    def refresh_side_ai_map(self):
+        self.side_ai_map = {"Blue": None, "Red": None}
+        for side in ("Blue", "Red"):
+            side_config = self.side_role_config[side]
+            if side_config["role"] != "human":
+                self.side_ai_map[side] = self.create_ai_from_config(side_config["ai"])
+
+    def schedule_role_ai_turn_if_needed(self):
+        if self.ai_thinking or self.game.is_game_over():
+            return
+        side = "Blue" if self.game.get_color() == 1 else "Red"
+        if self.side_role_config[side]["role"] == "human":
+            return
+        ai = self.side_ai_map.get(side)
+        if ai is None:
+            ai = self.create_ai_from_config(self.side_role_config[side]["ai"])
+            self.side_ai_map[side] = ai
+        self.executor.submit(self.handle_ai_move, ai)
+
+    def apply_role_config(self, blue_config: Optional[Dict], red_config: Optional[Dict], sleep: Optional[float], source: str):
+        normalized_blue = self.normalize_role_side_config(blue_config)
+        normalized_red = self.normalize_role_side_config(red_config)
+        try:
+            normalized_sleep = float(sleep) if sleep is not None else 0.0
+        except (TypeError, ValueError):
+            normalized_sleep = 0.0
+        self.side_role_config["Blue"] = normalized_blue
+        self.side_role_config["Red"] = normalized_red
+        self.spectator_sleep = max(normalized_sleep, 0.0)
+        self.spectator_mode = self.detect_mode() == "spectator"
+        self.refresh_side_ai_map()
+        if self.spectator_mode:
+            with self.lock:
+                self.game.restart()
+            self.sendDataToBackend()
+        self.emit_role_status()
+        blue_summary = "human" if normalized_blue["role"] == "human" else self.format_ai_config_summary(normalized_blue["ai"])
+        red_summary = "human" if normalized_red["role"] == "human" else self.format_ai_config_summary(normalized_red["ai"])
+        self.cmd_print(f"角色已更新: 蓝方={blue_summary}, 红方={red_summary}, 模式={self.detect_mode()}, 等待={self.spectator_sleep}s")
+        self.schedule_role_ai_turn_if_needed()
 
     def get_init_state(self):
         """
@@ -145,6 +229,10 @@ class GameSession:
             "move": move,
             "score": score,
             "step": step,
+            "mode": self.detect_mode(),
+            "blue": self.side_role_config["Blue"],
+            "red": self.side_role_config["Red"],
+            "sleep": self.spectator_sleep,
         }
 
     def get_update_board(self):
@@ -291,7 +379,6 @@ class GameSession:
         返回:
             dict: 新棋局初始化状态。
         """
-        self.stop_spectator()
         with self.lock:
             self.game = ChessGame((row_len, col_len), power)
             self.game.init_cfunc()
@@ -300,10 +387,14 @@ class GameSession:
             chess_state = ((row_len, col_len), power)
             self.ai_map = self.build_ai_map(chess_state)
             self.auto_mode = None
+            self.spectator_mode = self.detect_mode() == "spectator"
+            self.refresh_side_ai_map()
 
         self.emit_config_changed(source)
+        self.emit_role_status()
         self.sendDataToBackend()
         self.cmd_print(f"配置已更新: 棋盘={row_len}x{col_len}, power={power}, 来源={source}")
+        self.schedule_role_ai_turn_if_needed()
         return self.get_init_state()
 
     def normalize_ai_config(self, config: Optional[Dict]):
@@ -382,25 +473,17 @@ class GameSession:
             sleep: 每步最小间隔秒数（可选）。
         """
         self.set_auto_mode()
-        self.spectator_mode = True
-        normalized_blue = self.normalize_ai_config(blue_config)
-        normalized_red = self.normalize_ai_config(red_config)
-        self.spectator_sleep = float(sleep) if sleep is not None else 0.0
-
-        with self.lock:
-            self.game.restart()
-        self.sendDataToBackend()
-        blue_summary = self.format_ai_config_summary(normalized_blue)
-        red_summary = self.format_ai_config_summary(normalized_red)
-        self.cmd_print(f"观战已开始: 蓝方={blue_summary}, 红方={red_summary}, 等待={self.spectator_sleep}s")
-        self.emit_spectator_status("start", normalized_blue, normalized_red, self.spectator_sleep)
-        self.executor.submit(self.run_spectator_loop, normalized_blue, normalized_red)
+        blue_ai = self.normalize_ai_config(blue_config)
+        red_ai = self.normalize_ai_config(red_config)
+        blue_role = {"role": blue_ai["type"], "ai": blue_ai}
+        red_role = {"role": red_ai["type"], "ai": red_ai}
+        self.apply_role_config(blue_role, red_role, sleep, "spectator")
+        self.emit_spectator_status("start", blue_role["ai"], red_role["ai"], self.spectator_sleep)
 
     def stop_spectator(self):
         """停止观战模式并广播状态。"""
-        if self.spectator_mode:
-            self.spectator_mode = False
-            self.spectator_sleep = 0.0
+        if self.detect_mode() == "spectator":
+            self.apply_role_config({"role": "human"}, {"role": "human"}, 0.0, "spectator")
             self.cmd_print("观战已停止")
             self.emit_spectator_status("stop")
 
@@ -459,6 +542,7 @@ class GameSession:
             return
 
         self.ai_thinking = True
+        self.socketio.emit("ai_thinking", {"status": "start"})
         try:
             color = self.game.get_color()
             ai_msg_type = self.resolve_ai_msg_type(ai, color)
@@ -482,6 +566,8 @@ class GameSession:
                 ai.end_model()
         finally:
             self.ai_thinking = False
+            self.socketio.emit("ai_thinking", {"status": "stop"})
+            self.schedule_role_ai_turn_if_needed()
 
     def handle_ai_auto(self, ai: BaseAI):
         """
@@ -509,6 +595,10 @@ class GameSession:
         row = data["row"]
         col = data["col"]
         color = data["color"]
+        side = "Blue" if color == 1 else "Red"
+        if self.side_role_config[side]["role"] != "human":
+            self.cmd_print(f"{side} 方由 AI 执棋，当前不允许手动落子。")
+            return
 
         if not self.game.is_move_valid(row, col):
             self.cmd_print(f"非法落子位置: ({row}, {col})")
@@ -526,6 +616,8 @@ class GameSession:
 
         if self.auto_mode in self.ai_map:
             self.executor.submit(self.handle_ai_move, self.ai_map[self.auto_mode])
+            return
+        self.schedule_role_ai_turn_if_needed()
 
     def handle_undo_move(self):
         """处理悔棋请求并广播更新。"""
@@ -554,6 +646,7 @@ class GameSession:
         self.sendDataToBackend()
         self.set_auto_mode()
         self.cmd_print("已重开棋局。")
+        self.schedule_role_ai_turn_if_needed()
 
     def handle_cmd_input(self, data):
         """
