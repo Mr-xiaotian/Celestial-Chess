@@ -1,4 +1,14 @@
-# utils_backend.py
+"""
+后端会话层与命令调度工具。
+
+该模块封装了棋局会话的核心控制逻辑，负责在 Flask-SocketIO 环境中：
+1. 维护单局游戏状态与线程安全访问；
+2. 构建与切换 AI 实例；
+3. 处理前端 Socket 指令与 CMD 文本命令；
+4. 推送棋盘更新、配置变化与观战状态；
+5. 管理自动模式与观战循环。
+"""
+
 import shlex
 import time
 from typing import List, Dict, Optional
@@ -10,8 +20,18 @@ from celestialchess import ChessGame, BaseAI, MinimaxAI, MCTSAI, MonkyAI
 
 def parse_options(tokens: List[str]):
     """
-    简单解析类似 Linux 风格参数:
-    --row 3 --col 4 --color 1  -> {"row": "3", "col": "4", "color": "1"}
+    解析命令行风格参数列表。
+
+    参数格式示例:
+        --row 3 --col 4 --color 1
+
+    解析结果示例:
+        {"row": "3", "col": "4", "color": "1"}
+
+    规则:
+        - 以 `--` 开头的 token 被视为键；
+        - 键后若跟随非 `--` token，则作为该键的值；
+        - 若键后无值，则该键映射为 True（布尔开关参数）。
     """
     opts = {}
     i = 0
@@ -31,6 +51,16 @@ def parse_options(tokens: List[str]):
 
 
 def convert_inf_to_string(value):
+    """
+    将 Python 的正无穷转换为可序列化字符串。
+
+    参数:
+        value: 任意值。
+
+    返回:
+        - value 为 float("inf") 时返回 "inf"
+        - 其他情况原样返回
+    """
     if value == float("inf"):
         return "inf"
     else:
@@ -38,6 +68,13 @@ def convert_inf_to_string(value):
 
 
 def prepare_board_for_json(board):
+    """
+    将棋盘二维结构转换为 JSON 友好格式。
+
+    处理内容:
+        - 遍历每个格子 `[value, load]`
+        - 将 value 中的无穷值转换为字符串 "inf"
+    """
     return [
         [[convert_inf_to_string(cell[0]), cell[1]] for cell in row]
         for row in board
@@ -45,6 +82,13 @@ def prepare_board_for_json(board):
 
 
 class GameSession:
+    """
+    单局游戏会话控制器。
+
+    该类聚合了游戏状态、AI 策略、线程池与 Socket 推送能力，
+    为 app.py 提供统一的后端业务入口。
+    """
+
     def __init__(
         self,
         socketio: SocketIO,
@@ -52,6 +96,15 @@ class GameSession:
         ai_map: Dict[str, BaseAI],
         executor: ThreadPoolExecutor,
     ):
+        """
+        初始化会话对象。
+
+        参数:
+            socketio: 用于事件推送的 SocketIO 实例。
+            game: 当前棋局对象。
+            ai_map: 可用 AI 映射表，键为 AI 名称。
+            executor: 异步任务执行器（用于 AI 执棋与观战循环）。
+        """
         self.socketio = socketio
         self.game = game
         self.ai_map = ai_map
@@ -63,9 +116,21 @@ class GameSession:
         self.spectator_sleep = 0.0
 
     def set_auto_mode(self, mode: Optional[str] = None):
+        """
+        设置自动对弈模式。
+
+        参数:
+            mode: 目标 AI 名称；传 None 表示关闭自动模式。
+        """
         self.auto_mode = mode
 
     def get_init_state(self):
+        """
+        获取前端初始化所需的完整状态快照。
+
+        返回:
+            dict: 包含棋盘尺寸、棋力、棋盘内容、最近一步、分数、步数。
+        """
         row_len, col_len = self.game.board_range
         power = self.game.power
         prepared_board = prepare_board_for_json(self.game.chessboard)
@@ -83,6 +148,12 @@ class GameSession:
         }
 
     def get_update_board(self):
+        """
+        获取棋盘增量广播数据。
+
+        返回:
+            dict: 包含棋盘、分数、当前步、游戏结束与胜者信息。
+        """
         prepared_board = prepare_board_for_json(self.game.chessboard)
         score = self.game.get_score()
         move = self.game.get_current_move()
@@ -100,9 +171,26 @@ class GameSession:
         }
 
     def cmd_print(self, msg: str, msg_type: str = "system"):
+        """
+        向前端 CMD 面板发送日志。
+
+        参数:
+            msg: 文本内容。
+            msg_type: 日志类型（用于前端样式分类）。
+        """
         self.socketio.emit("cmd_log", {"msg": msg, "type": msg_type})
 
     def resolve_ai_msg_type(self, ai: BaseAI, color: int):
+        """
+        根据 AI 名称与执棋方生成前端日志类型。
+
+        参数:
+            ai: AI 实例。
+            color: 执棋方（1=蓝方，-1=红方）。
+
+        返回:
+            str: 例如 ai-minimax-blue / ai-mcts-red。
+        """
         side = "blue" if color == 1 else "red"
         ai_name = ai.name.lower()
         if "minimax" in ai_name:
@@ -116,11 +204,26 @@ class GameSession:
         return f"ai-generic-{side}"
 
     def emit_config_changed(self, source: str):
+        """
+        广播“配置已变化”事件。
+
+        参数:
+            source: 触发来源标识（如 panel / cmd）。
+        """
         payload = self.get_init_state()
         payload["source"] = source
         self.socketio.emit("config_changed", payload)
 
     def emit_spectator_status(self, status: str, blue_config=None, red_config=None, sleep=None):
+        """
+        广播观战模式状态。
+
+        参数:
+            status: 状态字符串（start / stop）。
+            blue_config: 蓝方 AI 配置（可选）。
+            red_config: 红方 AI 配置（可选）。
+            sleep: 观战回合间隔（可选）。
+        """
         payload = {"status": status}
         if blue_config is not None:
             payload["blue"] = blue_config
@@ -131,6 +234,11 @@ class GameSession:
         self.socketio.emit("spectator_status", payload)
 
     def sendDataToBackend(self):
+        """
+        向前端广播棋盘更新。
+
+        如果构造更新数据时发生断言异常，会回传错误消息。
+        """
         try:
             response = self.get_update_board()
             self.socketio.emit("update_board", response)
@@ -138,12 +246,28 @@ class GameSession:
             self.socketio.emit("update_board", {"error": str(e)})
 
     def ensure_not_spectator(self):
+        """
+        校验当前是否处于观战模式。
+
+        返回:
+            bool:
+                - False: 观战中，不允许执行手动操作；
+                - True: 非观战状态，可继续执行。
+        """
         if self.spectator_mode:
             self.cmd_print("观战中，无法执行该操作。")
             return False
         return True
 
     def build_ai_map(self, chess_state, minimax_depth=2, mcts_iter=1000):
+        """
+        构建标准 AI 映射表。
+
+        参数:
+            chess_state: 棋局状态定义，供部分 AI 初始化使用。
+            minimax_depth: Minimax 搜索深度。
+            mcts_iter: MCTS 迭代次数。
+        """
         minimax_ai = MinimaxAI(minimax_depth, False)
         minimax_ai.set_transposition_mode(chess_state, r"transposition_table/")
         mcts_ai = MCTSAI(mcts_iter, complate_mode=True)
@@ -155,6 +279,18 @@ class GameSession:
         }
 
     def configure_game(self, row_len: int, col_len: int, power: int, source: str):
+        """
+        重新配置并重建棋局。
+
+        行为:
+            1. 停止观战；
+            2. 新建游戏对象并初始化历史；
+            3. 重建 AI 映射；
+            4. 广播配置变更与棋盘状态。
+
+        返回:
+            dict: 新棋局初始化状态。
+        """
         self.stop_spectator()
         with self.lock:
             self.game = ChessGame((row_len, col_len), power)
@@ -171,6 +307,15 @@ class GameSession:
         return self.get_init_state()
 
     def normalize_ai_config(self, config: Optional[Dict]):
+        """
+        归一化 AI 配置，补齐缺省值并转换类型。
+
+        参数:
+            config: 原始配置字典（可为空）。
+
+        返回:
+            dict: 标准化后的配置。
+        """
         ai_type = "mcts"
         minimax_depth = 2
         mcts_iter = 1000
@@ -188,6 +333,15 @@ class GameSession:
         }
 
     def create_ai_from_config(self, config: Dict):
+        """
+        根据标准化配置创建 AI 实例。
+
+        参数:
+            config: AI 配置字典。
+
+        返回:
+            BaseAI: 对应的 AI 对象。
+        """
         row_len, col_len = self.game.board_range
         chess_state = ((row_len, col_len), self.game.power)
         if config["type"] == "minimax":
@@ -201,6 +355,12 @@ class GameSession:
         return MCTSAI(config["mcts_iter"], complate_mode=True)
 
     def run_spectator_loop(self, blue_config: Dict, red_config: Dict):
+        """
+        观战循环主逻辑。
+
+        根据当前执棋方轮流调用蓝方或红方 AI，直到游戏结束
+        或观战模式被外部停止。
+        """
         ai_blue = self.create_ai_from_config(blue_config)
         ai_red = self.create_ai_from_config(red_config)
 
@@ -213,6 +373,14 @@ class GameSession:
             self.emit_spectator_status("stop")
 
     def start_spectator(self, blue_config: Optional[Dict], red_config: Optional[Dict], sleep: Optional[float] = None):
+        """
+        启动观战模式。
+
+        参数:
+            blue_config: 蓝方 AI 配置。
+            red_config: 红方 AI 配置。
+            sleep: 每步最小间隔秒数（可选）。
+        """
         self.set_auto_mode()
         self.spectator_mode = True
         normalized_blue = self.normalize_ai_config(blue_config)
@@ -229,6 +397,7 @@ class GameSession:
         self.executor.submit(self.run_spectator_loop, normalized_blue, normalized_red)
 
     def stop_spectator(self):
+        """停止观战模式并广播状态。"""
         if self.spectator_mode:
             self.spectator_mode = False
             self.spectator_sleep = 0.0
@@ -236,6 +405,12 @@ class GameSession:
             self.emit_spectator_status("stop")
 
     def format_ai_config_summary(self, config: Dict):
+        """
+        生成人类可读的 AI 配置摘要。
+
+        参数:
+            config: AI 配置字典。
+        """
         if config["type"] == "minimax":
             return f"minimax(depth={config['minimax_depth']})"
         if config["type"] == "mcts":
@@ -245,6 +420,17 @@ class GameSession:
         return config["type"]
 
     def apply_move_and_update(self, row: int, col: int, color: int):
+        """
+        在游戏对象中应用落子并推送更新。
+
+        参数:
+            row: 落子行索引。
+            col: 落子列索引。
+            color: 执棋颜色（1/-1）。
+
+        返回:
+            bool: 是否在该步后进入终局。
+        """
         self.game.update_chessboard(row, col, color)
         self.game.update_history(row, col)
 
@@ -260,6 +446,15 @@ class GameSession:
         return False
 
     def handle_ai_move(self, ai: BaseAI):
+        """
+        执行一次 AI 回合。
+
+        该方法负责：
+            - 打印 AI 思考日志；
+            - 调用 AI 搜索落子；
+            - 根据观战延时策略补齐等待；
+            - 应用落子并处理终局收尾。
+        """
         if self.game.is_game_over():
             return
 
@@ -289,10 +484,22 @@ class GameSession:
             self.ai_thinking = False
 
     def handle_ai_auto(self, ai: BaseAI):
+        """
+        进入与指定 AI 的自动对弈流程。
+
+        参数:
+            ai: 对手 AI 实例。
+        """
         self.cmd_print(f"已开启与 {ai.name} 对弈模式。")
         self.handle_ai_move(ai)
 
     def handle_play_move(self, data):
+        """
+        处理前端手动落子请求。
+
+        参数:
+            data: 包含 row/col/color 的字典。
+        """
         if not self.ensure_not_spectator():
             return
         if self.ai_thinking:
@@ -321,6 +528,7 @@ class GameSession:
             self.executor.submit(self.handle_ai_move, self.ai_map[self.auto_mode])
 
     def handle_undo_move(self):
+        """处理悔棋请求并广播更新。"""
         if not self.ensure_not_spectator():
             return
         with self.lock:
@@ -329,6 +537,7 @@ class GameSession:
         self.cmd_print("已悔棋。")
 
     def handle_redo_move(self):
+        """处理重做请求并广播更新。"""
         if not self.ensure_not_spectator():
             return
         with self.lock:
@@ -337,6 +546,7 @@ class GameSession:
         self.cmd_print("已重悔。")
 
     def handle_restart_game(self):
+        """处理重开棋局请求并清空自动模式。"""
         if not self.ensure_not_spectator():
             return
         with self.lock:
@@ -346,6 +556,12 @@ class GameSession:
         self.cmd_print("已重开棋局。")
 
     def handle_cmd_input(self, data):
+        """
+        处理 CMD 文本输入并分派子命令。
+
+        支持命令:
+            play / undo / redo / restart / ai / auto / config / help
+        """
         text = data.get("text", "").strip()
 
         if not text:
