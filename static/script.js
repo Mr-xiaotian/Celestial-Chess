@@ -12,13 +12,30 @@ let lastBoardData = null;
 let bluePastelMaxLevel = 50;
 let redPastelMaxLevel = 50;
 let playerMode = "pvp";
+let currentColorScheme = "pastel";
 
 const COLOR_RANGE_MAX = 100;
 const WHITE_RGB = [255, 255, 255];
-const BLUE_PASTEL_MIN = [235, 245, 255]; // #ebf5ff
-const BLUE_PASTEL_MAX = [129, 212, 250]; // #81d4fa
-const RED_PASTEL_MIN = [255, 238, 238];  // #ffeeee
-const RED_PASTEL_MAX = [229, 115, 115];  // #e57373
+const COLOR_SCHEMES = {
+    pastel: {
+        blueMin: [235, 245, 255], // #ebf5ff
+        blueMax: [129, 212, 250], // #81d4fa
+        redMin: [255, 238, 238],  // #ffeeee
+        redMax: [229, 115, 115]   // #e57373
+    },
+    morandi: {
+        blueMin: [236, 240, 241], // #ecf0f1
+        blueMax: [130, 150, 161], // #8296a1
+        redMin: [244, 236, 234],  // #f4ecea
+        redMax: [177, 134, 130]   // #b18682
+    },
+    neon: {
+        blueMin: [229, 247, 255], // #e5f7ff
+        blueMax: [0, 191, 255],   // #00bfff
+        redMin: [255, 233, 244],  // #ffe9f4
+        redMax: [255, 64, 129]    // #ff4081
+    }
+};
 
 let socket = io.connect(
     window.location.protocol + '//' + window.location.host,
@@ -131,6 +148,11 @@ function bindConfigControls() {
     }
     setPastelMaxLevel("blue", blueRange ? blueRange.value : bluePastelMaxLevel);
     setPastelMaxLevel("red", redRange ? redRange.value : redPastelMaxLevel);
+    const colorSchemeSelect = document.getElementById("colorScheme");
+    if (colorSchemeSelect) {
+        colorSchemeSelect.addEventListener("change", (e) => applyColorScheme(e.target.value));
+        applyColorScheme(colorSchemeSelect.value);
+    }
 
     ["Blue", "Red"].forEach(side => {
         const roleSelect = document.getElementById(`spectator${side}Role`);
@@ -548,10 +570,37 @@ function setConfigInputs(rowLen, colLen, powerValue) {
 }
 
 function getTargetPastelColor(side) {
+    const scheme = COLOR_SCHEMES[currentColorScheme] || COLOR_SCHEMES.pastel;
     const level = side === "blue" ? bluePastelMaxLevel : redPastelMaxLevel;
-    const from = side === "blue" ? BLUE_PASTEL_MIN : RED_PASTEL_MIN;
-    const to = side === "blue" ? BLUE_PASTEL_MAX : RED_PASTEL_MAX;
+    const from = side === "blue" ? scheme.blueMin : scheme.redMin;
+    const to = side === "blue" ? scheme.blueMax : scheme.redMax;
     return interpolateColor(from, to, Math.min(Math.max(level, 0), 100) / 100);
+}
+
+function applyColorScheme(schemeKey) {
+    currentColorScheme = COLOR_SCHEMES[schemeKey] ? schemeKey : "pastel";
+    const scheme = COLOR_SCHEMES[currentColorScheme];
+    const blueRange = document.getElementById("bluePastelMax");
+    const redRange = document.getElementById("redPastelMax");
+    const toRgb = (arr) => `rgb(${arr[0]}, ${arr[1]}, ${arr[2]})`;
+    if (blueRange) {
+        blueRange.style.setProperty("--range-start", toRgb(scheme.blueMin));
+        blueRange.style.setProperty("--range-end", toRgb(scheme.blueMax));
+    }
+    if (redRange) {
+        redRange.style.setProperty("--range-start", toRgb(scheme.redMin));
+        redRange.style.setProperty("--range-end", toRgb(scheme.redMax));
+    }
+    const select = document.getElementById("colorScheme");
+    if (select) {
+        select.value = currentColorScheme;
+        syncCustomSelect(select);
+    }
+    if (lastBoardData) {
+        updateChessboard(lastBoardData.board, lastBoardData.move);
+    }
+    const score = Number(scoreEl.textContent);
+    updateDynamicBackground(Number.isFinite(score) ? score : 0);
 }
 
 function setPastelMaxLevel(side, value) {

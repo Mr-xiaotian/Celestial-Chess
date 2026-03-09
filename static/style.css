@@ -351,6 +351,10 @@ td {
     justify-content: space-around;
 }
 
+.space-between {
+    justify-content: space-between;
+}
+
 .config-row {
     display: flex;
     flex-wrap: wrap;
@@ -435,6 +439,10 @@ td {
     text-align: right;
     color: #475569;
     font-size: 13px;
+}
+
+.color-scheme-row {
+    justify-content: flex-end;
 }
 
 .custom-select-wrapper {

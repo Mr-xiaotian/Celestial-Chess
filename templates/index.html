@@ -90,15 +90,27 @@
         </div>
         <div class="config-section">
           <div class="config-title config-title-center">颜色配置</div>
-          <div class="config-row">
-            <label for="bluePastelMax">蓝色最大值</label>
-            <input id="bluePastelMax" class="color-range color-range-blue" type="range" min="0" max="100" step="1" value="50" />
-            <span id="bluePastelMaxValue" class="color-range-value">50%</span>
-          </div>
-          <div class="config-row">
-            <label for="redPastelMax">红色最大值</label>
-            <input id="redPastelMax" class="color-range color-range-red" type="range" min="0" max="100" step="1" value="50" />
-            <span id="redPastelMaxValue" class="color-range-value">50%</span>
+          <div class="config-row space-between">
+            <div>
+              <div class="config-row">
+                <label for="bluePastelMax">蓝色最大值</label>
+                <input id="bluePastelMax" class="color-range color-range-blue" type="range" min="0" max="100" step="1" value="50" />
+                <span id="bluePastelMaxValue" class="color-range-value">50%</span>
+              </div>
+              <div class="config-row">
+                <label for="redPastelMax">红色最大值</label>
+                <input id="redPastelMax" class="color-range color-range-red" type="range" min="0" max="100" step="1" value="50" />
+                <span id="redPastelMaxValue" class="color-range-value">50%</span>
+              </div>
+            </div>
+            <div class="config-row color-scheme-row">
+              <label for="colorScheme">配色方案</label>
+              <select id="colorScheme">
+                <option value="pastel" selected>粉彩(Pastel)</option>
+                <option value="morandi">莫兰迪(Morandi)</option>
+                <option value="neon">霓虹(Neon)</option>
+              </select>
+            </div>
           </div>
         </div>
         <div class="config-section">
