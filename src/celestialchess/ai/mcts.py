@@ -135,6 +135,7 @@ class MCTSAI(BaseAI):
 
         best_child = self.MCTS(root)  # 使用MCTS算法选择最佳的子节点
         best_move = best_child.get_current_move()
+        self.best_win_rate = best_child.get_win_rate()
 
         # 将最佳子节点和根节点存储在缓存中
         self.cache = {best_move: best_child}
@@ -142,49 +143,7 @@ class MCTSAI(BaseAI):
             move = child.get_current_move()
             self.cache[move] = child
 
-        # 如果是完整模式，则更新游戏状态和评分板
-        (
-            self.update_game_with_mcts_results(game, root, best_child)
-            if self.complate_mode
-            else None
-        )
-
         return best_move
-
-    def update_game_with_mcts_results(
-        self, game: ChessGame, root: MCTSNode, best_child: MCTSNode
-    ) -> None:
-        """
-        根据 MCTS 搜索结果更新游戏状态和评分板。
-
-        :param game: 当前棋盘游戏对象
-        :param root: MCTS 树的根节点
-        :param best_child: MCTS 搜索的最佳子节点
-        """
-        best_win_rate = best_child.get_win_rate()
-
-        game.set_current_win_rate(best_win_rate)
-
-        # 更新消息
-        self._build_mcts_msg(best_win_rate)
-
-    def _build_mcts_msg(self, best_win_rate):
-        if best_win_rate < 0.3:
-            selected = "very_low"
-        elif best_win_rate < 0.5:
-            selected = "low"
-        elif best_win_rate < 0.7:
-            selected = "mid"
-        elif best_win_rate < 0.85:
-            selected = "high"
-        elif best_win_rate < 0.93:
-            selected = "very_high"
-        else:
-            selected = "extreme"
-
-        mood = random.choice(MCTS_DIALOGUES[selected])
-
-        self._msg = mood
 
     def MCTS(self, root: MCTSNode) -> MCTSNode:
         """执行迭代次数为 itermax 的 MCTS 搜索，返回最佳子节点"""
@@ -198,7 +157,28 @@ class MCTSAI(BaseAI):
             node.backpropagate(reward)
         return root.get_best_child(c_param=0)
 
+    def tree_policy(self, node: MCTSNode, c_param) -> MCTSNode:
+        """根据选择策略递归选择子节点，直到达到未完全展开或未被访问的节点"""
+        while not node.chess_game.is_game_over():
+            if not node.is_fully_expanded():
+                return node.expand()
+            else:
+                node = node.get_best_child(c_param)
+        return node
+
     def analyze_position(self, game: ChessGame) -> dict:
+        """
+        对当前局面进行 MCTS 分析并返回可视化所需结果。
+
+        参数:
+            game: 待分析的棋局对象（方法内部会复制，不修改原对象）。
+
+        返回:
+            dict:
+                - current_win_rate: 当前执棋方最佳分支估计胜率
+                - moves: 所有已访问候选点列表，元素包含
+                    row/col/win_rate/visits/rank
+        """
         root = MCTSNode(game.copy(), root_color=game.get_color())
         if root.max_untried_index == 0:
             return {"current_win_rate": None, "moves": []}
@@ -229,14 +209,24 @@ class MCTSAI(BaseAI):
             "moves": ranked_moves,
         }
 
-    def tree_policy(self, node: MCTSNode, c_param) -> MCTSNode:
-        """根据选择策略递归选择子节点，直到达到未完全展开或未被访问的节点"""
-        while not node.chess_game.is_game_over():
-            if not node.is_fully_expanded():
-                return node.expand()
-            else:
-                node = node.get_best_child(c_param)
-        return node
+    @property
+    def msg(self):
+        if self.best_win_rate < 0.3:
+            selected = "very_low"
+        elif self.best_win_rate < 0.5:
+            selected = "low"
+        elif self.best_win_rate < 0.7:
+            selected = "mid"
+        elif self.best_win_rate < 0.85:
+            selected = "high"
+        elif self.best_win_rate < 0.93:
+            selected = "very_high"
+        else:
+            selected = "extreme"
+
+        mood = random.choice(MCTS_DIALOGUES[selected])
+
+        return mood
 
     def end_game(self):
         self.cache = {}

@@ -132,6 +132,15 @@ class GameSession:
         self.auto_mode = mode
 
     def normalize_role_side_config(self, config: Optional[Dict]):
+        """
+        归一化单侧角色配置。
+
+        参数:
+            config: 角色配置，可为 human 或具体 AI 类型配置。
+
+        返回:
+            dict: 标准结构 {"role": str, "ai": dict}。
+        """
         role = "human"
         ai_config = self.normalize_ai_config(None)
         ai_types = {"minimax", "mcts", "monky"}
@@ -150,6 +159,12 @@ class GameSession:
         return {"role": role, "ai": ai_config}
 
     def detect_mode(self):
+        """
+        根据红蓝两侧角色推断当前对局模式。
+
+        返回:
+            str: pvp / pve / spectator。
+        """
         blue_ai = self.side_role_config["Blue"]["role"] != "human"
         red_ai = self.side_role_config["Red"]["role"] != "human"
         if blue_ai and red_ai:
@@ -159,6 +174,12 @@ class GameSession:
         return "pvp"
 
     def get_role_status_payload(self):
+        """
+        构造角色状态广播载荷。
+
+        返回:
+            dict: 包含 mode、blue、red、sleep。
+        """
         return {
             "mode": self.detect_mode(),
             "blue": self.side_role_config["Blue"],
@@ -167,9 +188,11 @@ class GameSession:
         }
 
     def emit_role_status(self):
+        """向前端广播角色状态。"""
         self.socketio.emit("role_status", self.get_role_status_payload())
 
     def refresh_side_ai_map(self):
+        """根据角色配置重建红蓝方 AI 实例缓存。"""
         self.side_ai_map = {"Blue": None, "Red": None}
         for side in ("Blue", "Red"):
             side_config = self.side_role_config[side]
@@ -177,6 +200,13 @@ class GameSession:
                 self.side_ai_map[side] = self.create_ai_from_config(side_config["ai"])
 
     def schedule_role_ai_turn_if_needed(self):
+        """
+        在当前回合调度“AI 执棋或人类分析”。
+
+        规则:
+            - AI 回合：提交 AI 执棋任务；
+            - Human 回合：提交局面分析任务。
+        """
         if self.ai_thinking or self.game.is_game_over():
             return
         side = "Blue" if self.game.get_color() == 1 else "Red"
@@ -190,6 +220,11 @@ class GameSession:
         self.executor.submit(self.handle_ai_move, ai)
 
     def schedule_human_analysis_if_needed(self):
+        """
+        当轮到人类方时异步触发 MCTS 分析。
+
+        会先发送 pending 状态，再在后台线程完成分析并推送结果。
+        """
         if self.ai_thinking or self.game.is_game_over():
             self.socketio.emit("analysis_update", {"status": "idle"})
             return
@@ -205,6 +240,14 @@ class GameSession:
         self.executor.submit(self.run_human_analysis, seq, game_snapshot, side)
 
     def run_human_analysis(self, seq: int, game_snapshot: ChessGame, side: str):
+        """
+        执行单次人类回合分析任务并推送 analysis_update。
+
+        参数:
+            seq: 分析序号，用于丢弃过期结果。
+            game_snapshot: 分析用棋局快照。
+            side: 当前轮到的执棋方（Blue/Red）。
+        """
         payload = {"status": "idle"}
         try:
             if game_snapshot.is_game_over():
@@ -225,6 +268,15 @@ class GameSession:
         self.socketio.emit("analysis_update", payload)
 
     def apply_role_config(self, blue_config: Optional[Dict], red_config: Optional[Dict], sleep: Optional[float], source: str):
+        """
+        应用红蓝双方角色配置并刷新模式状态。
+
+        参数:
+            blue_config: 蓝方角色配置。
+            red_config: 红方角色配置。
+            sleep: AI 对战回合间隔秒数。
+            source: 触发来源标识。
+        """
         normalized_blue = self.normalize_role_side_config(blue_config)
         normalized_red = self.normalize_role_side_config(red_config)
         try:
