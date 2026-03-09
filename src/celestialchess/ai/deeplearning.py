@@ -48,6 +48,7 @@ class ChessPolicyModel(nn.Module):
 
 
 class DeepLearningAI(BaseAI):
+    _name = "DeepLearningAI"
     def __init__(self, model_path, complete_mode=False):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = ChessPolicyModel().to(self.device)

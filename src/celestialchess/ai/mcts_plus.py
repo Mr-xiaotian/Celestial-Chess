@@ -143,7 +143,8 @@ class MCTSPlusAI(BaseAI):
         value_net: Optional[DeepLearningAI] = None,
         complate_mode=True,
     ) -> None:
-        self.name = "MCTSPlusAI"
+        self._name = "MCTSPlusAI"
+
         self.itermax = itermax
         self.c_param = c_param
         self.complate_mode = complate_mode
@@ -215,10 +216,6 @@ class MCTSPlusAI(BaseAI):
                         policy_net=policy_net, c_param=c_param
                     )
         return node
-
-    @property
-    def msg(self):
-        return self._msg
 
     def end_game(self):
         pass

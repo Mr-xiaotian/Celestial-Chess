@@ -11,19 +11,16 @@ logger.remove()  # remove the default handler
 now_time = strftime("%Y-%m-%d", localtime())
 os.makedirs("logs", exist_ok=True)
 logger.add(
-    f"logs/chess_manager({now_time}).log",
+    f"logs/chess_log({now_time}).log",
     format="{time:YYYY-MM-DD HH:mm:ss} {level} {message}",
     level="INFO",
 )
 
 
 class BaseAI:
-    name = "BaseAI"
+    _name = "BaseAI"
+    _msg = ""
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
-        raise NotImplementedError("This method should be overridden by subclasses.")
-    
-    @property
-    def msg(self):
         raise NotImplementedError("This method should be overridden by subclasses.")
 
     def end_game(self):
@@ -31,3 +28,11 @@ class BaseAI:
 
     def end_model(self):
         raise NotImplementedError("This method should be overridden by subclasses.")
+    
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def msg(self):
+        return self._msg

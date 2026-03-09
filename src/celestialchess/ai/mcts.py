@@ -110,9 +110,8 @@ class MCTSNode:
 
 
 class MCTSAI(BaseAI):
+    _name = "MCTSAI"
     def __init__(self, itermax: int = 1000, c_param=0.8, complate_mode=False) -> None:
-        self.name = f"MCTSAI"
-
         self.itermax = itermax
         self.c_param = c_param
         self.complate_mode = complate_mode
@@ -171,7 +170,7 @@ class MCTSAI(BaseAI):
         
         # 你原来的棋盘格式化
         board_text = game.get_format_board(current_win_rate_board, (3, 0))
-        print(f"MCTSAI 思考结果：\n{board_text}")
+        # print(f"MCTSAI 思考结果：\n{board_text}")
 
         # 更新消息
         self._build_mcts_msg(best_win_rate)
@@ -214,6 +213,10 @@ class MCTSAI(BaseAI):
             else:
                 node = node.get_best_child(c_param)
         return node
+
+    @property
+    def name(self):
+        return self._name
     
     @property
     def msg(self):

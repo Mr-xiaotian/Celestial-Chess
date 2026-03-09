@@ -6,7 +6,7 @@ from .dialogues import MONKY_ATTITUDES, MONKY_CHAOS_SOUNDS, MONKY_ENDINGS
 
 
 class MonkyAI(BaseAI):
-    name = "MonkyAI"
+    _name = "MonkyAI"
 
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
         # 随机选择一个合法移动
@@ -23,8 +23,3 @@ class MonkyAI(BaseAI):
     def _build_monky_msg(self):
         self._msg = random.choice(MONKY_CHAOS_SOUNDS + MONKY_ATTITUDES + MONKY_ENDINGS)
 
-
-    @property
-    def msg(self):
-        # 如果还没生成过，给个默认乱语
-        return getattr(self, "_msg", "bluh bluh wobba-wobba monky brain offline...")

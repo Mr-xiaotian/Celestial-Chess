@@ -17,9 +17,8 @@ class AlphaBetaFlag(IntEnum):
 
 
 class MinimaxAI(BaseAI):
+    _name = "MinimaxAI" if random.random() < 0.8 else "【Minimax 报告】"
     def __init__(self, depth: int, log_mode: bool = False) -> None:
-        self.name = "MinimaxAI"
-
         self.depth = depth
         self.log_mode = log_mode
         self.transposition_mode = False
@@ -231,19 +230,13 @@ class MinimaxAI(BaseAI):
         mood = random.choice(MINIMAX_DIALOGUES[selected])
 
         meta = (
-            f"搜索深度 = {depth}, 节点数 ≈ {iters}。"
+            f"搜索深度 = {depth}, 节点数 ≈ {iters}, 评估 = {signed_score:.3f}。"
         )
 
-        if random.random() < 0.8:
-            self.name = f"MinimaxAI"
+        if self._name == "MinimaxAI":
             self._msg =  mood
-        else:
-            self.name = "【Minimax 报告】"
+        elif self._name == "【Minimax 报告】":
             self._msg =  meta
-
-    @property
-    def msg(self):
-        return self._msg
 
     def end_game(self):
         pass

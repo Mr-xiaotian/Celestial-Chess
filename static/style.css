@@ -347,6 +347,10 @@ td {
     text-align: center;
 }
 
+.space-around {
+    justify-content: space-around;
+}
+
 .config-row {
     display: flex;
     flex-wrap: wrap;
