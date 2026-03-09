@@ -557,6 +557,53 @@ td {
     user-select: none;
 }
 
+.analysis-winrate {
+    min-width: 92px;
+    text-align: center;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #f8fafc;
+    padding: 4px 8px;
+    font-family: "JetBrains Mono", "Consolas", monospace;
+    cursor: default;
+}
+
+.analysis-winrate-mask {
+    display: inline;
+    letter-spacing: 1px;
+    color: #64748b;
+}
+
+.analysis-winrate-value {
+    display: none;
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.analysis-winrate:hover .analysis-winrate-mask {
+    display: none;
+}
+
+.analysis-winrate:hover .analysis-winrate-value {
+    display: inline;
+}
+
+.cell-analysis {
+    position: absolute;
+    right: 3px;
+    bottom: 2px;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.82);
+    border-radius: 4px;
+    padding: 1px 3px;
+    font-size: 10px;
+    line-height: 1.15;
+    color: #0f172a;
+    display: none;
+    pointer-events: none;
+    text-align: right;
+}
+
 .config-actions {
     display: flex;
     gap: 10px;

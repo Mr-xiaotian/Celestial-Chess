@@ -162,15 +162,8 @@ class MCTSAI(BaseAI):
         :param best_child: MCTS 搜索的最佳子节点
         """
         best_win_rate = best_child.get_win_rate()
-        current_win_rate_board = root.get_child_win_rate_board()
-        next_win_rate_board = best_child.get_child_win_rate_board()
 
         game.set_current_win_rate(best_win_rate)
-        game.set_MCTSscore_board(next_win_rate_board)
-        
-        # 你原来的棋盘格式化
-        board_text = game.get_format_board(current_win_rate_board, (3, 0))
-        # print(f"MCTSAI 思考结果：\n{board_text}")
 
         # 更新消息
         self._build_mcts_msg(best_win_rate)
@@ -205,6 +198,37 @@ class MCTSAI(BaseAI):
             node.backpropagate(reward)
         return root.get_best_child(c_param=0)
 
+    def analyze_position(self, game: ChessGame) -> dict:
+        root = MCTSNode(game.copy(), root_color=game.get_color())
+        if root.max_untried_index == 0:
+            return {"current_win_rate": None, "moves": []}
+
+        best_child = self.MCTS(root)
+        board = root.get_child_win_rate_board()
+
+        row_len, col_len = game.board_range
+        ranked_moves = []
+        for row in range(row_len):
+            for col in range(col_len):
+                visits = int(board[row, col, 1])
+                if visits <= 0:
+                    continue
+                ranked_moves.append({
+                    "row": row,
+                    "col": col,
+                    "win_rate": float(board[row, col, 0]),
+                    "visits": visits,
+                })
+
+        ranked_moves.sort(key=lambda item: (-item["win_rate"], -item["visits"], item["row"], item["col"]))
+        for idx, item in enumerate(ranked_moves):
+            item["rank"] = idx + 1
+
+        return {
+            "current_win_rate": float(best_child.get_win_rate()),
+            "moves": ranked_moves,
+        }
+
     def tree_policy(self, node: MCTSNode, c_param) -> MCTSNode:
         """根据选择策略递归选择子节点，直到达到未完全展开或未被访问的节点"""
         while not node.chess_game.is_game_over():
@@ -213,14 +237,6 @@ class MCTSAI(BaseAI):
             else:
                 node = node.get_best_child(c_param)
         return node
-
-    @property
-    def name(self):
-        return self._name
-    
-    @property
-    def msg(self):
-        return self._msg
 
     def end_game(self):
         self.cache = {}

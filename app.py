@@ -57,6 +57,7 @@ def create_app():
     @app.route("/init_state", methods=["GET"])
     def init_state():
         """返回前端初始化所需的完整棋局状态。"""
+        session.schedule_human_analysis_if_needed()
         return jsonify(session.get_init_state())
 
     @app.route("/configure", methods=["POST"])

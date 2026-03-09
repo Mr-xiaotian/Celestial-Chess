@@ -180,10 +180,8 @@ class MCTSPlusAI(BaseAI):
         self, game: ChessGame, root: MCTSPlusNode, best_child: MCTSPlusNode
     ) -> None:
         best_win_rate = best_child.get_win_rate()
-        next_win_rate_board = best_child.get_child_win_rate_board()
 
         game.set_current_win_rate(best_win_rate)
-        game.set_MCTSscore_board(next_win_rate_board)
 
         self._msg = f"win_rate={best_win_rate:.3f}"
 

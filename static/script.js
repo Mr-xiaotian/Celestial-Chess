@@ -13,6 +13,9 @@ let bluePastelMaxLevel = 50;
 let redPastelMaxLevel = 50;
 let playerMode = "pvp";
 let currentColorScheme = "pastel";
+let analysisRecommendationEnabled = false;
+let latestAnalysisData = null;
+let analysisRefs = [];
 
 const COLOR_RANGE_MAX = 100;
 const WHITE_RGB = [255, 255, 255];
@@ -130,6 +133,10 @@ function bindConfigControls() {
         setCmdPanelVisible(e.target.value === "show");
     });
     setCmdPanelVisible(document.getElementById("configCmdVisible").value === "show");
+    document.getElementById("toggleAnalysisRecommendations").addEventListener("click", () => {
+        setAnalysisRecommendationEnabled(!analysisRecommendationEnabled);
+    });
+    setAnalysisRecommendationEnabled(false);
 
     document.getElementById("displayMode").addEventListener("change", (e) => {
         currentDisplayMode = e.target.value;
@@ -241,6 +248,10 @@ function bindSocketEvents() {
         }
         applyBackendState(data);
     });
+
+    socket.on("analysis_update", data => {
+        applyAnalysisUpdate(data || {});
+    });
 }
 
 /**
@@ -282,6 +293,7 @@ function renderChessboard(row_len, col_len) {
     cellRefs = Array.from({ length: row_len }, () => new Array(col_len));
     valueRefs = Array.from({ length: row_len }, () => new Array(col_len));
     diamondRefs = Array.from({ length: row_len }, () => new Array(col_len));
+    analysisRefs = Array.from({ length: row_len }, () => new Array(col_len));
 
     const fragment = document.createDocumentFragment();
     for (let i = 0; i < row_len; i++) {
@@ -297,12 +309,17 @@ function renderChessboard(row_len, col_len) {
             const diamond = document.createElement('div');
             diamond.className = 'cell-diamond';
 
+            const analysisSpan = document.createElement('div');
+            analysisSpan.className = 'cell-analysis';
+
             cell.appendChild(numberSpan);
             cell.appendChild(diamond);
+            cell.appendChild(analysisSpan);
             row.appendChild(cell);
             cellRefs[i][j] = cell;
             valueRefs[i][j] = numberSpan;
             diamondRefs[i][j] = diamond;
+            analysisRefs[i][j] = analysisSpan;
         }
         fragment.appendChild(row);
     }
@@ -318,6 +335,7 @@ function renderChessboard(row_len, col_len) {
  */
 function updateChessboard(board, move) {
     lastBoardData = { board, move };
+    const analysisMap = buildAnalysisMap();
 
     for (let i = 0; i < board.length; i++) {
         for (let j = 0; j < board[i].length; j++) {
@@ -325,7 +343,8 @@ function updateChessboard(board, move) {
             const cell = cellRefs[i]?.[j];
             const numberSpan = valueRefs[i]?.[j];
             const diamond = diamondRefs[i]?.[j];
-            if (!cell || !numberSpan || !diamond) continue;
+            const analysisSpan = analysisRefs[i]?.[j];
+            if (!cell || !numberSpan || !diamond || !analysisSpan) continue;
 
             const value = board[i][j][0];
             const load = board[i][j][1];
@@ -352,6 +371,15 @@ function updateChessboard(board, move) {
             numberSpan.textContent = displayText;
             
             diamond.style.display = move && move[0] === i && move[1] === j ? 'block' : 'none';
+            const analysisCell = analysisMap[`${i}-${j}`];
+            const isPlayableCell = value !== "inf" && Number(value) === 0;
+            if (analysisRecommendationEnabled && isPlayableCell && analysisCell) {
+                analysisSpan.style.display = "block";
+                analysisSpan.textContent = `#${analysisCell.rank} ${(analysisCell.win_rate * 100).toFixed(1)}%`;
+            } else {
+                analysisSpan.style.display = "none";
+                analysisSpan.textContent = "";
+            }
         }
     }
 }
@@ -800,6 +828,57 @@ function applyRoleStatus(data) {
     if (data && data.blue && data.red) {
         setSpectatorConfigInputs(data.blue, data.red);
     }
+}
+
+function setAnalysisRecommendationEnabled(enabled) {
+    analysisRecommendationEnabled = Boolean(enabled);
+    const btn = document.getElementById("toggleAnalysisRecommendations");
+    if (btn) {
+        btn.textContent = analysisRecommendationEnabled ? "关闭" : "开启";
+    }
+    if (lastBoardData) {
+        updateChessboard(lastBoardData.board, lastBoardData.move);
+    }
+}
+
+function applyAnalysisUpdate(data) {
+    if (data.status === "ready") {
+        latestAnalysisData = data;
+    } else if (data.status === "pending") {
+        latestAnalysisData = null;
+    } else {
+        latestAnalysisData = null;
+    }
+    updateAnalysisWinRateDisplay(data);
+    if (lastBoardData) {
+        updateChessboard(lastBoardData.board, lastBoardData.move);
+    }
+}
+
+function updateAnalysisWinRateDisplay(data) {
+    const valueEl = document.getElementById("analysisWinRateValue");
+    if (!valueEl) return;
+    if (data.status === "ready" && Number.isFinite(data.current_win_rate)) {
+        valueEl.textContent = `${(data.current_win_rate * 100).toFixed(2)}%`;
+        return;
+    }
+    if (data.status === "pending") {
+        valueEl.textContent = "分析中";
+        return;
+    }
+    valueEl.textContent = "--";
+}
+
+function buildAnalysisMap() {
+    if (!latestAnalysisData || latestAnalysisData.status !== "ready" || !Array.isArray(latestAnalysisData.moves)) {
+        return {};
+    }
+    const map = {};
+    for (const move of latestAnalysisData.moves) {
+        if (!Number.isInteger(move.row) || !Number.isInteger(move.col)) continue;
+        map[`${move.row}-${move.col}`] = move;
+    }
+    return map;
 }
 
 cmdInput.addEventListener("keydown", function(e) {

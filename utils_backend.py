@@ -119,6 +119,8 @@ class GameSession:
             "Red": self.normalize_role_side_config({"role": "human"}),
         }
         self.side_ai_map: Dict[str, Optional[BaseAI]] = {"Blue": None, "Red": None}
+        self.analysis_iter = 800
+        self.analysis_seq = 0
 
     def set_auto_mode(self, mode: Optional[str] = None):
         """
@@ -179,12 +181,48 @@ class GameSession:
             return
         side = "Blue" if self.game.get_color() == 1 else "Red"
         if self.side_role_config[side]["role"] == "human":
+            self.schedule_human_analysis_if_needed()
             return
         ai = self.side_ai_map.get(side)
         if ai is None:
             ai = self.create_ai_from_config(self.side_role_config[side]["ai"])
             self.side_ai_map[side] = ai
         self.executor.submit(self.handle_ai_move, ai)
+
+    def schedule_human_analysis_if_needed(self):
+        if self.ai_thinking or self.game.is_game_over():
+            self.socketio.emit("analysis_update", {"status": "idle"})
+            return
+        side = "Blue" if self.game.get_color() == 1 else "Red"
+        if self.side_role_config[side]["role"] != "human":
+            self.socketio.emit("analysis_update", {"status": "idle"})
+            return
+        with self.lock:
+            game_snapshot = self.game.copy()
+        self.analysis_seq += 1
+        seq = self.analysis_seq
+        self.socketio.emit("analysis_update", {"status": "pending", "turn": side})
+        self.executor.submit(self.run_human_analysis, seq, game_snapshot, side)
+
+    def run_human_analysis(self, seq: int, game_snapshot: ChessGame, side: str):
+        payload = {"status": "idle"}
+        try:
+            if game_snapshot.is_game_over():
+                payload = {"status": "idle"}
+            else:
+                analyzer = MCTSAI(self.analysis_iter, complate_mode=False)
+                analysis = analyzer.analyze_position(game_snapshot)
+                payload = {
+                    "status": "ready",
+                    "turn": side,
+                    "current_win_rate": analysis.get("current_win_rate"),
+                    "moves": analysis.get("moves", []),
+                }
+        except Exception as e:
+            payload = {"status": "error", "message": str(e)}
+        if seq != self.analysis_seq:
+            return
+        self.socketio.emit("analysis_update", payload)
 
     def apply_role_config(self, blue_config: Optional[Dict], red_config: Optional[Dict], sleep: Optional[float], source: str):
         normalized_blue = self.normalize_role_side_config(blue_config)
@@ -627,6 +665,7 @@ class GameSession:
             self.game.undo()
         self.sendDataToBackend()
         self.cmd_print("已悔棋。")
+        self.schedule_role_ai_turn_if_needed()
 
     def handle_redo_move(self):
         """处理重做请求并广播更新。"""
@@ -636,6 +675,7 @@ class GameSession:
             self.game.redo()
         self.sendDataToBackend()
         self.cmd_print("已重悔。")
+        self.schedule_role_ai_turn_if_needed()
 
     def handle_restart_game(self):
         """处理重开棋局请求并清空自动模式。"""
