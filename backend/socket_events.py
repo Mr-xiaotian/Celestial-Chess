@@ -87,3 +87,8 @@ def register_socket_events(socketio, session):
         """
         data = data or {}
         session.apply_role_config(data.get("blue"), data.get("red"), data.get("sleep"), "panel")
+
+    @socketio.on("set_analysis_iter")
+    def handle_set_analysis_iter(data):
+        data = data or {}
+        session.set_analysis_iter(data.get("iter"))

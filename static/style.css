@@ -604,6 +604,11 @@ td {
     text-align: right;
 }
 
+.cell-analysis-top3 {
+    font-size: 12px;
+    font-weight: 700;
+}
+
 .config-actions {
     display: flex;
     gap: 10px;

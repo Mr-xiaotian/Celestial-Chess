@@ -16,6 +16,7 @@ let currentColorScheme = "pastel";
 let analysisRecommendationEnabled = false;
 let latestAnalysisData = null;
 let analysisRefs = [];
+let currentStep = 0;
 
 const COLOR_RANGE_MAX = 100;
 const WHITE_RGB = [255, 255, 255];
@@ -136,6 +137,9 @@ function bindConfigControls() {
     document.getElementById("toggleAnalysisRecommendations").addEventListener("click", () => {
         setAnalysisRecommendationEnabled(!analysisRecommendationEnabled);
     });
+    document.getElementById("analysisIter").addEventListener("change", (e) => {
+        applyAnalysisIter(parseInt(e.target.value, 10));
+    });
     setAnalysisRecommendationEnabled(false);
 
     document.getElementById("displayMode").addEventListener("change", (e) => {
@@ -252,6 +256,10 @@ function bindSocketEvents() {
     socket.on("analysis_update", data => {
         applyAnalysisUpdate(data || {});
     });
+
+    socket.on("analysis_config", data => {
+        applyAnalysisConfig(data || {});
+    });
 }
 
 /**
@@ -266,6 +274,9 @@ function applyBackendState(data) {
     updateTotalScore(data.score ?? 0);
     toggleColor(data.step ?? 0);
     setConfigInputs(data.row_len, data.col_len, data.power);
+    if (data && Number.isInteger(data.analysis_iter)) {
+        setAnalysisIterInput(data.analysis_iter);
+    }
     if (data && data.mode && data.blue && data.red) {
         applyRoleStatus({
             mode: data.mode,
@@ -376,9 +387,13 @@ function updateChessboard(board, move) {
             if (analysisRecommendationEnabled && isPlayableCell && analysisCell) {
                 analysisSpan.style.display = "block";
                 analysisSpan.textContent = `#${analysisCell.rank} ${(analysisCell.win_rate * 100).toFixed(1)}%`;
+                analysisSpan.classList.toggle("cell-analysis-top3", analysisCell.rank <= 3);
+                analysisSpan.style.color = analysisCell.rank <= 3 ? getCelestialColor() : "#0f172a";
             } else {
                 analysisSpan.style.display = "none";
                 analysisSpan.textContent = "";
+                analysisSpan.classList.remove("cell-analysis-top3");
+                analysisSpan.style.color = "#0f172a";
             }
         }
     }
@@ -420,6 +435,7 @@ function getColor(value) {
  * @param {number} step - 当前步数，偶数为蓝方，奇数为红方
  */
 function toggleColor(step) {
+    currentStep = Number.isInteger(step) ? step : 0;
     currentColor = (step % 2 === 0) ? 1 : -1;
     updatePlayerIndicator();
 }
@@ -597,6 +613,12 @@ function setConfigInputs(rowLen, colLen, powerValue) {
     document.getElementById("configPower").value = powerValue;
 }
 
+/**
+ * 获取指定方的目标 pastel 颜色。
+ * 
+ * @param {string} side - 方别，"blue" 或 "red"
+ * @returns {Array} 目标 pastel 颜色的 RGB 数组
+ */
 function getTargetPastelColor(side) {
     const scheme = COLOR_SCHEMES[currentColorScheme] || COLOR_SCHEMES.pastel;
     const level = side === "blue" ? bluePastelMaxLevel : redPastelMaxLevel;
@@ -605,6 +627,12 @@ function getTargetPastelColor(side) {
     return interpolateColor(from, to, Math.min(Math.max(level, 0), 100) / 100);
 }
 
+/**
+ * 应用指定的颜色方案。
+ * 更新 UI 元素的颜色样式。
+ * 
+ * @param {string} schemeKey - 颜色方案键
+ */
 function applyColorScheme(schemeKey) {
     currentColorScheme = COLOR_SCHEMES[schemeKey] ? schemeKey : "pastel";
     const scheme = COLOR_SCHEMES[currentColorScheme];
@@ -631,6 +659,13 @@ function applyColorScheme(schemeKey) {
     updateDynamicBackground(Number.isFinite(score) ? score : 0);
 }
 
+/**
+ * 设置指定方的 pastel 颜色最大等级。
+ * 更新 UI 元素的显示值。
+ * 
+ * @param {string} side - 方别，"blue" 或 "red"
+ * @param {number} value - 最大等级，0-100 之间的整数
+ */
 function setPastelMaxLevel(side, value) {
     const parsed = Number(value);
     const normalized = Number.isFinite(parsed) ? Math.min(Math.max(parsed, 0), 100) : 100;
@@ -814,6 +849,12 @@ function updateAiConfigVisibility(side) {
     mctsWrap.style.display = role === "mcts" ? "inline-flex" : "none";
 }
 
+/**
+ * 更新观战状态文本和配置回显。
+ * 
+ * @param {string} status - 状态 ("start" 或 "stop")
+ * @param {object} data - 配置数据
+ */
 function applyRoleStatus(data) {
     const mode = data && data.mode ? data.mode : "pvp";
     playerMode = mode;
@@ -830,6 +871,11 @@ function applyRoleStatus(data) {
     }
 }
 
+/**
+ * 设置分析推荐功能的启用状态。
+ * 
+ * @param {boolean} enabled - 是否启用分析推荐
+ */
 function setAnalysisRecommendationEnabled(enabled) {
     analysisRecommendationEnabled = Boolean(enabled);
     const btn = document.getElementById("toggleAnalysisRecommendations");
@@ -841,7 +887,15 @@ function setAnalysisRecommendationEnabled(enabled) {
     }
 }
 
+/**
+ * 应用分析更新。
+ * 
+ * @param {object} data - 分析数据
+ */
 function applyAnalysisUpdate(data) {
+    if (!Number.isInteger(data.step) || data.step !== currentStep) {
+        return;
+    }
     if (data.status === "ready") {
         latestAnalysisData = data;
     } else if (data.status === "pending") {
@@ -855,6 +909,71 @@ function applyAnalysisUpdate(data) {
     }
 }
 
+/**
+ * 应用分析配置。
+ * 
+ * @param {object} data - 分析配置数据
+ */
+function applyAnalysisConfig(data) {
+    if (!data || !Number.isInteger(data.iter)) {
+        return;
+    }
+    setAnalysisIterInput(data.iter);
+}
+
+/**
+ * 设置分析迭代次数输入框的值。
+ * 
+ * @param {number} iter - 目标迭代次数
+ */
+function setAnalysisIterInput(iter) {
+    const iterSelect = document.getElementById("analysisIter");
+    if (!iterSelect) return;
+    const normalized = Number.isInteger(iter) && iter > 0 ? iter : 800;
+    const value = String(normalized);
+    let optionExists = false;
+    for (const option of iterSelect.options) {
+        if (option.value === value) {
+            optionExists = true;
+            break;
+        }
+    }
+    if (!optionExists) {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = `自定义 (${value})`;
+        iterSelect.appendChild(option);
+    }
+    iterSelect.value = value;
+    syncCustomSelect(iterSelect);
+}
+
+/**
+ * 应用分析迭代次数。
+ * 
+ * @param {number} iter - 目标迭代次数
+ */
+function applyAnalysisIter(iter) {
+    if (uiLocked) return;
+    const normalized = Number.isInteger(iter) && iter > 0 ? iter : 800;
+    socket.emit("set_analysis_iter", { iter: normalized });
+}
+
+/**
+ * 获取 Celestial 文本的颜色。
+ * 
+ * @returns {string} Celestial 文本的颜色，或默认值 "#334155"
+ */
+function getCelestialColor() {
+    const color = window.getComputedStyle(celestialText).color;
+    return color && color !== "rgba(0, 0, 0, 0)" ? color : "#334155";
+}
+
+/**
+ * 更新分析胜率显示。
+ * 
+ * @param {object} data - 分析数据
+ */
 function updateAnalysisWinRateDisplay(data) {
     const valueEl = document.getElementById("analysisWinRateValue");
     if (!valueEl) return;
@@ -869,6 +988,11 @@ function updateAnalysisWinRateDisplay(data) {
     valueEl.textContent = "--";
 }
 
+/**
+ * 构建分析移动映射。
+ * 
+ * @returns {object} 分析移动映射，键为 "row-col" 格式，值为移动数据
+ */
 function buildAnalysisMap() {
     if (!latestAnalysisData || latestAnalysisData.status !== "ready" || !Array.isArray(latestAnalysisData.moves)) {
         return {};
@@ -881,6 +1005,11 @@ function buildAnalysisMap() {
     return map;
 }
 
+/**
+ * 处理 CMD 输入框的按键事件。
+ * 
+ * @param {KeyboardEvent} e - 按键事件对象
+ */
 cmdInput.addEventListener("keydown", function(e) {
     if (e.key === "ArrowUp") {
         if (!cmdHistory.length) return;
@@ -969,18 +1098,30 @@ cmdInput.addEventListener("keydown", function(e) {
     });
 })();
 
+/**
+ * 为 CMD 标题添加双击事件处理函数，用于切换最大化状态。
+ */
 cmdHeader.addEventListener("dblclick", function() {
     toggleCmdMaximize();
 });
 
+/**
+ * 为 CMD 关闭按钮添加点击事件处理函数。
+ */
 cmdCloseBtn.addEventListener("click", function() {
     setCmdPanelVisible(false);
 });
 
+/**
+ * 为 CMD 最小化按钮添加点击事件处理函数。
+ */
 cmdMinBtn.addEventListener("click", function() {
     setCmdCollapsed(!cmdPanel.classList.contains("minimized"));
 });
 
+/**
+ * 为 CMD 最大化按钮添加点击事件处理函数。
+ */
 cmdMaxBtn.addEventListener("click", function() {
     toggleCmdMaximize();
 });

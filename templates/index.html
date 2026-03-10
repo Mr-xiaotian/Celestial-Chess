@@ -141,6 +141,15 @@
               <button id="toggleAnalysisRecommendations" type="button">关闭</button>
             </div>
             <div class="config-row">
+              <label for="analysisIter">分析迭代</label>
+              <select id="analysisIter">
+                <option value="300">极速 (300)</option>
+                <option value="800" selected>平衡 (800)</option>
+                <option value="1500">深入 (1500)</option>
+                <option value="3000">专家 (3000)</option>
+              </select>
+            </div>
+            <div class="config-row">
               <label>当前理想胜率</label>
               <div id="analysisWinRateBox" class="analysis-winrate">
                 <span class="analysis-winrate-mask">██████</span>

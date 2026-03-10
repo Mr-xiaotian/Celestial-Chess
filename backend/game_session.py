@@ -126,6 +126,34 @@ class GameSession:
             "sleep": self.spectator_sleep,
         }
 
+    def get_analysis_config_payload(self):
+        """
+        构造分析配置广播载荷。
+
+        返回:
+            dict: 包含 iter。
+        """
+        return {"iter": self.analysis_iter}
+
+    def emit_analysis_config(self):
+        """向前端广播分析配置。"""
+        self.socketio.emit("analysis_config", self.get_analysis_config_payload())
+
+    def set_analysis_iter(self, iter_count):
+        """
+        设置分析迭代次数。
+
+        参数:
+            iter_count: 目标迭代次数，需为非负整数。
+        """
+        try:
+            normalized_iter = int(iter_count)
+        except (TypeError, ValueError):
+            normalized_iter = 800
+        self.analysis_iter = max(normalized_iter, 10)
+        self.emit_analysis_config()
+        self.schedule_analysis_if_needed()
+
     def emit_role_status(self):
         """向前端广播角色状态。"""
         self.socketio.emit("role_status", self.get_role_status_payload())
@@ -144,41 +172,39 @@ class GameSession:
 
         规则:
             - AI 回合：提交 AI 执棋任务；
-            - Human 回合：提交局面分析任务。
+            - 所有回合：提交局面分析任务。
         """
         if self.ai_thinking or self.game.is_game_over():
             return
+        self.schedule_analysis_if_needed()
         side = "Blue" if self.game.get_color() == 1 else "Red"
-        if self.side_role_config[side]["role"] == "human":
-            self.schedule_human_analysis_if_needed()
-            return
         ai = self.side_ai_map.get(side)
+        if self.side_role_config[side]["role"] == "human":
+            return
         if ai is None:
             ai = self.create_ai_from_config(self.side_role_config[side]["ai"])
             self.side_ai_map[side] = ai
         self.executor.submit(self.handle_ai_move, ai)
 
-    def schedule_human_analysis_if_needed(self):
+    def schedule_analysis_if_needed(self):
         """
-        当轮到人类方时异步触发 MCTS 分析。
+        在当前回合异步触发 MCTS 分析。
 
         会先发送 pending 状态，再在后台线程完成分析并推送结果。
         """
         if self.ai_thinking or self.game.is_game_over():
-            self.socketio.emit("analysis_update", {"status": "idle"})
+            self.socketio.emit("analysis_update", {"status": "idle", "step": self.game.step})
             return
         side = "Blue" if self.game.get_color() == 1 else "Red"
-        if self.side_role_config[side]["role"] != "human":
-            self.socketio.emit("analysis_update", {"status": "idle"})
-            return
         with self.lock:
             game_snapshot = self.game.copy()
+            step = self.game.step
         self.analysis_seq += 1
         seq = self.analysis_seq
-        self.socketio.emit("analysis_update", {"status": "pending", "turn": side})
-        self.executor.submit(self.run_human_analysis, seq, game_snapshot, side)
+        self.socketio.emit("analysis_update", {"status": "pending", "turn": side, "step": step})
+        self.executor.submit(self.run_human_analysis, seq, game_snapshot, side, step)
 
-    def run_human_analysis(self, seq: int, game_snapshot: ChessGame, side: str):
+    def run_human_analysis(self, seq: int, game_snapshot: ChessGame, side: str, step: int):
         """
         执行单次人类回合分析任务并推送 analysis_update。
 
@@ -186,22 +212,24 @@ class GameSession:
             seq: 分析序号，用于丢弃过期结果。
             game_snapshot: 分析用棋局快照。
             side: 当前轮到的执棋方（Blue/Red）。
+            step: 触发分析时的局面步数。
         """
-        payload = {"status": "idle"}
+        payload = {"status": "idle", "step": step}
         try:
             if game_snapshot.is_game_over():
-                payload = {"status": "idle"}
+                payload = {"status": "idle", "step": step}
             else:
                 analyzer = MCTSAI(self.analysis_iter, complate_mode=False)
                 analysis = analyzer.analyze_position(game_snapshot)
                 payload = {
                     "status": "ready",
                     "turn": side,
+                    "step": step,
                     "current_win_rate": analysis.get("current_win_rate"),
                     "moves": analysis.get("moves", []),
                 }
         except Exception as e:
-            payload = {"status": "error", "message": str(e)}
+            payload = {"status": "error", "message": str(e), "step": step}
         if seq != self.analysis_seq:
             return
         self.socketio.emit("analysis_update", payload)
@@ -262,6 +290,7 @@ class GameSession:
             "blue": self.side_role_config["Blue"],
             "red": self.side_role_config["Red"],
             "sleep": self.spectator_sleep,
+            "analysis_iter": self.analysis_iter,
         }
 
     def get_update_board(self):
