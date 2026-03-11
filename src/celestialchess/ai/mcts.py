@@ -227,10 +227,15 @@ class MCTSAI(BaseAI):
 
         return mood
 
+    
+    @property
+    def deepseek_msg(self):
+        context = (
+            f"当前执棋方最佳分支估计胜率：{self.best_win_rate:.3f}。"
+            f"example: {str(self.msg)}"
+        )
+        return self._request_deepseek_reply(context)
+    
     def end_game(self):
         self.cache = {}
-
-    def end_model(self):
-        pass
-
 

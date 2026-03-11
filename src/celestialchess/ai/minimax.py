@@ -225,13 +225,23 @@ class MinimaxAI(BaseAI):
         mood = random.choice(MINIMAX_DIALOGUES[selected])
 
         meta = (
-            f"搜索深度 = {self.depth}, 节点数 ≈ {self.iterate_time}, 评估 = {signed_score:.3f}。"
+            f"搜索深度 = {self.depth}, 节点数 ≈ {self.iterate_time}, 局面评估 = {signed_score:.3f}。"
         )
 
         if self._name == "MinimaxAI":
             return mood
         elif self._name == "【Minimax 报告】":
             return meta
+        
+    @property
+    def deepseek_msg(self):
+        # 从当前行动方视角看：正数 = 我方占优
+        signed_score = self.best_score if self.color == 1 else -self.best_score
+        context = (
+            f"搜索深度 = {self.depth}, 节点数 ≈ {self.iterate_time}, 局面评估 = {signed_score:.3f}。"
+            f"example: {str(self.msg)}"
+        )
+        return self._request_deepseek_reply(context)
 
     def end_game(self):
         pass

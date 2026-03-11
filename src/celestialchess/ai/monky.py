@@ -18,3 +18,9 @@ class MonkyAI(BaseAI):
     def msg(self):
         return random.choice(MONKY_CHAOS_SOUNDS + MONKY_ATTITUDES + MONKY_ENDINGS)
 
+    @property
+    def deepseek_msg(self):
+        context = (
+            f"example: {str(self.msg)}"
+        )
+        return self._request_deepseek_reply(context)

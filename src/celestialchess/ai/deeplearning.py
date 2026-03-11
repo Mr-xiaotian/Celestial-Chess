@@ -152,9 +152,17 @@ class DeepLearningAI(BaseAI):
             f"{np.random.choice(DL_SENSATIONS)}\n"
             f"{np.random.choice(DL_ENDINGS)}"
         )
+    
+    @property
+    def deepseek_msg(self):
+        values = self.masked_outputs.flatten().tolist()
+        max_val = max(v for v in values if v != float("-inf"))
+        min_val = min(v for v in values if v != float("-inf"))
 
-    def end_game(self):
-        pass
+        context = (
+            f"最大激活：{max_val:.3f}，最小激活：{min_val:.3f}。"
+            f"example: {str(self.msg)}"
+        )
+        return self._request_deepseek_reply(context)
 
-    def end_model(self):
-        pass
+

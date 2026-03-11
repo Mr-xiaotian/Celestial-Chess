@@ -296,7 +296,7 @@ class SessionGameplayMixin:
             self.cmd_print(f"({ai.name} thinking...)", ai_msg_type)
             start_time = time.perf_counter()
             move = ai.find_best_move(self.game)
-            self.cmd_print(f"{ai.name}: {ai.msg}", ai_msg_type)
+            self.cmd_print(f"{ai.name}: {ai.deepseek_msg}", ai_msg_type)
 
             if self.spectator_mode and self.spectator_sleep > 0:
                 elapsed = time.perf_counter() - start_time
