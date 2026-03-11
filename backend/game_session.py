@@ -55,7 +55,7 @@ class GameSession(SessionLifecycleMixin, SessionGameplayMixin, SessionCommandMix
             "Red": self.normalize_role_side_config({"role": "human"}),
         }
         self.side_ai_map: Dict[str, Optional[BaseAI]] = {"Blue": None, "Red": None}
-        self.analysis_iter = 800
+        self.analysis_iter = 1500
         self.analysis_seq = 0
 
     def set_auto_mode(self, mode: Optional[str] = None):

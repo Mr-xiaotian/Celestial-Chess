@@ -929,7 +929,7 @@ function applyAnalysisConfig(data) {
 function setAnalysisIterInput(iter) {
     const iterSelect = document.getElementById("analysisIter");
     if (!iterSelect) return;
-    const normalized = Number.isInteger(iter) && iter > 0 ? iter : 800;
+    const normalized = Number.isInteger(iter) && iter > 0 ? iter : 1500;
     const value = String(normalized);
     let optionExists = false;
     for (const option of iterSelect.options) {
@@ -955,7 +955,7 @@ function setAnalysisIterInput(iter) {
  */
 function applyAnalysisIter(iter) {
     if (uiLocked) return;
-    const normalized = Number.isInteger(iter) && iter > 0 ? iter : 800;
+    const normalized = Number.isInteger(iter) && iter > 0 ? iter : 1500;
     socket.emit("set_analysis_iter", { iter: normalized });
 }
 
