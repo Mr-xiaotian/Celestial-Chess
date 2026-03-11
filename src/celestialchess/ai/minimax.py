@@ -40,31 +40,25 @@ class MinimaxAI(BaseAI):
     def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
         best_move = None
         self.iterate_time = 0
-        depth = self.depth
-        color = game.get_color()
+        self.depth = self.depth
+        self.color = game.get_color()
         if self.log_mode:
             logger.debug(
-                f"MinimaxAI is thinking in depth {depth}...\n{game.get_format_board()}"
+                f"MinimaxAI is thinking in depth {self.depth}...\n{game.get_format_board()}"
             )
 
-        best_score = float("-inf") if color == 1 else float("inf")
+        self.best_score = float("-inf") if self.color == 1 else float("inf")
         for move in game.get_all_moves():
             current_game = game.copy()
-            current_game.update_chessboard(*move, color)
+            current_game.update_chessboard(*move, self.color)
             score = self.minimax(
-                current_game, depth, -color, float("-inf"), float("inf")
+                current_game, self.depth, -self.color, float("-inf"), float("inf")
             )
-            if (color == 1 and score > best_score) or (
-                color == -1 and score < best_score
+            if (self.color == 1 and score > self.best_score) or (
+                self.color == -1 and score < self.best_score
             ):
-                best_score = score
+                self.best_score = score
                 best_move = move
-
-        # Minimax 没有真正 win_rate，这里保持接口一致但用不到
-        game.set_current_win_rate()
-
-        # ✦ 生成带人格的 Minimax 消息 ✦
-        self._build_minimax_msg(best_score, color, depth, self.iterate_time)
 
         return best_move
 
@@ -210,11 +204,12 @@ class MinimaxAI(BaseAI):
         )
 
         self.transposition_table_change = False
-
-    def _build_minimax_msg(self, best_score: float, color: int, depth: int, iters: int) -> str:
+    
+    @property
+    def msg(self) -> str:
         # 从当前行动方视角看：正数 = 我方占优
-        signed_score = best_score if color == 1 else -best_score
-
+        signed_score = self.best_score if self.color == 1 else -self.best_score
+        
         # 根据 score 选择分组
         if signed_score < -5:
             selected = "crushed"
@@ -230,13 +225,13 @@ class MinimaxAI(BaseAI):
         mood = random.choice(MINIMAX_DIALOGUES[selected])
 
         meta = (
-            f"搜索深度 = {depth}, 节点数 ≈ {iters}, 评估 = {signed_score:.3f}。"
+            f"搜索深度 = {self.depth}, 节点数 ≈ {self.iterate_time}, 评估 = {signed_score:.3f}。"
         )
 
         if self._name == "MinimaxAI":
-            self._msg =  mood
+            return mood
         elif self._name == "【Minimax 报告】":
-            self._msg =  meta
+            return meta
 
     def end_game(self):
         pass

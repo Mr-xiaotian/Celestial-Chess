@@ -135,19 +135,18 @@ class MCTSPlusNode:
 
 
 class MCTSPlusAI(BaseAI):
+    _name = "MCTSPlusAI"
     def __init__(
         self,
         itermax: int = 1000,
         c_param=0.8,
         policy_net: Optional[DeepLearningAI] = None,
-        value_net: Optional[DeepLearningAI] = None,
-        complate_mode=True,
+        value_net: Optional[DeepLearningAI] = None
     ) -> None:
         self._name = "MCTSPlusAI"
 
         self.itermax = itermax
         self.c_param = c_param
-        self.complate_mode = complate_mode
         self.policy_net = policy_net
         self.value_net = value_net
         self.cache = {}
@@ -171,19 +170,7 @@ class MCTSPlusAI(BaseAI):
             move = child.get_current_move()
             self.cache[move] = child
 
-        if self.complate_mode:
-            self.update_game_with_mcts_results(game, root, best_child)
-
         return best_move
-
-    def update_game_with_mcts_results(
-        self, game: ChessGame, root: MCTSPlusNode, best_child: MCTSPlusNode
-    ) -> None:
-        best_win_rate = best_child.get_win_rate()
-
-        game.set_current_win_rate(best_win_rate)
-
-        self._msg = f"win_rate={best_win_rate:.3f}"
 
     def MCTS(self, root: MCTSPlusNode) -> MCTSPlusNode:
         """执行迭代次数为 itermax 的 MCTS 搜索，返回最佳子节点"""

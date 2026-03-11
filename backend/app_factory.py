@@ -40,7 +40,7 @@ def create_app():
 
     minimax_ai = MinimaxAI(2, False)
     minimax_ai.set_transposition_mode(chess_state, r"transposition_table/")
-    mcts_ai = MCTSAI(1000, complate_mode=True)
+    mcts_ai = MCTSAI(1000)
     monky_ai = MonkyAI()
 
     ai_map = {

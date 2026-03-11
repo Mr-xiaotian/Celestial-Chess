@@ -111,13 +111,12 @@ class MCTSNode:
 
 class MCTSAI(BaseAI):
     _name = "MCTSAI"
-    def __init__(self, itermax: int = 1000, c_param=0.8, complate_mode=False) -> None:
+    def __init__(self, itermax: int = 1000, c_param=0.8) -> None:
         self.itermax = itermax
         self.c_param = c_param
-        self.complate_mode = complate_mode
 
         self.cache = {}
-        self._msg = ""
+        self.best_win_rate = 0.0
 
         init_rates_visits = np.ones((2, 2), dtype=np.float64)
         get_best_index_by_ucb1(init_rates_visits, 1, 1)

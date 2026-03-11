@@ -130,24 +130,23 @@ class DeepLearningAI(BaseAI):
         )
         with torch.no_grad():
             outputs = self.model(board_state)
-            masked_outputs = self.process_output(outputs, board_state)
+            self.masked_outputs = self.process_output(outputs, board_state)
 
-            move_index = torch.argmax(masked_outputs).item()
+            move_index = torch.argmax(self.masked_outputs).item()
             move = (move_index // 5, move_index % 5)
 
         if self.complete_mode:
-            self.trans_softmax(masked_outputs)
-            game.set_current_win_rate()
+            self.trans_softmax(self.masked_outputs)
 
-        self._build_dl_msg(masked_outputs)
         return move
     
-    def _build_dl_msg(self, masked_outputs):
-        values = masked_outputs.flatten().tolist()
+    @property
+    def msg(self):
+        values = self.masked_outputs.flatten().tolist()
         max_val = max(v for v in values if v != float("-inf"))
         min_val = min(v for v in values if v != float("-inf"))
 
-        self._msg = (
+        return (
             f"最大激活：{max_val:.3f}，最小激活：{min_val:.3f}。\n"
             f"{np.random.choice(DL_HALLUCINATIONS)}"
             f"{np.random.choice(DL_SENSATIONS)}\n"

@@ -85,7 +85,7 @@ class SessionLifecycleMixin:
         try:
             normalized_iter = int(iter_count)
         except (TypeError, ValueError):
-            normalized_iter = 800
+            normalized_iter = 1500
         self.analysis_iter = max(normalized_iter, 10)
         self.emit_analysis_config()
         self.schedule_analysis_if_needed()
@@ -155,7 +155,7 @@ class SessionLifecycleMixin:
             if game_snapshot.is_game_over():
                 payload = {"status": "idle", "step": step}
             else:
-                analyzer = MCTSAI(self.analysis_iter, complate_mode=False)
+                analyzer = MCTSAI(self.analysis_iter)
                 analysis = analyzer.analyze_position(game_snapshot)
                 payload = {
                     "status": "ready",

@@ -38,7 +38,7 @@ def start_train_data(
         show_progress=True,
     )
 
-    mcts_ai = MCTSAI(mcts_iter, complate_mode=False)
+    mcts_ai = MCTSAI(mcts_iter)
     train_data_manager.set_envirement(mcts_ai, mcts_ai, chess_state=chess_state)
 
     train_data_manager.start(range(train_num))

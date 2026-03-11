@@ -105,7 +105,7 @@ class SessionGameplayMixin:
         """
         minimax_ai = MinimaxAI(minimax_depth, False)
         minimax_ai.set_transposition_mode(chess_state, r"transposition_table/")
-        mcts_ai = MCTSAI(mcts_iter, complate_mode=True)
+        mcts_ai = MCTSAI(mcts_iter)
         monky_ai = MonkyAI()
         return {
             "minimax": minimax_ai,
@@ -187,10 +187,10 @@ class SessionGameplayMixin:
             ai.set_transposition_mode(chess_state, r"transposition_table/")
             return ai
         if config["type"] == "mcts":
-            return MCTSAI(config["mcts_iter"], complate_mode=True)
+            return MCTSAI(config["mcts_iter"])
         if config["type"] == "monky":
             return MonkyAI()
-        return MCTSAI(config["mcts_iter"], complate_mode=True)
+        return MCTSAI(config["mcts_iter"])
 
     def run_spectator_loop(self, blue_config: Dict, red_config: Dict):
         """

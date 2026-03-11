@@ -116,14 +116,6 @@ class ChessGame:
         self.chessboard = np.copy(self.history_board[self.step])
         self.current_move = self.history_move[self.step]
 
-    def set_current_win_rate(self, win_rate: float = 0.0):
-        """设置当前玩家的胜率"""
-        self.current_win_rate = win_rate
-
-    def get_current_win_rate(self):
-        """获取当前玩家的胜率"""
-        return self.current_win_rate
-
     def get_current_move(self):
         """获取当前玩家的移动"""
         current_move = self.current_move
