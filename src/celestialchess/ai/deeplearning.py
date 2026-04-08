@@ -58,6 +58,7 @@ class DeepLearningAI(BaseAI):
     def process_output(self, output, board_state):
         """
         将已经有落子的点 & 黑洞点在输出中屏蔽
+
         :param output: 模型输出，形状为 (batch_size, 25)
         :param board_state: 当前棋盘状态，形状为 (batch_size, 4, 5, 5)
         :return: 展平后的 (batch_size, 25)
@@ -89,6 +90,7 @@ class DeepLearningAI(BaseAI):
     def trans_softmax(self, outputs):
         """
         将输出转换为概率分布
+        
         :param outputs: 模型输出，形状为 (batch_size, 25)
         :return: 归一化概率分布，形状为 (batch_size, 25)
         """
@@ -103,7 +105,13 @@ class DeepLearningAI(BaseAI):
         return softmax_tensor
 
     def get_move_probs(self, game: ChessGame):
-        chessboard = process_board(game)              # (5,5,4)
+        """
+        获取每个移动的概率分布
+
+        :param game: 棋局对象
+        :return: 概率分布，形状为 (5, 5)
+        """
+        chessboard = process_board(game.chessboard, game.get_color())              # (5,5,4)
 
         board_state = np.array(chessboard).reshape(1, 5, 5, 4)
         board_state = (
@@ -118,6 +126,12 @@ class DeepLearningAI(BaseAI):
         return masked_outputs.view(5, 5)
 
     def find_best_move(self, game: ChessGame):
+        """
+        找到最佳移动
+
+        :param game: 棋局对象
+        :return: 最佳移动的坐标
+        """
         chessboard = process_board(game.chessboard, game.get_color())              # (5,5,4)
 
         board_state = np.array(chessboard).reshape(1, 5, 5, 4)
@@ -137,7 +151,8 @@ class DeepLearningAI(BaseAI):
             self.trans_softmax(masked_outputs)
             game.set_current_win_rate()
 
-        self._build_dl_msg(masked_outputs)
+            self._build_dl_msg(masked_outputs)
+            
         return move
     
     def _build_dl_msg(self, masked_outputs):
