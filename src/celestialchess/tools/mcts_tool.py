@@ -9,9 +9,12 @@ def get_best_index_by_ucb1(rates_visits, parent_visit: int, c_param: float):
     best_value = -np.inf
 
     for index, (child_win, child_visit) in enumerate(rates_visits):
-        ucb_value = (1 - c_param) * child_win / child_visit + c_param * math.sqrt(
-            (2 * math.log(parent_visit) / child_visit)
-        )
+        if child_visit == 0:
+            ucb_value = np.inf
+        else:
+            ucb_value = (1 - c_param) * child_win / child_visit + c_param * math.sqrt(
+                (2 * math.log(parent_visit) / child_visit)
+            )
         if ucb_value > best_value:
             best_value = ucb_value
             best_index = index
@@ -25,13 +28,16 @@ def get_best_index_by_puct(rates_visits_probs, parent_visit: int, c_param: float
     best_value = -np.inf
 
     for index, (child_win, child_visit, policy_prob) in enumerate(rates_visits_probs):
-        puct_value = (
-            1 - c_param
-        ) * policy_prob * child_win / child_visit + c_param * math.sqrt(
-            parent_visit
-        ) / (
-            1 + child_visit
-        )
+        if child_visit == 0:
+            puct_value = np.inf
+        else:
+            puct_value = (
+                1 - c_param
+            ) * policy_prob * child_win / child_visit + c_param * math.sqrt(
+                parent_visit
+            ) / (
+                1 + child_visit
+            )
 
         if puct_value > best_value:
             best_value = puct_value

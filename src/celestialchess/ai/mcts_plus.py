@@ -43,7 +43,7 @@ class MCTSPlusNode:
 
     def get_win_rate(self) -> float:
         """计算节点的胜率"""
-        return self.wins / self.visits
+        return 0.0 if self.visits == 0 else (self.wins / self.visits)
 
     def get_current_move(self) -> Tuple[int, int]:
         """获取当前节点的移动"""
@@ -135,18 +135,42 @@ class MCTSPlusNode:
 
 
 class MCTSPlusAI(BaseAI):
+    _name = "MCTSPlusAI"
     def __init__(
         self,
         itermax: int = 1000,
         c_param=0.8,
         policy_net: Optional[DeepLearningAI] = None,
-        value_net: Optional[DeepLearningAI] = None,
-        complate_mode=True,
+        value_net: Optional[DeepLearningAI] = None
     ) -> None:
+        self._name = "MCTSPlusAI"
 
-        super().__init__(itermax, c_param, complate_mode)
+        self.itermax = itermax
+        self.c_param = c_param
         self.policy_net = policy_net
         self.value_net = value_net
+        self.cache = {}
+        self._msg = ""
+        init_rates_visits = np.ones((2, 2), dtype=np.float64)
+        get_best_index_by_ucb1(init_rates_visits, 1, 1)
+
+    def find_best_move(self, game: ChessGame) -> Tuple[int, int]:
+        current_move = game.get_current_move()
+        if current_move in self.cache:
+            root: MCTSPlusNode = self.cache[current_move]
+            root.change_root_color() if game.get_color() != root.root_color else None
+        else:
+            root = MCTSPlusNode(game.copy(), root_color=game.get_color())
+
+        best_child = self.MCTS(root)
+        best_move = best_child.get_current_move()
+
+        self.cache = {best_move: best_child}
+        for child in best_child.children:
+            move = child.get_current_move()
+            self.cache[move] = child
+
+        return best_move
 
     def MCTS(self, root: MCTSPlusNode) -> MCTSPlusNode:
         """执行迭代次数为 itermax 的 MCTS 搜索，返回最佳子节点"""
@@ -170,7 +194,16 @@ class MCTSPlusAI(BaseAI):
             if not node.is_fully_expanded():
                 return node.expand()
             else:
-                node = node.get_best_child_with_net(
-                    policy_net=policy_net, c_param=c_param
-                )
+                if policy_net is None:
+                    node = node.get_best_child(c_param)
+                else:
+                    node = node.get_best_child_with_net(
+                        policy_net=policy_net, c_param=c_param
+                    )
         return node
+
+    def end_game(self):
+        pass
+
+    def end_model(self):
+        pass

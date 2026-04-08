@@ -14,7 +14,8 @@ dependencies = [
     "snakeviz",
     "torch",
     "celestialflow",
-    "loguru"
+    "loguru",
+    "torchsummary"
 ]
 
 [build-system]

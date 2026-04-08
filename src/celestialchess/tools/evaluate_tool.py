@@ -53,9 +53,10 @@ def get_model_score_by_mcts(
     """
     score_dict = dict()
 
+    last_mcts_iter = None
     for mcts_iter in range(int(start_mcts_iter), int(end_mcts_iter), mcts_step):
         win = 0
-        test_mcts = MCTSAI(mcts_iter, complate_mode=False)
+        test_mcts = MCTSAI(mcts_iter)
         
         test_ai_executor = TestAIExecutor(
             battle_for_eval,
@@ -71,11 +72,12 @@ def get_model_score_by_mcts(
         win = test_ai_executor.process_result_dict()
 
         score_dict[f"{mcts_iter}"] = win / simulate_num
+        last_mcts_iter = mcts_iter
         if sum(score_dict.values()) / len(score_dict) < 0.6:
             break
 
     test_model.end_model()
-    return mcts_iter - 10, score_dict
+    return last_mcts_iter or 0, score_dict
 
 
 def get_best_c_param(
@@ -95,8 +97,8 @@ def get_best_c_param(
 
     def play_match(c1, c2):
         """返回 c1 对 c2 的胜率"""
-        ai1 = MCTSAI(100, c_param=c1, complate_mode=False)
-        ai2 = MCTSAI(100, c_param=c2, complate_mode=False)
+        ai1 = MCTSAI(100, c_param=c1)
+        ai2 = MCTSAI(100, c_param=c2)
 
         executor = TestAIExecutor(
             battle_for_eval,
@@ -204,7 +206,7 @@ def ai_battle(
         print(
             f"第{test_game.step}步: {ai_red_name if color==1 else ai_blue_name} 落子在 {test_game.get_current_move()}"
         )
-        print(f"获胜概率: {test_game.get_current_win_rate():.2%}")
+        # print(f"获胜概率: {test_game.get_current_win_rate():.2%}")
         print(f"分数: {test_game.get_score()}")
         print(f"用时: {time()-last_time:.2f}s\n")
 

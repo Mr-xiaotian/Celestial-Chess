@@ -9,6 +9,7 @@ class ChessGameEnv(gym.Env):
     def __init__(self):
         super(ChessGameEnv, self).__init__()
         self.game = ChessGame()
+        self.steps = 0
         self.action_space = spaces.Discrete(
             self.game.board_range[0] * self.game.board_range[1]
         )
@@ -25,6 +26,7 @@ class ChessGameEnv(gym.Env):
         if seed is not None:
             np.random.seed(seed)
         self.game = ChessGame()
+        self.steps = 0
         return self.game.chessboard.flatten(), {}
 
     def step(self, action):
@@ -32,18 +34,17 @@ class ChessGameEnv(gym.Env):
         col = action % self.game.board_range[1]
 
         if not self.game.is_move_valid(row, col):
-            return (
-                self.game.chessboard.flatten(),
-                -10,
-                True,
-                {},
-            )  # Invalid move results in a penalty
+            terminated = True
+            truncated = False
+            return (self.game.chessboard.flatten(), -10, terminated, truncated, {})  # Invalid move penalty
 
         self.game.update_chessboard(row, col, self.game.current_color)
         reward = self.game.get_score()
-        done = self.game.is_game_over()
+        self.steps += 1
+        terminated = self.game.is_game_over()
+        truncated = self.steps >= self._max_episode_steps
 
-        return self.game.chessboard.flatten(), reward, done, {}
+        return self.game.chessboard.flatten(), reward, terminated, truncated, {}
 
     def render(self, mode="human"):
         self.game.show_chessboard()

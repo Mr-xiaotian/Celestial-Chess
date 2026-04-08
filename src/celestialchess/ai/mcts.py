@@ -6,6 +6,7 @@ from typing import Tuple, List, Optional
 from ..chess_game import ChessGame
 from ..tools.mcts_tool import *
 from .base_ai import BaseAI
+from .dialogues import MCTS_DIALOGUES
 
 
 class MCTSNode:
@@ -42,7 +43,7 @@ class MCTSNode:
 
     def get_win_rate(self) -> float:
         """计算节点的胜率"""
-        return self.wins / self.visits
+        return 0.0 if self.visits == 0 else (self.wins / self.visits)
 
     def get_current_move(self) -> Tuple[int, int]:
         """获取当前节点的移动"""
@@ -109,15 +110,13 @@ class MCTSNode:
 
 
 class MCTSAI(BaseAI):
-    def __init__(self, itermax: int = 1000, c_param=0.8, complate_mode=False) -> None:
-        self.name = f"MCTSAI"
-
+    _name = "MCTSAI"
+    def __init__(self, itermax: int = 1000, c_param=0.8) -> None:
         self.itermax = itermax
         self.c_param = c_param
-        self.complate_mode = complate_mode
 
         self.cache = {}
-        self._msg = ""
+        self.best_win_rate = 0.0
 
         init_rates_visits = np.ones((2, 2), dtype=np.float64)
         get_best_index_by_ucb1(init_rates_visits, 1, 1)
@@ -135,6 +134,7 @@ class MCTSAI(BaseAI):
 
         best_child = self.MCTS(root)  # 使用MCTS算法选择最佳的子节点
         best_move = best_child.get_current_move()
+        self.best_win_rate = best_child.get_win_rate()
 
         # 将最佳子节点和根节点存储在缓存中
         self.cache = {best_move: best_child}
@@ -142,108 +142,7 @@ class MCTSAI(BaseAI):
             move = child.get_current_move()
             self.cache[move] = child
 
-        # 如果是完整模式，则更新游戏状态和评分板
-        (
-            self.update_game_with_mcts_results(game, root, best_child)
-            if self.complate_mode
-            else None
-        )
-
         return best_move
-
-    def update_game_with_mcts_results(
-        self, game: ChessGame, root: MCTSNode, best_child: MCTSNode
-    ) -> None:
-        """
-        根据 MCTS 搜索结果更新游戏状态和评分板。
-
-        :param game: 当前棋盘游戏对象
-        :param root: MCTS 树的根节点
-        :param best_child: MCTS 搜索的最佳子节点
-        """
-        best_win_rate = best_child.get_win_rate()
-        current_win_rate_board = root.get_child_win_rate_board()
-        next_win_rate_board = best_child.get_child_win_rate_board()
-
-        game.set_current_win_rate(best_win_rate)
-        game.set_MCTSscore_board(next_win_rate_board)
-        
-        # 你原来的棋盘格式化
-        board_text = game.get_format_board(current_win_rate_board, (3, 0))
-        print(f"MCTSAI 思考结果：\n{board_text}")
-
-        # 更新消息
-        self._build_mcts_msg(best_win_rate)
-
-    def _build_mcts_msg(self, best_win_rate):
-        # --- ✦ 雌小鬼人格文本 ✦ ---
-        dialogues = {
-            "very_low": [
-                "什、什么？！这点胜率才不是我慌了！只是……只是我在让你啦！！你别得意太早！！",
-                "什、什么？！这点胜率又不是因为我弱！是、是我在测试你的下限啦！",
-                "喂！别误会！我才没有慌！只是……暂时让你一下而已！",
-                "呃？！这……这只是统计误差！你别给我得意得太快！",
-                "要是我认真起来你早就没了！记住现在只是——意外！意外！"
-            ],
-
-            "low": [
-                "嘁……局面有点糟，但我还没输！你要是敢露出一点破绽，我马上就反打回去！",
-                "嘁……形势有点不妙？哼，我才不会承认！我随时都能翻盘给你看！",
-                "别以为你占上风了！我还没开始认真呢！",
-                "啧……稍微有点烦了，但还没到我害怕的程度！你别太自信啊！",
-                "可恶……不过这点程度我还应付得来！你给我等着被反打！"
-            ],
-
-            "mid": [
-                "嚯，居然有点势均力敌的感觉？别太得意，我随时能把你按回去～",
-                "五五开嘛～不过你别误会，这只是因为我还没认真。",
-                "居然还能咬住我？哼，我开始对你有一点点兴趣了～",
-                "你以为这叫势均力敌？不，这叫我在玩，明白吗？",
-                "嗯哼～你挺抗打的嘛？不过也就这样了。"
-            ],
-
-            "high": [
-                "看到了吗？形势开始倾斜咯～再动两步，你就要被我玩得团团转啦！",
-                "看到了吗？优势开始站在我这边了呢～要不要先想好遗言？",
-                "嘿嘿～形势开始变得好玩了，你是不是有点慌了呀？",
-                "果然我稍微一动真格你就要撑不住了嘛～",
-                "哎呀，我这优势可是越来越明显了哟？你要挺住啊～不然我很快就无聊了～"
-            ],
-
-            "very_high": [
-                "看到了吗？形势开始倾斜咯～再动两步，你就要被我玩得团团转啦！",
-                "看到了吗？优势开始站在我这边了呢～要不要先想好遗言？",
-                "嘿嘿～形势开始变得好玩了，你是不是有点慌了呀？",
-                "果然我稍微一动真格你就要撑不住了嘛～",
-                "哎呀，我这优势可是越来越明显了哟？你要挺住啊～不然我很快就无聊了～"
-            ],
-
-            "extreme": [
-                "看到了吗？形势开始倾斜咯～再动两步，你就要被我玩得团团转啦！",
-                "看到了吗？优势开始站在我这边了呢～要不要先想好遗言？",
-                "嘿嘿～形势开始变得好玩了，你是不是有点慌了呀？",
-                "果然我稍微一动真格你就要撑不住了嘛～",
-                "哎呀，我这优势可是越来越明显了哟？你要挺住啊～不然我很快就无聊了～"
-            ],
-        }
-
-        
-        if best_win_rate < 0.3:
-            selected = "very_low"
-        elif best_win_rate < 0.5:
-            selected = "low"
-        elif best_win_rate < 0.7:
-            selected = "mid"
-        elif best_win_rate < 0.85:
-            selected = "high"
-        elif best_win_rate < 0.93:
-            selected = "very_high"
-        else:
-            selected = "extreme"
-
-        mood = random.choice(dialogues[selected])
-
-        self._msg = mood
 
     def MCTS(self, root: MCTSNode) -> MCTSNode:
         """执行迭代次数为 itermax 的 MCTS 搜索，返回最佳子节点"""
@@ -265,15 +164,78 @@ class MCTSAI(BaseAI):
             else:
                 node = node.get_best_child(c_param)
         return node
-    
+
+    def analyze_position(self, game: ChessGame) -> dict:
+        """
+        对当前局面进行 MCTS 分析并返回可视化所需结果。
+
+        参数:
+            game: 待分析的棋局对象（方法内部会复制，不修改原对象）。
+
+        返回:
+            dict:
+                - current_win_rate: 当前执棋方最佳分支估计胜率
+                - moves: 所有已访问候选点列表，元素包含
+                    row/col/win_rate/visits/rank
+        """
+        root = MCTSNode(game.copy(), root_color=game.get_color())
+        if root.max_untried_index == 0:
+            return {"current_win_rate": None, "moves": []}
+
+        best_child = self.MCTS(root)
+        board = root.get_child_win_rate_board()
+
+        row_len, col_len = game.board_range
+        ranked_moves = []
+        for row in range(row_len):
+            for col in range(col_len):
+                visits = int(board[row, col, 1])
+                if visits <= 0:
+                    continue
+                ranked_moves.append({
+                    "row": row,
+                    "col": col,
+                    "win_rate": float(board[row, col, 0]),
+                    "visits": visits,
+                })
+
+        ranked_moves.sort(key=lambda item: (-item["win_rate"], -item["visits"], item["row"], item["col"]))
+        for idx, item in enumerate(ranked_moves):
+            item["rank"] = idx + 1
+
+        return {
+            "current_win_rate": float(best_child.get_win_rate()),
+            "moves": ranked_moves,
+        }
+
     @property
     def msg(self):
-        return self._msg
+        if self.best_win_rate < 0.3:
+            selected = "very_low"
+        elif self.best_win_rate < 0.5:
+            selected = "low"
+        elif self.best_win_rate < 0.7:
+            selected = "mid"
+        elif self.best_win_rate < 0.85:
+            selected = "high"
+        elif self.best_win_rate < 0.93:
+            selected = "very_high"
+        else:
+            selected = "extreme"
 
+        mood = random.choice(MCTS_DIALOGUES[selected])
+
+        return mood
+
+    
+    @property
+    def deepseek_msg(self):
+        context = (
+            f"当前执棋方最佳分支估计胜率：{self.best_win_rate:.3f}。"
+            f"example: {str(self.msg)}"
+        )
+        return self._request_deepseek_reply(context)
+    
     def end_game(self):
         self.cache = {}
-
-    def end_model(self):
-        pass
-
 
