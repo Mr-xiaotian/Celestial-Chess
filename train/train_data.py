@@ -1,12 +1,12 @@
 import json
 from pathlib import Path
 from time import strftime, localtime
-from celestialflow import TaskManager
+from celestialflow import TaskExecutor
 
 from celestialchess import ChessGame, MCTSAI, battle_for_training
 
 
-class TrainDataManager(TaskManager):
+class TrainDataExecutor(TaskExecutor):
     def set_envirement(self, ai_0, ai_1, chess_state):
         self.ai_0 = ai_0
         self.ai_1 = ai_1
@@ -29,7 +29,7 @@ def start_train_data(
     train_num: int, mcts_iter: int = 1000, chess_state: tuple = None, execution_mode: str = "serial"
 ):
     chess_state = chess_state or ((5, 5), 2)
-    train_data_manager = TrainDataManager(
+    train_data_executor = TrainDataExecutor(
         battle_for_training,
         execution_mode=execution_mode,
         worker_limit = 5,
@@ -39,10 +39,10 @@ def start_train_data(
     )
 
     mcts_ai = MCTSAI(mcts_iter, complate_mode=False)
-    train_data_manager.set_envirement(mcts_ai, mcts_ai, chess_state=chess_state)
+    train_data_executor.set_envirement(mcts_ai, mcts_ai, chess_state=chess_state)
 
-    train_data_manager.start(range(train_num))
-    all_training_data = train_data_manager.process_result_dict()
+    train_data_executor.start(range(train_num))
+    all_training_data = train_data_executor.process_result_dict()
 
     return all_training_data
 
