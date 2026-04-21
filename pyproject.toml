@@ -15,7 +15,8 @@ dependencies = [
     "torch",
     "celestialflow",
     "loguru",
-    "torchsummary"
+    "torchsummary",
+    "dotenv",
 ]
 
 [build-system]

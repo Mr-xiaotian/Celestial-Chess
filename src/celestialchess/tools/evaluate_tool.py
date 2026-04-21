@@ -6,7 +6,7 @@ from ..chess_game import ChessGame
 from ..ai import BaseAI, MCTSAI
 
 
-class TestAIManager(TaskExecutor):
+class TestAIExecutor(TaskExecutor):
     def set_envirement(self, ai_0, ai_1, chess_state):
         self.ai_0 = ai_0
         self.ai_1 = ai_1
@@ -58,7 +58,7 @@ def get_model_score_by_mcts(
         win = 0
         test_mcts = MCTSAI(mcts_iter)
         
-        test_ai_manager = TestAIManager(
+        test_ai_executor = TestAIExecutor(
             battle_for_eval,
             execution_mode=execution_mode,
             worker_limit = 5,
@@ -66,10 +66,10 @@ def get_model_score_by_mcts(
             progress_desc=f"Mcts Iter {mcts_iter}",
             show_progress=True,
         )
-        test_ai_manager.set_envirement(test_model, test_mcts, chess_state)
+        test_ai_executor.set_envirement(test_model, test_mcts, chess_state)
 
-        test_ai_manager.start(range(simulate_num))
-        win = test_ai_manager.process_result_dict()
+        test_ai_executor.start(range(simulate_num))
+        win = test_ai_executor.process_result_dict()
 
         score_dict[f"{mcts_iter}"] = win / simulate_num
         last_mcts_iter = mcts_iter
@@ -100,7 +100,7 @@ def get_best_c_param(
         ai1 = MCTSAI(100, c_param=c1)
         ai2 = MCTSAI(100, c_param=c2)
 
-        manager = TestAIManager(
+        executor = TestAIExecutor(
             battle_for_eval,
             execution_mode=execution_mode,
             worker_limit=5,
@@ -108,9 +108,9 @@ def get_best_c_param(
             progress_desc=f"C param {c1} vs {c2}",
             show_progress=True,
         )
-        manager.set_envirement(ai1, ai2, chess_state)
-        manager.start(range(test_game_num))
-        win = manager.process_result_dict()
+        executor.set_envirement(ai1, ai2, chess_state)
+        executor.start(range(test_game_num))
+        win = executor.process_result_dict()
         return win / test_game_num
 
     # 主循环：依次测试 0.0 ～ 1.0
